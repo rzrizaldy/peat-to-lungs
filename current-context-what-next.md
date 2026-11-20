@@ -10,7 +10,7 @@ Last updated 2026-11-20 (America/New_York).
 
 ## Current state
 
-- A ten-slide scroll-snap story (adds a cross-border haze slide and a 'What this means' policy slide; the ArcGIS recipe moved to the coursework folder, agent_context/08_arcgis_replication_recipe.md) with Story and Advanced modes, EN/ID and light/dark, styled as a news graphic. The explorer map uses Esri Light/Dark Gray Canvas tiles on Web Mercator. The 3D fire terrain uses GADM province outlines.
+- An eleven-slide scroll-snap story, one reading mode (Story/Advanced removed 2026-11-20). Slides add cross-border haze, a 2×2 exposure matrix (fire × unhealthy days, bubble = population, colour = PM₂.₅, 2026) and a policy slide. The ArcGIS recipe lives in the coursework folder (agent_context/08_arcgis_replication_recipe.md). Copy avoids 'X, not Y' phrasing. The site has EN/ID and light/dark, styled as a news graphic. The explorer map uses Esri Light/Dark Gray Canvas tiles on Web Mercator. The 3D fire terrain uses GADM province outlines.
 - The index and K-means use Ln(1 + people/km²). Priority people: 2.23M in 2019 (both provinces), 1.65M in 2026 (all Central Kalimantan).
 - `data/stats.json` holds the significance checks. Count / 100 km is the best setting (R² 0.55, regency-out 0.52, bootstrap CI 116–210, residual Moran's I 0.61).
 - `node --test tools/verify.test.mjs` passes 5/5.

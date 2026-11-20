@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="en" data-mode="story">
+<html lang="en">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -12,7 +12,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Public+Sans:ital,wght@0,400;0,500;0,600;0,700;0,800;1,500&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="styles.css?v=3">
+  <link rel="stylesheet" href="styles.css?v=4">
 </head>
 <body>
 <a class="skip" href="#deck" data-id="Lompat ke konten">Skip to content</a>
@@ -28,15 +28,11 @@
     <nav class="chapters" aria-label="Chapters" data-id-aria-label="Bab">
       <a class="chapter-seg" href="#intro" data-part="A"><b data-id="Konteks">Context</b><i></i></a>
       <a class="chapter-seg" href="#seasons" data-part="B"><b data-id="Bukti">Evidence</b><i></i></a>
-      <a class="chapter-seg" href="#explore" data-part="C"><b data-id="Tindakan">Action</b><i></i></a>
+      <a class="chapter-seg" href="#matrix" data-part="C"><b data-id="Tindakan">Action</b><i></i></a>
       <a class="chapter-seg" href="#limits" data-part="D"><b data-id="Batasan">Limits</b><i></i></a>
     </nav>
     <div class="header-tools">
-      <span id="counter">1 / 10</span>
-      <div class="modes" role="group" aria-label="Reading mode" data-id-aria-label="Mode baca">
-        <button type="button" data-mode="story" aria-pressed="true" data-id="Cerita">Story</button>
-        <button type="button" data-mode="advanced" aria-pressed="false" data-id="Lanjutan">Advanced</button>
-      </div>
+      <span id="counter">1 / 11</span>
       <select id="language" aria-label="Language" data-id-aria-label="Bahasa">
         <option value="en" lang="en">EN</option>
         <option value="id" lang="id">ID</option>
@@ -56,10 +52,6 @@
     <h1 data-id="Dari gambut ke paru-paru">From peat to lungs</h1>
     <p class="lede" data-id="Setiap kemarau, gambut yang dikeringkan di Sumatra dan Kalimantan membara berminggu-minggu. Kami menelusuri asapnya dari tanah yang terbakar sampai ke orang yang menghirupnya, di 305 kecamatan Riau dan Kalimantan Tengah.">Every dry season, drained peat in Sumatra and Borneo smoulders for weeks. We followed the smoke from the burning ground to the people who breathe it, across 305 districts in Riau and Central Kalimantan.</p>
     <ul class="findings" id="findings" aria-label="Main findings" data-id-aria-label="Temuan utama"></ul>
-    <div class="reader" role="group" aria-label="Reading mode" data-id-aria-label="Mode baca">
-      <button type="button" data-mode="story" aria-pressed="true"><b data-id="Cerita">Story</b><span data-id="Bahasa sederhana dan angka kunci">Plain language and the key numbers</span></button>
-      <button type="button" data-mode="advanced" aria-pressed="false"><b data-id="Lanjutan">Advanced</b><span data-id="Uji statistik, asumsi, dan langkah ArcGIS">Statistical tests, assumptions and ArcGIS steps</span></button>
-    </div>
   </div>
   <figure>
     <img src="assets/peat-to-lungs.png" width="1536" height="1024" alt="Isometric cutaway of drained peat, a canal and a small fire whose smoke drifts toward a village." data-id-alt="Penampang isometrik gambut yang dikeringkan, kanal, dan api kecil yang asapnya bergerak ke arah desa.">
@@ -76,7 +68,7 @@
     <div class="iso-caption" id="iso-caption" aria-live="polite"></div>
   </div>
   <div>
-    <div class="iso-stage"><canvas id="iso" role="img" aria-label="Animated isometric landscape showing peat, drainage, fire, smoke and a town." data-id-aria-label="Lanskap isometrik beranimasi: gambut, kanal, api, asap, dan kota."></canvas><span class="iso-note" data-id="Skema ilustratif, bukan data">Schematic, not data</span></div>
+    <div class="iso-stage"><canvas id="iso" role="img" aria-label="Animated isometric landscape showing peat, drainage, fire, smoke and a town." data-id-aria-label="Lanskap isometrik beranimasi: gambut, kanal, api, asap, dan kota."></canvas><span class="iso-note" data-id="Ilustrasi skematis">Schematic illustration</span></div>
     <div class="iso-ctl">
       <div class="iso-steps" id="iso-steps"></div>
       <div class="iso-play"><button type="button" id="iso-prev" aria-label="Previous step" data-id-aria-label="Langkah sebelumnya">‹</button><button type="button" id="iso-play" data-id="Putar">Play</button><button type="button" id="iso-next" aria-label="Next step" data-id-aria-label="Langkah berikutnya">›</button></div>
@@ -116,7 +108,7 @@
     <p class="kicker" data-id="Jenis lahan">Land type</p>
     <h2 data-id="Api terkumpul di gambut yang dibuka">Fire clusters on cleared peat</h2>
     <p class="standfirst" id="peat-insight"></p>
-    <p class="muted small" data-id="Ini perbandingan deskriptif, bukan bukti sebab-akibat. Kategori bisa tumpang tindih: gambut juga bisa berhutan.">A descriptive comparison, not proof of cause. Categories overlap: peat can also be forest.</p>
+    <p class="muted small" data-id="Angka ini menunjukkan di mana api terjadi. Kategori bisa tumpang tindih: gambut juga bisa berhutan.">These rates show where fire happened. Categories overlap: peat can also be forest.</p>
   </div>
   <figure class="chart-block">
     <h3 data-id="Deteksi api per 100 km² menurut jenis lahan">Fire detections per 100 km², by land type</h3>
@@ -133,13 +125,7 @@
     <h2 data-id="Lebih banyak api di sekitar, udara lebih kotor">More fire nearby, dirtier air</h2>
     <p class="standfirst" id="smoke-insight"></p>
     <div class="numbers" id="smoke-tiles"></div>
-    <p class="story-only muted small" id="smoke-caveat"></p>
-    <div class="adv">
-      <div class="seg" id="model-pick" role="group" aria-label="Model setting" data-id-aria-label="Pengaturan model"></div>
-      <div class="table-scroll" style="margin-top:12px"><table id="stat-table"></table></div>
-      <h4 style="margin-top:16px" data-id="Bentuk kurva, jangkauan, dan waktu">Curve shape, reach and timing</h4>
-      <div class="table-scroll"><table id="shape-table"></table></div>
-    </div>
+    <p class="muted small" id="smoke-caveat"></p>
   </div>
   <div>
     <figure class="chart-block chart">
@@ -148,8 +134,6 @@
       <canvas id="scatter" role="img" aria-label="Scatterplot of fire density and September 2019 PM2.5 for 305 districts." data-id-aria-label="Diagram pencar kepadatan api dan PM2.5 September 2019 untuk 305 kecamatan."></canvas><div class="tip" id="scatter-tip" hidden></div>
       <p class="source" data-id="Sumber: PM₂.₅ WashU ACAG V6.GL.03 berbobot penduduk WorldPop 2020; NASA FIRMS.">Source: WashU ACAG V6.GL.03 PM₂.₅, weighted by WorldPop 2020 population; NASA FIRMS.</p>
     </figure>
-    <div class="adv" style="margin-top:14px"><h4 data-id="Cara membaca uji">How to read the tests</h4><ul class="read-list" id="read-list"></ul>
-    </div>
   </div>
 </div></section>
 
@@ -157,7 +141,7 @@
 <section class="slide" id="borders" data-part="B" data-label="Smoke crosses borders" data-id-label="Asap melintasi batas"><div class="inner split even reveal">
   <div class="copy">
     <p class="kicker" data-id="Melintasi batas">Beyond the border</p>
-    <h2 data-id="Asap tidak berhenti di perbatasan">Smoke does not stop at the border</h2>
+    <h2 data-id="Asap melintasi perbatasan">Smoke crosses borders</h2>
     <p class="standfirst" id="border-insight"></p>
     <figure class="chart-block">
       <h3 data-id="PM₂.₅ harian di Singapura, Juli–Oktober">Daily PM₂.₅ in Singapore, July–October</h3>
@@ -176,6 +160,26 @@
   </figure>
 </div></section>
 
+<!-- 5c · matrix -->
+<section class="slide" id="matrix" data-part="C" data-label="Fire, smoke, time, people" data-id-label="Api, asap, waktu, warga"><div class="inner split reveal">
+  <div class="copy">
+    <p class="kicker" data-id="Siapa terdampak, berapa lama">Who breathed it, and for how long</p>
+    <h2 data-id="Dua jenis wilayah butuh dua respons">Two kinds of places need two responses</h2>
+    <p class="standfirst" id="matrix-insight"></p>
+    <div class="quad-key" id="quad-key"></div>
+    <h4 style="margin-top:18px" data-id="Seberapa erat keempatnya berkaitan">How closely the four move together</h4>
+    <div class="table-scroll"><table class="corr" id="corr"></table></div>
+    <p class="small muted" id="matrix-note"></p>
+  </div>
+  <figure class="chart-block">
+    <h3 data-id="Api di sekitar vs lama paparan, 2026">Fire nearby vs length of exposure, 2026</h3>
+    <p class="chart-sub" data-id="Satu lingkaran = satu kecamatan. Ukuran = penduduk; warna = rerata PM₂.₅ Juli–Oktober.">One circle per district. Size = population; colour = mean PM₂.₅, July–October.</p>
+    <div class="chart"><canvas id="quad" role="img" aria-label="Quadrant chart of fire nearby against days of unhealthy air for 305 districts, 2026." data-id-aria-label="Diagram kuadran api di sekitar terhadap hari udara tidak sehat untuk 305 kecamatan, 2026."></canvas><div class="tip" id="quad-tip" hidden></div></div>
+    <div class="range" id="quad-legend" style="margin-top:8px"></div>
+    <p class="source" data-id="Sumber: kepadatan api NASA FIRMS (kernel 100 km); PM₂.₅ harian CAMS lewat Open-Meteo di titik label kecamatan; WorldPop 2020. Hari tidak sehat = rerata harian ≥ 55,5 µg/m³ (ISPU).">Source: NASA FIRMS fire density (100 km kernel); daily CAMS PM₂.₅ via Open-Meteo at each district's label point; WorldPop 2020. Unhealthy day = daily mean ≥ 55.5 µg/m³ (Indonesia's ISPU scale).</p>
+  </figure>
+</div></section>
+
 <!-- 6 · explore -->
 <section class="slide" id="explore" data-part="C" data-label="Explore the map" data-id-label="Jelajahi peta"><div class="inner reveal">
   <div style="display:flex;justify-content:space-between;gap:24px;flex-wrap:wrap;align-items:end">
@@ -190,9 +194,7 @@
       <option value="exposure" data-id="Paparan PM₂.₅">PM₂.₅ exposure</option>
       <option value="index" data-id="Indeks prioritas">Priority index</option>
       <option value="cluster" data-id="Kelompok kecamatan">District groups</option></select></label>
-    <label class="adv"><span data-id="Wilayah">Region</span><select id="region"><option value="all" data-id="Kedua provinsi">Both provinces</option><option value="ID14">Riau</option><option value="ID62" data-id="Kalimantan Tengah">Central Kalimantan</option></select></label>
-    <label class="adv"><span data-id="Bobot titik api">Hotspot weight</span><select id="mode"><option value="count" data-id="Jumlah deteksi">Detection count</option><option value="frp" data-id="Daya radiasi (FRP)">Fire radiative power (FRP)</option></select></label>
-    <label class="adv"><span data-id="Radius kernel">Kernel radius</span><select id="radius"><option value="25">25 km</option><option value="50">50 km</option><option value="100" selected>100 km</option></select></label>
+    <label><span data-id="Wilayah">Region</span><select id="region"><option value="all" data-id="Kedua provinsi">Both provinces</option><option value="ID14">Riau</option><option value="ID62" data-id="Kalimantan Tengah">Central Kalimantan</option></select></label>
   </form>
   <div class="explore">
     <div>
@@ -220,11 +222,6 @@
     <p class="standfirst" id="priority-insight"></p>
     <div class="versus" id="versus"></div>
     <p class="muted small" data-id="Zona prioritas adalah sel 2 km tempat api, asap, dan penduduk paling bertumpuk (indeks ≥ 1,5 simpangan baku di atas rata-rata).">Priority zones are 2 km cells where fire, smoke and people overlap most (index at least 1.5 standard deviations above average).</p>
-    <div class="adv">
-      <h4 style="margin-top:14px" data-id="Uji sensitivitas indeks">Index sensitivity test</h4>
-      <div class="table-scroll"><table id="sensitivity"></table></div>
-      <p class="small muted" id="sensitivity-note" style="margin-top:8px"></p>
-    </div>
   </div>
   <div class="stack">
     <figure class="chart-block">
@@ -241,7 +238,6 @@
       <h3 data-id="Kelompok kecamatan serupa">Groups of similar districts</h3>
       <p class="chart-sub" id="cluster-caption"></p>
       <div class="cluster-list" id="clusters"></div>
-      <p class="small muted adv" id="cluster-scores" style="margin-top:10px"></p>
     </figure>
   </div>
 </div></section>
@@ -263,7 +259,7 @@
       <div><h4 data-id="Angin tidak dimodelkan">Wind is not modelled</h4><p data-id="Kernel menyebar api ke segala arah. Galat model mengelompok di ruang (Moran's I 0,61), tanda bahwa arah asap penting.">The kernel spreads fire evenly in every direction. Model errors cluster in space (Moran's I 0.61), a sign that smoke direction matters.</p></div>
       <div><h4 data-id="2026 adalah perkiraan">2026 is an estimate</h4><p id="limit-2026"></p></div>
       <div><h4 data-id="Penduduk 2020 untuk kedua musim">2020 population for both seasons</h4><p data-id="WorldPop 2020 dipakai untuk 2019 dan 2026. Perpindahan penduduk tidak tercermin.">WorldPop 2020 stands in for both seasons, so migration is not reflected.</p></div>
-      <div><h4 data-id="Prioritas bersifat relatif">Priority is relative</h4><p data-id="Indeks dibakukan per musim. Bandingkan lokasi di dalam satu musim, bukan besarnya risiko antar-tahun.">The index is standardised within each season. Compare places within a season, not the size of risk across years.</p></div>
+      <div><h4 data-id="Prioritas bersifat relatif">Priority is relative</h4><p data-id="Indeks dibakukan per musim, jadi indeks ini membandingkan lokasi di dalam satu musim.">The index is standardised within each season, so it ranks places within one season.</p></div>
     </div>
   </div>
   
@@ -275,6 +271,6 @@
 </div></section>
 
 </main>
-<script type="module" src="app.mjs?v=3"></script>
+<script type="module" src="app.mjs?v=4"></script>
 </body>
 </html>

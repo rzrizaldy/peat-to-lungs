@@ -283,7 +283,18 @@ tr.best td { font-weight: 700; }
 .actions-list li::before { counter-increment: a; content: counter(a); font-weight: 800; font-size: 14px; color: var(--ember-ink); font-variant-numeric: tabular-nums; }
 .actions-list h3 { font-size: 21px; font-weight: 800; letter-spacing: -.01em; margin: 4px 0 6px; }
 .actions-list p { color: var(--muted); font-size: 15.5px; margin: 0; max-width: 60ch; }
-#shape-table th[colspan] { padding-top: 12px; color: var(--ink); }
+#quad { width: 100%; aspect-ratio: 4 / 3.2; display: block; }
+.quad-key { display: grid; grid-template-columns: 1fr 1fr; gap: 0; border-top: 1px solid var(--line); }
+.quad-key > div { padding: 9px 12px 9px 0; border-bottom: 1px solid var(--line); }
+.quad-key > div:nth-child(even) { padding-left: 12px; border-left: 1px solid var(--line); }
+.quad-key b { display: block; font-size: 14.5px; }
+.quad-key .num { display: block; font-size: 13px; font-weight: 600; color: var(--ink); font-variant-numeric: tabular-nums; }
+.quad-key small { display: block; font-size: 13px; color: var(--muted); line-height: 1.35; margin-top: 2px; }
+table.corr { width: auto; }
+table.corr th, table.corr td { text-align: center; padding: 6px 10px; font-size: 13px; }
+table.corr th[scope="row"] { text-align: left; }
+table.corr td:empty { background: none; }
+@media (max-width: 640px) { .quad-key { grid-template-columns: 1fr; } .quad-key > div:nth-child(even) { padding-left: 0; border-left: 0; } }
 @media (max-width: 900px) { .actions-list { grid-template-columns: 1fr; } }
 
 @keyframes nudge { 0%, 100% { transform: translate(-50%, 0); } 50% { transform: translate(-50%, 5px); } }

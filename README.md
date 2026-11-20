@@ -4,8 +4,7 @@
 
 A scroll-snap data story about peat fires, smoke and people in Riau and Central Kalimantan (305 districts, 2019 and 2026). It is the web companion to a CMU 94-802A GIS project, whose official deliverables are being built in ArcGIS Pro.
 
-- **Story mode** gives plain language and the key numbers.
-- **Advanced mode** shows the significance tests, the curve-shape, reach and timing tests, and the index sensitivity check.
+- One story, in plain language, with the key numbers and how sure we are about each.
 - English by default, Indonesian (`ID`) in the header. Light and dark themes.
 
 ## Run locally
@@ -26,6 +25,7 @@ The site is static: `index.html`, `styles.css`, `app.mjs`, `map.mjs`, `iso.mjs`,
 | Shape, reach, timing | Close to linear: about +10 µg/m³ per extra 0.1 detections/km² (linear has the best regency-out R², 0.54; exponential and power fit worse). Fire up to ~100 km matters most (25 km 0.35, 100 km 0.52, 200 km 0.44). September fire explains September smoke; adding August does not help, and October (placebo) adds nothing. |
 | Why 2026 was worse | Not a hotter September (Central Kalimantan 66,213 vs 60,750 detections) but a season that did not stop: October 64,807 vs 6,696, 68 days with 500+ detections vs 39, and 2.5× more spots burning on 5+ days. A strong El Niño and positive IOD kept it dry. |
 | Across borders | Singapore (NEA stations, same source both years): 39 days ≥ 37.5 µg/m³ in Jul–Oct 2026 vs 13 in 2019, longest episode 20 vs 7 days, dose above the WHO guideline 2.9×. |
+| Exposure matrix (2026) | 6.85M people (75%) lived through 30+ unhealthy days (daily mean ≥ 55.5 µg/m³); 3.58M of them had little fire nearby. Spearman across 305 districts: fire–PM₂.₅ 0.82, PM₂.₅–unhealthy days 0.97, population–fire −0.27. Daily CAMS values track Singapore's NEA monitors (r 0.88) but read low, so day counts are conservative. |
 | Who to prepare | Priority zones (index ≥ +1.5 SD) hold 2.23M people in 2019 (both provinces) and 1.65M in 2026 (all Central Kalimantan). |
 
 ## Methods
@@ -53,6 +53,7 @@ python tools/export-basemap.py       # GADM province outlines for the 3D terrain
 node tools/fire-profile.mjs          # daily season profile from raw FIRMS CSVs → data/fire-profile.json
 node tools/shape-reach.mjs           # curve shape, radius and timing tests → data/shape.json
 python tools/regional-aq.py          # WashU 2019, CAMS 2026 (Open-Meteo), Singapore NEA → data/regional.json (needs h5py)
+python tools/district-exposure.py    # daily CAMS PM2.5 per district, Jul–Oct 2026 → data/exposure2026.json
 node --test tools/verify.test.mjs
 ```
 
