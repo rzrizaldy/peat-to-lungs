@@ -119,8 +119,8 @@ let statusText = ['Loading Sumatra and Kalimantan…', 'Memuat Sumatera dan Kali
 function renderStatus() { const s = el('app-status'); s.textContent = statusText[0] ? t(...statusText) : ''; s.classList.toggle('error', statusError); }
 function setStatus(en = '', id = '', error = false) { statusText = [en, id]; statusError = error; renderStatus(); }
 
-/* Regions: two islands, 13 provinces. Riau (ID14) and Central Kalimantan (ID62) are mapped by
-   kecamatan, as in the ArcGIS Pro deep dive; the other provinces by kabupaten. */
+/* Regions: two islands, 13 provinces, every area a kabupaten/kota so all areas compare evenly.
+   Riau (ID14) and Central Kalimantan (ID62) are the ArcGIS Pro deep-dive provinces (by kecamatan there). */
 const ISLANDS = ['Sumatra', 'Kalimantan'];
 const FOCUS = ['ID14', 'ID62'];
 const PROVINCE_EN = { ID11: 'Aceh', ID12: 'North Sumatra', ID13: 'West Sumatra', ID14: 'Riau', ID15: 'Jambi', ID16: 'South Sumatra',
@@ -137,7 +137,7 @@ const islandColour = island => cssVar(island === 'Sumatra' ? '--sumatra' : '--ka
 const provinceIds = region => (region === 'all' ? allProvinces() : ISLANDS.includes(region) ? islandIds(region) : [region]);
 const provinceName = id => t(PROVINCE_EN[id] ?? id, PROVINCE_ID[id] ?? id);
 const scopeName = region => (region === 'all' ? t('Sumatra and Kalimantan', 'Sumatera dan Kalimantan') : ISLANDS.includes(region) ? islandName(region) : provinceName(region));
-const areaWord = (n = 2) => (n === 1 ? t('area', 'wilayah') : t('areas', 'wilayah'));
+const areaWord = (n = 2) => (n === 1 ? t('regency', 'kabupaten/kota') : t('regencies', 'kabupaten/kota'));
 const islandSeason = (island, y) => {
   const out = { total: 0, peat: 0, cleared: 0, remaining: 0, area: 0, peatArea: 0, forest: 0, loss: 0 };
   for (const id of islandIds(island)) {
@@ -270,8 +270,8 @@ function renderFindings() {
       `<b>2026 lebih buruk.</b> Di Sumatera dan Kalimantan, deteksi api ${up(seasonTotal('all', 2019), seasonTotal('all', 2026))} ${fmt(Math.abs(change('all')))}%, dari ${fmt(seasonTotal('all', 2019))} menjadi ${fmt(seasonTotal('all', 2026))} (Juli–Oktober). Kalimantan ${up(seasonTotal('Kalimantan', 2019), seasonTotal('Kalimantan', 2026))} ${fmt(Math.abs(change('Kalimantan')))}%; Sumatera ${up(seasonTotal('Sumatra', 2019), seasonTotal('Sumatra', 2026))} ${fmt(Math.abs(change('Sumatra')))}%.`),
     t(`<b>More people in the smoke.</b> Measured against 2019, priority zones held ${millions(pr19)} people in 2019 and <strong>${millions(pr26)}</strong> in 2026, ${fmt(kShare * 100)}% of them in Kalimantan. Singapore's haze dose was ${fmt(d26 / d19, 1)}× that of 2019.`,
       `<b>Lebih banyak warga di dalam asap.</b> Dengan tolok ukur 2019, zona prioritas dihuni ${millions(pr19)} orang pada 2019 dan <strong>${millions(pr26)}</strong> pada 2026, ${fmt(kShare * 100)}% di Kalimantan. Dosis kabut asap Singapura ${fmt(d26 / d19, 1)}× lipat 2019.`),
-    t(`<b>Fire nearby predicts smoke.</b> Fire within 100 km explains about ${fmt(cal.r2 * 100)}% of the differences in September 2019 PM₂.₅ between ${overview.zones.length} areas.`,
-      `<b>Api di sekitar memprediksi asap.</b> Api dalam radius 100 km menjelaskan sekitar ${fmt(cal.r2 * 100)}% perbedaan PM₂.₅ September 2019 antar ${overview.zones.length} wilayah.`),
+    t(`<b>Fire nearby predicts smoke.</b> Fire within 100 km explains about ${fmt(cal.r2 * 100)}% of the differences in September 2019 PM₂.₅ between ${overview.zones.length} ${areaWord()}.`,
+      `<b>Api di sekitar memprediksi asap.</b> Api dalam radius 100 km menjelaskan sekitar ${fmt(cal.r2 * 100)}% perbedaan PM₂.₅ September 2019 antar ${overview.zones.length} ${areaWord()}.`),
   ].map(s => `<li><span>${s}</span></li>`).join('');
 }
 
@@ -383,7 +383,7 @@ async function renderSmoke() {
   const w = cal.withinProvince;
   const pAll = Math.max(w.Sumatra.p, w.Kalimantan.p);
   el('smoke-tiles').innerHTML = [
-    [`${fmt(cal.r2 * 100)}%`, t(`of the differences between ${overview.zones.length} areas explained by nearby fire`, `perbedaan antar ${overview.zones.length} wilayah dijelaskan oleh api di sekitar`)],
+    [`${fmt(cal.r2 * 100)}%`, t(`of the differences between ${overview.zones.length} regencies explained by nearby fire`, `perbedaan antar ${overview.zones.length} kabupaten/kota dijelaskan oleh api di sekitar`)],
     [`${fmt(cal.spatialCV.r2 * 100)}%`, t('still explained when whole regencies are hidden from the model', 'tetap terjelaskan saat seluruh kabupaten disembunyikan dari model')],
     [`ρ ${fmt(w.Sumatra.rho, 2)} / ${fmt(w.Kalimantan.rho, 2)}`, t(`rank link inside Sumatra / Kalimantan, ${pLabel(pAll)}`, `hubungan peringkat di dalam Sumatera / Kalimantan, ${pLabel(pAll)}`)],
   ].map(([a, b]) => `<div><strong>${a}</strong><small>${b}</small></div>`).join('');
@@ -423,7 +423,7 @@ function drawScatter() {
     const px = X(x[i]), py = Y(y[i]);
     scatterPts.push([px, py, i]);
     ctx.beginPath();
-    if (z.island === 'Sumatra') ctx.rect(px - 3.5, py - 3.5, 7, 7); else ctx.arc(px, py, 4, 0, 7);
+    islandMark(ctx, z.island, px, py, 4);
     ctx.fillStyle = islandColour(z.island); ctx.globalAlpha = 0.75; ctx.fill(); ctx.globalAlpha = 1;
     ctx.strokeStyle = surface; ctx.lineWidth = 1; ctx.stroke();
   });
@@ -517,7 +517,7 @@ function renderMapPanel() {
     caption = t('Red outlines mark priority zones (index ≥ +1.5 SD). Both seasons use the 2019 yardstick, so they compare directly.', 'Garis merah menandai zona prioritas (indeks ≥ +1,5 SD). Kedua musim memakai tolok ukur 2019, jadi bisa dibandingkan langsung.');
     legend = legendRamp(INDEX_COLORS, '−1.5 SD', '+1.5 SD', t('0.5 SD per class', '0,5 SD per kelas'));
   } else {
-    caption = t(`K-means groups all ${overview.zones.length} areas into ${scenario.clusters.k} profiles for ${year}.`, `K-means mengelompokkan ${overview.zones.length} wilayah menjadi ${scenario.clusters.k} profil untuk ${year}.`);
+    caption = t(`K-means groups all ${overview.zones.length} regencies into ${scenario.clusters.k} profiles for ${year}.`, `K-means mengelompokkan ${overview.zones.length} kabupaten/kota menjadi ${scenario.clusters.k} profil untuk ${year}.`);
     legend = `<div class="range">${scenario.clusters.profiles.map(p => `<span><i class="swatch" style="background:${TYPE_COLORS[p.type]}"></i>${clusterLabel(p)[0]}</span>`).join(' ')}</div>`;
   }
   el('map-title').textContent = t(...layerTitles[layer]);
@@ -571,7 +571,7 @@ function renderPriority() {
     `Measured against the 2019 season, priority zones held <strong>${millions(people(2026))}</strong> people in 2026 against ${millions(people(2019))} in 2019. The risk moved with the fire, and ${provinceName(lead26)} alone held ${millions(lead26n)}.`,
     `Diukur dengan musim 2019, zona prioritas dihuni <strong>${millions(people(2026))}</strong> orang pada 2026 dibanding ${millions(people(2019))} pada 2019. Risiko berpindah bersama api, dan ${provinceName(lead26)} sendiri dihuni ${millions(lead26n)}.`);
   // ranking follows the map filters
-  const districts = el('ranking-grain').value === 'district';
+  const districts = true;   // every area is a kabupaten/kota
   const groups = new Map();
   for (const i of currentIds()) {
     const z = overview.zones[i];
@@ -579,7 +579,7 @@ function renderPriority() {
     const g = groups.get(id) ?? { name: districts ? z.name : z.regency, province: z.province, people: 0, priority: 0, index: i };
     g.people += z.population; g.priority += scenario.indicators[i].priorityPeople; groups.set(id, g);
   }
-  el('ranking-area').textContent = districts ? t('Area', 'Wilayah') : t('Regency / city', 'Kabupaten/kota');
+  el('ranking-area').textContent = t('Regency / city', 'Kabupaten/kota');
   const rows = [...groups.values()].filter(g => g.priority >= 1).sort((a, b) => b.priority - a.priority).slice(0, 7);
   el('priority-caption').textContent = `${year} · ${scopeName(region)} · ${t('follows the map filters', 'mengikuti filter peta')}`;
   el('ranking').querySelector('tbody').innerHTML = rows.length ? rows.map(row => {
@@ -602,8 +602,8 @@ function renderPriority() {
 /* ================================================================ limits */
 function renderLimits() {
   el('limit-2026').textContent = t(
-    `No 2026 satellite PM₂.₅ map exists yet. 2026 values come from the 2019 model, and ${stats.extrapolation['count-100']} of ${overview.zones.length} areas fall outside its training range. The 2×2 uses CAMS daily model values instead.`,
-    `Belum ada peta PM₂.₅ satelit 2026. Nilai 2026 berasal dari model 2019, dan ${stats.extrapolation['count-100']} dari ${overview.zones.length} wilayah berada di luar rentang data latihnya. Matriks 2×2 memakai nilai harian model CAMS.`);
+    `No 2026 satellite PM₂.₅ map exists yet. 2026 values come from the 2019 model, and ${stats.extrapolation['count-100']} of ${overview.zones.length} regencies fall outside its training range. The 2×2 uses CAMS daily model values instead.`,
+    `Belum ada peta PM₂.₅ satelit 2026. Nilai 2026 berasal dari model 2019, dan ${stats.extrapolation['count-100']} dari ${overview.zones.length} kabupaten/kota berada di luar rentang data latihnya. Matriks 2×2 memakai nilai harian model CAMS.`);
 }
 
 /* ================================================================ daily fire chart */
@@ -787,15 +787,25 @@ const spearman = (a, b) => {
 const QUADS = ['ll', 'hl', 'hs', 'ls'];
 const QUAD_NAME = {
   ll: ['Protect people', 'Lindungi warga'], hl: ['Prevent fires, protect people', 'Cegah api, lindungi warga'],
-  hs: ['Prevent for those downwind', 'Cegah demi warga di arah angin'], ls: ['Monitor', 'Pantau'],
+  hs: ['Stop fires that smoke out neighbours', 'Cegah api, asapnya ke daerah lain'], ls: ['Monitor', 'Pantau'],
 };
 const QUAD_WHAT = {
   ll: ['Little fire nearby, yet 30+ unhealthy days: the smoke comes from elsewhere. Early warnings, masks and clean-air rooms.', 'Sedikit api di sekitar, tetapi 30+ hari tidak sehat: asap datang dari tempat lain. Peringatan dini, masker, dan ruang udara bersih.'],
   hl: ['Next to the fire and 30+ unhealthy days. Stop peat fires at the source and protect the people living beside them.', 'Dekat api dan 30+ hari tidak sehat. Hentikan kebakaran gambut di sumbernya dan lindungi warga di sekitarnya.'],
-  hs: ['Much fire, but the smoke moved on. Prevention here protects the neighbours downwind.', 'Banyak api, tetapi asapnya berpindah. Pencegahan di sini melindungi tetangga di arah angin.'],
+  hs: ['Plenty of fire, but the wind carried the smoke away, so people here had fewer bad-air days. Putting these fires out protects the neighbouring regencies that end up breathing it.', 'Banyak titik api, tetapi angin membawa asapnya pergi, jadi warga setempat lebih jarang menghirup udara buruk. Memadamkan api di sini melindungi kabupaten tetangga yang akhirnya menghirup asapnya.'],
   ls: ['Little fire and short exposure. Routine monitoring.', 'Sedikit api dan paparan singkat. Pemantauan rutin.'],
 };
 const quadColour = k => cssVar(`--q-${k}`);
+// island marks: square = Sumatra, triangle = Kalimantan, each with the area of a circle of radius r
+function islandMark(ctx, island, x, y, r) {
+  ctx.beginPath();
+  if (island === 'Sumatra') { const h = r * Math.sqrt(Math.PI) / 2; ctx.rect(x - h, y - h, 2 * h, 2 * h); return; }
+  const a = r * Math.sqrt(4 * Math.PI / Math.sqrt(3)), hgt = a * Math.sqrt(3) / 2;
+  // centroid at (x, y): apex 2/3 of the height above, base 1/3 below
+  ctx.moveTo(x, y - 2 * hgt / 3); ctx.lineTo(x + a / 2, y + hgt / 3); ctx.lineTo(x - a / 2, y + hgt / 3); ctx.closePath();
+}
+const SHAPE_KEY = () => `<span class="small"><svg class="shape-key" viewBox="0 0 10 10" aria-hidden="true"><rect x="1" y="1" width="8" height="8"/></svg>${t('Sumatra', 'Sumatera')}</span>`
+  + `<span class="small"><svg class="shape-key" viewBox="0 0 10 10" aria-hidden="true"><path d="M5 1 9.5 9h-9z"/></svg>Kalimantan</span>`;
 let quadView = 'matrix', quadShapes = null;
 function matrixData() {
   const fire = story[2026].indicators.map(r => r.density);
@@ -814,19 +824,19 @@ function renderMatrix() {
   const allPeople = total(pop);
   const longPeople = q.hl.people + q.ll.people;
   const personDays = total(overview.zones.map((z, i) => z.population * ex[i].unhealthy));
-  const lead = k => ISLANDS.reduce((a, b) => (q[k].island[a].people >= q[k].island[b].people ? a : b));
+  const where = k => ISLANDS.filter(i => q[k].island[i].n).map(i => `${islandName(i)} ${q[k].island[i].n}`).join(', ');
   el('matrix-insight').innerHTML = t(
-    `In 2026, <strong>${millions(longPeople)}</strong> people (${fmt(100 * longPeople / allPeople)}%) on the two islands lived through ${DAY_CUT} or more days of unhealthy air, about <strong>${fmt(personDays / 1e6)} million person-days</strong> in all. They split into two groups that need different help: smoke from elsewhere (mostly ${islandName(lead('ll'))}) and smoke from fires next door (mostly ${islandName(lead('hl'))}).`,
-    `Pada 2026, <strong>${millions(longPeople)}</strong> orang (${fmt(100 * longPeople / allPeople)}%) di kedua pulau mengalami ${DAY_CUT} hari atau lebih udara tidak sehat, sekitar <strong>${fmt(personDays / 1e6)} juta orang-hari</strong>. Mereka terbagi dalam dua kelompok yang butuh bantuan berbeda: asap dari tempat lain (terutama ${islandName(lead('ll'))}) dan asap dari api di dekatnya (terutama ${islandName(lead('hl'))}).`);
+    `In 2026, <strong>${millions(longPeople)}</strong> people (${fmt(100 * longPeople / allPeople)}%) on the two islands lived through ${DAY_CUT} or more days of unhealthy air, about <strong>${personDays >= 1e9 ? `${fmt(personDays / 1e9, 2)} billion` : `${fmt(personDays / 1e6)} million`} person-days</strong> in all. Most lived next to the fires: <strong>${millions(q.hl.people)}</strong> in ${q.hl.n} regencies (${where('hl')}). Another ${millions(q.ll.people)} in ${q.ll.n} regencies (${where('ll')}) breathed smoke from elsewhere.`,
+    `Pada 2026, <strong>${millions(longPeople)}</strong> orang (${fmt(100 * longPeople / allPeople)}%) di kedua pulau mengalami ${DAY_CUT} hari atau lebih udara tidak sehat, sekitar <strong>${personDays >= 1e9 ? `${fmt(personDays / 1e9, 2)} miliar` : `${fmt(personDays / 1e6)} juta`} orang-hari</strong>. Sebagian besar tinggal dekat api: <strong>${millions(q.hl.people)}</strong> di ${q.hl.n} kabupaten/kota (${where('hl')}). ${millions(q.ll.people)} lainnya di ${q.ll.n} kabupaten/kota (${where('ll')}) menghirup asap dari tempat lain.`);
   el('quad-key').innerHTML = QUADS.map(k => {
     const s = q[k], split = ISLANDS.map(isl => `${islandName(isl)} ${s.island[isl].n}`).join(' · ');
-    return `<div class="${k === 'ls' || k === 'hs' ? 'minor' : ''}"><b><i class="dot" style="background:${quadColour(k)}"></i>${t(...QUAD_NAME[k])}</b>`
+    return `<div class="${k === 'ls' ? 'minor' : ''}"><b><i class="dot" style="background:${quadColour(k)}"></i>${t(...QUAD_NAME[k])}</b>`
       + `<span class="num">${s.n} ${areaWord(s.n)} · ${millions(s.people)} ${t('people', 'jiwa')}</span><small>${split}</small><small>${t(...QUAD_WHAT[k])}</small></div>`;
   }).join('');
   const rFirePm = spearman(fire, ex.map(r => r.mean)), rPopFire = spearman(pop, fire);
   el('matrix-corr').textContent = t(
-    `Across all ${overview.zones.length} areas, fire nearby and mean PM₂.₅ rise together (rank correlation ${fmt(rFirePm, 2)}). More populous areas had ${rPopFire < 0 ? 'slightly less' : 'slightly more'} fire nearby (${fmt(rPopFire, 2)}).`,
-    `Di ${overview.zones.length} wilayah, api di sekitar dan rerata PM₂.₅ naik bersama (korelasi peringkat ${fmt(rFirePm, 2)}). Wilayah yang lebih padat penduduk ${rPopFire < 0 ? 'sedikit lebih jauh dari' : 'sedikit lebih dekat ke'} api (${fmt(rPopFire, 2)}).`);
+    `Across all ${overview.zones.length} regencies, fire nearby and mean PM₂.₅ rise together (rank correlation ${fmt(rFirePm, 2)}). More populous regencies had ${rPopFire < 0 ? 'slightly less' : 'slightly more'} fire nearby (${fmt(rPopFire, 2)}).`,
+    `Di ${overview.zones.length} kabupaten/kota, api di sekitar dan rerata PM₂.₅ naik bersama (korelasi peringkat ${fmt(rFirePm, 2)}). Kabupaten/kota yang lebih padat penduduk ${rPopFire < 0 ? 'sedikit lebih jauh dari' : 'sedikit lebih dekat ke'} api (${fmt(rPopFire, 2)}).`);
   const sg = regional.singapore.daily[2026], cams = regional.cities.Singapore.camsDaily2026;
   const pairs = sg.map((v, i) => [v, cams[i]]).filter(([a, b]) => a != null && b != null);
   const pr = (() => { const ma = total(pairs.map(p => p[0])) / pairs.length, mb = total(pairs.map(p => p[1])) / pairs.length; let s = 0, sa = 0, sb = 0; for (const [a, b] of pairs) { s += (a - ma) * (b - mb); sa += (a - ma) ** 2; sb += (b - mb) ** 2; } return s / Math.sqrt(sa * sb); })();
@@ -844,10 +854,10 @@ function drawQuad() {
   ctx.clearRect(0, 0, width, height);
   $$('#quad-view button').forEach(b => b.setAttribute('aria-pressed', b.dataset.v === quadView));
   el('quad-sub').textContent = quadView === 'matrix'
-    ? t('One circle per area. Size = population; colour = quadrant. Lines split at the median fire level and 30 unhealthy days.', 'Satu lingkaran = satu wilayah. Ukuran = penduduk; warna = kuadran. Garis membagi di median api dan 30 hari tidak sehat.')
-    : t('Each area in its quadrant colour. Riau and Central Kalimantan by kecamatan; the other provinces by kabupaten.', 'Setiap wilayah diwarnai menurut kuadrannya. Riau dan Kalimantan Tengah per kecamatan; provinsi lain per kabupaten.');
+    ? t('One mark per regency. Colour = quadrant; shape = island; size = population. Lines split at the median fire level and 30 unhealthy days.', 'Satu tanda = satu kabupaten/kota. Warna = kuadran; bentuk = pulau; ukuran = penduduk. Garis membagi di median api dan 30 hari tidak sehat.')
+    : t('Each regency in its quadrant colour. ★ ArcGIS Pro deep-dive provinces.', 'Setiap kabupaten/kota diwarnai menurut kuadrannya. ★ Provinsi analisis mendalam ArcGIS Pro.');
   el('quad-legend').innerHTML = QUADS.map(k => `<span class="small"><i class="legend-dot" style="background:${quadColour(k)}"></i>${t(...QUAD_NAME[k])}</span>`).join('')
-    + (quadView === 'matrix' ? `<span class="small muted">${t('Circle size = population', 'Ukuran lingkaran = penduduk')}</span>` : '');
+    + (quadView === 'matrix' ? `<span class="legend-gap"></span>${SHAPE_KEY()}<span class="small muted">${t('Size = population', 'Ukuran = penduduk')}</span>` : '');
   if (quadView === 'map') { drawQuadMap(ctx, width, height); return; }
   const { fire, ex, fireCut, of, stats: q } = matrixData();
   const m = { l: 44, r: 10, t: 8, b: 40 };
@@ -876,7 +886,7 @@ function drawQuad() {
   for (const i of order) {
     const z = overview.zones[i], c = quadColour(of[i]);
     const px = X(fire[i]), py = Y(ex[i].unhealthy), r = 2.5 + 16 * Math.sqrt(z.population / maxPop);
-    ctx.beginPath(); ctx.arc(px, py, r, 0, 7);
+    islandMark(ctx, z.island, px, py, r);
     ctx.fillStyle = c; ctx.globalAlpha = 0.6; ctx.fill(); ctx.globalAlpha = 1;
     ctx.strokeStyle = surface; ctx.lineWidth = 0.8; ctx.stroke();
     quadPts.push([px, py, r, i]);
@@ -890,7 +900,7 @@ function drawQuad() {
   // quadrant names in their colour, BCG style: response in bold, group size underneath
   // narrow screens: short names only (the cards beside the chart carry the counts)
   const narrow = width < 520;
-  const SHORT = { ll: ['Protect', 'Lindungi'], hl: ['Prevent + protect', 'Cegah + lindungi'], hs: ['Downwind', 'Arah angin'], ls: ['Monitor', 'Pantau'] };
+  const SHORT = { ll: ['Protect', 'Lindungi'], hl: ['Prevent + protect', 'Cegah + lindungi'], hs: ['Smoke drifts away', 'Asap ke daerah lain'], ls: ['Monitor', 'Pantau'] };
   const corner = (k, x, y, align, strong) => {
     halo(t(...(narrow ? SHORT : QUAD_NAME)[k]), x, y, align, `${strong ? 800 : 700} ${narrow ? 12 : strong ? 14 : 12.5}px "Public Sans", sans-serif`, `color-mix(in srgb, ${quadColour(k)} 72%, #000)`);
     if (!narrow) halo(`${q[k].n} ${areaWord(q[k].n)} · ${millions(q[k].people)}`, x, y + 15, align, '500 12px "Public Sans", sans-serif', strong ? ink : faint);
@@ -1070,7 +1080,6 @@ async function start() {
     new ResizeObserver(drawQuad).observe(el('quad'));
     el('filters').addEventListener('change', refresh);
     el('district').addEventListener('change', e => selectDistrict(Number(e.target.value)));
-    el('ranking-grain').addEventListener('change', () => state && renderPriority());
     el('ranking').addEventListener('click', e => {
       const row = e.target.closest('button[data-district]');
       if (row) { selectDistrict(Number(row.dataset.district)); go(slides.findIndex(s => s.id === 'explore')); }

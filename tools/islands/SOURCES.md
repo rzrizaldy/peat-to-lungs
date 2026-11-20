@@ -1,8 +1,8 @@
 # Island-wide build: sources
 
-The web story covers every province on Sumatra (8) and Kalimantan (5). Riau and Central
-Kalimantan are mapped by **kecamatan**, matching the ArcGIS Pro deep dive; the other 11
-provinces are mapped by **kabupaten/kota**. Riau Islands and Bangka-Belitung are left out
+The web story covers every province on Sumatra (8) and Kalimantan (5), all by **kabupaten/kota**
+(200 areas, `--level kabupaten`, the default). Riau and Central Kalimantan are analysed by kecamatan
+in the ArcGIS Pro deep dive; `--level hybrid` builds that mix for the web too. Riau Islands and Bangka-Belitung are left out
 because they are not on either island.
 
 Large raw files are never committed. Coursework inputs are read in place (read-only) from
@@ -11,7 +11,7 @@ Large raw files are never committed. Coursework inputs are read in place (read-o
 
 | Input | Where | Notes |
 |---|---|---|
-| Admin boundaries (HDX COD-AB Indonesia) | `RawData/HDX_COD_AB_IDN/idn_admin_boundaries.gdb.zip` | `idn_admin3` for ID14, ID62; `idn_admin2` for the rest |
+| Admin boundaries (HDX COD-AB Indonesia) | `RawData/HDX_COD_AB_IDN/idn_admin_boundaries.gdb.zip` | `idn_admin2` (kabupaten); `idn_admin3` for ID14, ID62 with `--level hybrid` |
 | VIIRS S-NPP hotspots 2019 | `RawData/FIRMS_VIIRS_2019/viirs-snpp_2019_Indonesia.csv` | Jul 1–Oct 31, confidence n/h, type 0, exact duplicates removed |
 | VIIRS S-NPP hotspots 2026 | `RawData/FIRMS_VIIRS_2026/*SumKal*.csv` | July standard product, Aug–Oct near-real-time |
 | WorldPop 2020 (constrained, 100 m) | `RawData/WorldPop_2020/idn_pop_2020_CN_100m_R2025A_v1.tif` | |

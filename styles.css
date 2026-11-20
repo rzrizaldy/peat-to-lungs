@@ -358,3 +358,5 @@ table.corr td:empty { background: none; }
 .quad-key .minor small:last-child { display: none; }
 .tip .legend-dot { width: 8px; height: 8px; margin-right: 4px; }
 @media (max-width: 640px) { #quad { aspect-ratio: 4 / 3.8; } }
+.shape-key { width: 10px; height: 10px; margin-right: 5px; vertical-align: -1px; fill: var(--muted); }
+.legend-gap { width: 10px; }

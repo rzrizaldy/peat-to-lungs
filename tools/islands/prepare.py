@@ -18,7 +18,10 @@ See tools/islands/SOURCES.md and tools/islands/fetch.sh.
 Stages cache to .work/islands/ so a rerun skips finished work:
   zones -> hotspots -> land (forest, loss, peat per zone at 30 m) -> people (WorldPop, PM)
   -> assemble.
-Run:  .venv/Scripts/python tools/islands/prepare.py [--stage all|zones|hotspots|land|people|assemble]
+Run:  .venv/Scripts/python tools/islands/prepare.py [--level kabupaten|hybrid] [--stage all|zones|hotspots|land|people|assemble]
+
+--level kabupaten (default, what the site uses since W18): every province by kabupaten/kota, so all
+  areas are comparable. --level hybrid: Riau and Central Kalimantan by kecamatan, the rest by kabupaten.
 """
 import argparse
 import csv
@@ -97,7 +100,7 @@ def parts(geometry):
 
 
 # ------------------------------------------------------------------ zones
-FOCUS = ("ID14", "ID62")   # kecamatan, as in the ArcGIS deep dive; the other provinces use kabupaten
+FOCUS = ()   # provinces mapped by kecamatan; set by --level (hybrid = Riau and Central Kalimantan)
 
 
 def admin_rows(level, keep):
@@ -519,7 +522,12 @@ def assemble(Z, H, L, P):
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--stage", default="all")
+    ap.add_argument("--level", default="kabupaten", choices=["kabupaten", "hybrid"])
     args = ap.parse_args()
+    global FOCUS, CACHE
+    FOCUS = ("ID14", "ID62") if args.level == "hybrid" else ()
+    CACHE = WORK / "islands" / args.level   # zone-dependent caches are kept per level
+    CACHE.mkdir(parents=True, exist_ok=True)
     Z = cached("zones", build_zones)
     if args.stage == "zones":
         return

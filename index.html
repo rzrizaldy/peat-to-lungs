@@ -13,7 +13,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Public+Sans:ital,wght@0,400;0,500;0,600;0,700;0,800;1,500&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="styles.css?v=8">
+  <link rel="stylesheet" href="styles.css?v=9">
 </head>
 <body>
 <a class="skip" href="#deck" data-id="Lompat ke konten">Skip to content</a>
@@ -156,7 +156,7 @@
   <div>
     <figure class="chart-block chart">
       <h3 data-id="Api di sekitar vs PM₂.₅, September 2019">Nearby fire vs PM₂.₅, September 2019</h3>
-      <p class="chart-sub legend-row"><span><i class="swatch" style="background:var(--sumatra)"></i><span data-id="Sumatera">Sumatra</span></span><span><i class="swatch" style="background:var(--kalimantan);border-radius:50%"></i>Kalimantan</span><span data-id="Garis: model 2019 · satu titik = satu wilayah">Line: 2019 model · one dot per area</span></p>
+      <p class="chart-sub legend-row"><span><svg class="shape-key" viewBox="0 0 10 10" aria-hidden="true" style="fill:var(--sumatra)"><rect x="1" y="1" width="8" height="8"/></svg><span data-id="Sumatera">Sumatra</span></span><span><svg class="shape-key" viewBox="0 0 10 10" aria-hidden="true" style="fill:var(--kalimantan)"><path d="M5 1 9.5 9h-9z"/></svg>Kalimantan</span><span data-id="Garis: model 2019 · satu titik = satu kabupaten/kota">Line: 2019 model · one dot per regency</span></p>
       <canvas id="scatter" role="img" aria-label="Scatterplot of fire density and September 2019 PM2.5 for every area on Sumatra and Kalimantan." data-id-aria-label="Diagram pencar kepadatan api dan PM2.5 September 2019 untuk setiap wilayah di Sumatera dan Kalimantan."></canvas><div class="tip" id="scatter-tip" hidden></div>
       <p class="source" data-id="Sumber: PM₂.₅ WashU ACAG V6.GL.03 berbobot penduduk WorldPop 2020; NASA FIRMS.">Source: WashU ACAG V6.GL.03 PM₂.₅, weighted by WorldPop 2020 population; NASA FIRMS.</p>
     </figure>
@@ -220,7 +220,7 @@
       <option value="heat" data-id="Kepadatan api">Fire density</option>
       <option value="exposure" data-id="Paparan PM₂.₅">PM₂.₅ exposure</option>
       <option value="index" data-id="Indeks prioritas">Priority index</option>
-      <option value="cluster" data-id="Kelompok wilayah">Area groups</option></select></label>
+      <option value="cluster" data-id="Kelompok kabupaten/kota">Regency groups</option></select></label>
     <label><span data-id="Wilayah">Region</span><select id="region"></select></label>
   </form>
   <div class="explore">
@@ -234,7 +234,7 @@
       <div class="map-footer"><div id="legend"></div><span><span data-id="Peta dasar">Basemap</span>: Esri, HERE, Garmin, © OpenStreetMap contributors</span></div>
     </div>
     <aside class="inspect">
-      <label for="district" class="small muted" data-id="Pilih wilayah">Choose an area</label>
+      <label for="district" class="small muted" data-id="Pilih kabupaten/kota">Choose a regency</label>
       <select id="district"></select>
       <div id="district-detail" aria-live="polite"></div>
     </aside>
@@ -254,7 +254,7 @@
     <figure class="chart-block">
       <div style="display:flex;justify-content:space-between;gap:10px;align-items:center;flex-wrap:wrap">
         <h3 style="margin:0" data-id="Penduduk di zona prioritas">Residents in priority zones</h3>
-        <select id="ranking-grain" aria-label="Group by" data-id-aria-label="Kelompokkan menurut"><option value="regency" data-id="Kabupaten/kota">Regency / city</option><option value="district" data-id="Wilayah">Area</option></select>
+        
       </div>
       <p class="chart-sub" id="priority-caption" style="margin:4px 0 8px"></p>
       <div class="table-scroll"><table id="ranking"><thead><tr><th scope="col" id="ranking-area" data-id="Kabupaten/kota">Regency / city</th><th scope="col" data-id="Penduduk">Residents</th><th scope="col" data-id="Bagian">Share</th></tr></thead><tbody></tbody></table></div>
@@ -262,7 +262,7 @@
       <p class="source" data-id="Sumber: WorldPop 2020 (dipakai untuk kedua musim); analisis penulis.">Source: WorldPop 2020 (used for both seasons); author's analysis.</p>
     </figure>
     <figure class="chart-block">
-      <h3 data-id="Kelompok wilayah serupa">Groups of similar areas</h3>
+      <h3 data-id="Kelompok kabupaten/kota serupa">Groups of similar regencies</h3>
       <p class="chart-sub" id="cluster-caption"></p>
       <div class="cluster-list" id="clusters"></div>
     </figure>
@@ -287,7 +287,7 @@
       <div><h4 data-id="2026 adalah perkiraan">2026 is an estimate</h4><p id="limit-2026"></p></div>
       <div><h4 data-id="Penduduk 2020 untuk kedua musim">2020 population for both seasons</h4><p data-id="WorldPop 2020 dipakai untuk 2019 dan 2026. Perpindahan penduduk tidak tercermin.">WorldPop 2020 stands in for both seasons, so migration is not reflected.</p></div>
       <div><h4 data-id="Prioritas memakai tolok ukur 2019">Priority uses a 2019 yardstick</h4><p data-id="Kedua musim dibakukan terhadap sebaran 2019, jadi zona prioritas 2026 dapat dibandingkan langsung dengan 2019. Nilai 2026 tetap hasil model.">Both seasons are standardised against the 2019 distribution, so 2026 priority zones compare directly with 2019. The 2026 values are still model estimates.</p></div>
-      <div><h4 data-id="Dua tingkat wilayah">Two levels of area</h4><p data-id="Riau dan Kalimantan Tengah dipetakan per kecamatan, sama dengan analisis mendalam di ArcGIS Pro. Sebelas provinsi lain dipetakan per kabupaten/kota, jadi wilayahnya lebih besar dan nilainya lebih halus.">Riau and Central Kalimantan are mapped by kecamatan (sub-district), matching the ArcGIS Pro deep dive. The other eleven provinces are mapped by kabupaten (regency), so their areas are larger and their values smoother.</p></div>
+      <div><h4 data-id="Satu tingkat wilayah: kabupaten/kota">One level of area: kabupaten</h4><p data-id="Ke-13 provinsi dipetakan per kabupaten/kota agar semua wilayah setara. Riau dan Kalimantan Tengah (★) dianalisis lebih rinci per kecamatan di ArcGIS Pro.">All 13 provinces are mapped by kabupaten/kota (regency or city) so every area compares evenly. Riau and Central Kalimantan (★) are analysed in more detail, by kecamatan, in ArcGIS Pro.</p></div>
     </div>
   </div>
   
@@ -299,6 +299,6 @@
 </div></section>
 
 </main>
-<script type="module" src="app.mjs?v=8"></script>
+<script type="module" src="app.mjs?v=10"></script>
 </body>
 </html>

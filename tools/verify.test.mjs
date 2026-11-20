@@ -48,11 +48,12 @@ test('significance checks are present and the index is not driven by raw density
       assert(c.p < 1e-6 && c.slope > 0);
       assert(c.bootstrap.lo > 0, 'regency-cluster bootstrap CI must exclude zero');
       assert(c.spatialCV.r2 > 0.2 && c.fixedEffects.withinR2 > 0.2);
-      for (const id of ['Sumatra', 'Kalimantan', 'ID14', 'ID62']) assert(c.withinProvince[id].p < 0.01, id);
+      // within each island; Riau has only 12 kabupaten, too few for a within-province test (that runs by kecamatan in ArcGIS)
+      for (const id of ['Sumatra', 'Kalimantan']) assert(c.withinProvince[id].p < 0.01, id);
     }
   }
   const best = stats.calibration['count-100'];
-  assert(Math.abs(best.r2 - 0.5694) < 1e-3);
+  assert(Math.abs(best.r2 - 0.5972) < 1e-3);
   const s = stats.sensitivity.years;
   // Published (log density) must not flag Riau 2026 cells that only have dense population.
   assert.equal(s[2026].published.ID14.people, 0);
@@ -62,21 +63,21 @@ test('significance checks are present and the index is not driven by raw density
 test('all published scenarios preserve GIS totals and have complete valid layers', async () => {
   const [overview, geography, validation] = await Promise.all(['overview', 'geography', 'validation'].map(json));
   const n = overview.zones.length;
-  // 13 provinces: Riau and Central Kalimantan by kecamatan, the rest by kabupaten
+  // 13 provinces, every area a kabupaten/kota
+  assert(overview.zones.every(z => z.level === 'kabupaten'));
   assert.equal(Object.keys(overview.provinces).length, 13);
   assert.equal(new Set(overview.zones.map(z => z.id)).size, n);
   assert.equal(geography.shapes.length, n);
   // the ArcGIS deep-dive provinces must match the validated ArcGIS totals
   // (hotspots exactly; population within 0.1% and PM2.5 within 0.1 µg/m³, since seam pixels are assigned differently)
-  const expect = { ID14: { n: 169, counts: [22874, 3158], pop: 6474029.153, pm: 101.673528 },
-    ID62: { n: 136, counts: [80126, 164333], pop: 2700390.159, pm: 154.869554 } };
+  const expect = { ID14: { n: 12, counts: [22874, 3158], pop: 6474029.153, pm: 101.673528 },
+    ID62: { n: 14, counts: [80126, 164333], pop: 2700390.159, pm: 154.869554 } };
   for (const [id, province] of Object.entries(overview.provinces)) {
     const zones = overview.zones.filter(z => z.province === id);
     assert.equal(province.n, zones.length);
     assert.deepEqual(YEARS.map(year => province.seasons[year].total), YEARS.map((_, i) => sum(zones.map(z => z.counts[i]))));
     if (!expect[id]) continue;
     assert.equal(province.n, expect[id].n);
-    assert(zones.every(z => z.level === 'kecamatan'));
     assert(Math.abs(province.population / expect[id].pop - 1) < 1e-3);
     assert(Math.abs(province.pm25 - expect[id].pm) < 0.1);
     assert.deepEqual(YEARS.map(year => province.seasons[year].total), expect[id].counts);
