@@ -17,10 +17,10 @@ Last updated 2026-11-20 (America/New_York), after the island-wide rebuild (cours
 - 2×2 matrix: BCG layout, colour = quadrant (Protect / Prevent + protect / Prevent for downwind / Monitor), Matrix ↔ Map switch. CAMS daily PM₂.₅ for 479 label points in `data/exposure2026.json` (now with daily values).
 - Light theme only. Opening slide has the Pocket City dioramas with worst-day panels.
 - `npm test` passes 5/5 (Riau/Kalteng regression checks kept).
-- **Not committed yet** (the matrix redesign and the island rebuild).
+- Committed and pushed as `ed9ad93`; live on GitHub Pages (checked 2026-11-20).
 
 ## Next actions
 
-1. Commit and push after the user has reviewed the local page (`node serve.mjs 4174`).
+1. Review the live page on a phone; tune quadrant label placement if needed.
 2. ArcGIS Phase 4 stays focused on Riau and Central Kalimantan; the web numbers for those two provinces are the check values.
 3. When the ArcGIS StoryMap and Dashboard exist, add their links to the credits on the last slide.
