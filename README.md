@@ -1,5 +1,7 @@
 # From Peat to Lungs
 
+**Live: https://rzrizaldy.github.io/peat-to-lungs/**
+
 A scroll-snap data story about peat fires, smoke and people in Riau and Central Kalimantan (305 districts, 2019 and 2026). It is the web companion to a CMU 94-802A GIS project, whose official deliverables are being built in ArcGIS Pro.
 
 - **Story mode** gives plain language and the key numbers.
