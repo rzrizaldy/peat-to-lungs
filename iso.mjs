@@ -2,7 +2,9 @@
 // process, (2) a real-data "fire terrain" built from the kernel density grids.
 import { resizeCanvas } from './map.mjs';
 
-const REDUCE = matchMedia('(prefers-reduced-motion: reduce)').matches;
+// still mode: draw one frame and stop (set by the page's 3D animation switch; starts from the OS setting)
+let REDUCE = matchMedia('(prefers-reduced-motion: reduce)').matches;
+export function setStill(on) { REDUCE = on; }
 const css = () => {
   const s = getComputedStyle(document.documentElement);
   const v = name => s.getPropertyValue(name).trim();
@@ -224,7 +226,7 @@ export function createProcess(canvas, { onStep } = {}) {
   new ResizeObserver(() => { layout(); kick(); }).observe(canvas);
   new IntersectionObserver(es => { visible = es[0].isIntersecting; if (visible) kick(); else pause(); }, { threshold: 0.2 }).observe(canvas);
   return { go: n => { pause(); go(n); }, next: () => { pause(); go(step + 1); }, prev: () => { pause(); go(step - 1); },
-    toggle: () => (playing ? pause() : play()), get step() { return step; }, get playing() { return playing; }, redraw: kick, play };
+    toggle: () => (playing ? pause() : play()), pause, get step() { return step; }, get playing() { return playing; }, redraw: kick, play };
 }
 
 /* ================================================================ terrain */

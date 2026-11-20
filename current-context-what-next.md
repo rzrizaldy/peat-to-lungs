@@ -16,6 +16,7 @@ Last updated 2026-11-20 (America/New_York), after the switch to kabupaten everyw
 - **Method change:** the priority index is now standardised on 2019 for both seasons, so 2026 is comparable (before, each season was standardised on its own, which hid the worse 2026).
 - 2×2 matrix: BCG layout, colour = quadrant (Protect / Prevent + protect / Prevent for downwind / Monitor), Matrix ↔ Map switch. CAMS daily PM₂.₅ for 200 label points in `data/exposure2026.json` (now with daily values).
 - Light theme only. Opening slide has the Pocket City dioramas with worst-day panels.
+- Header switch "3D animation: on/off" (W19). Off shows still images of the dioramas (`assets/pocket/*.webp`, captured from their canvases at 1120×940; recapture if a diorama changes) and draws the process cutaway and fire terrain once. Defaults to off for reduced motion, data saver, ≤ 2 GB memory or ≤ 2 cores; choice stored as `peat-still`.
 - `npm test` passes 5/5 (Riau/Kalteng regression checks kept).
 - W18 (kabupaten everywhere, island shapes in the 2×2 and scatter, plainer downwind quadrant wording) is committed and pushed; W17 hybrid was `ed9ad93`.
 

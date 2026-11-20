@@ -360,3 +360,10 @@ table.corr td:empty { background: none; }
 @media (max-width: 640px) { #quad { aspect-ratio: 4 / 3.8; } }
 .shape-key { width: 10px; height: 10px; margin-right: 5px; vertical-align: -1px; fill: var(--muted); }
 .legend-gap { width: 10px; }
+/* 3D animation switch */
+.motion-btn { height: 30px; border: 1px solid var(--line); background: transparent; padding: 0 9px; font: 600 12.5px var(--sans); color: var(--ink); cursor: pointer; white-space: nowrap; }
+.motion-btn[aria-pressed="false"] { background: var(--ink); color: var(--bg); border-color: var(--ink); }
+.city-still { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; display: block; }
+.city-still[hidden], .city-frame iframe[hidden] { display: none; }
+html.still .cig-row svg { transition: none !important; }
+@media (max-width: 640px) { .motion-btn { padding: 0 6px; font-size: 11.5px; } }

@@ -13,7 +13,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Public+Sans:ital,wght@0,400;0,500;0,600;0,700;0,800;1,500&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="styles.css?v=9">
+  <link rel="stylesheet" href="styles.css?v=10">
 </head>
 <body>
 <a class="skip" href="#deck" data-id="Lompat ke konten">Skip to content</a>
@@ -34,6 +34,7 @@
     </nav>
     <div class="header-tools">
       <span id="counter">1 / 12</span>
+      <button type="button" id="motion" class="motion-btn" aria-pressed="true"></button>
       <select id="language" aria-label="Language" data-id-aria-label="Bahasa">
         <option value="en" lang="en">EN</option>
         <option value="id" lang="id">ID</option>
@@ -61,11 +62,11 @@
   </div>
   <div class="cities">
     <figure class="city">
-      <div class="city-frame"><iframe src="pocket/palangka-raya.html?v=2" data-clear="dry" title="Pocket City diorama of Dermaga Rambang, Palangka Raya" data-id-title="Diorama Pocket City Dermaga Rambang, Palangka Raya"></iframe></div>
+      <div class="city-frame"><img class="city-still" data-still="palangka-raya" alt="Still image of the Dermaga Rambang diorama" data-id-alt="Gambar diam diorama Dermaga Rambang" hidden><iframe data-src="pocket/palangka-raya.html?v=2" data-clear="dry" title="Pocket City diorama of Dermaga Rambang, Palangka Raya" data-id-title="Diorama Pocket City Dermaga Rambang, Palangka Raya"></iframe></div>
       <figcaption><h3>Palangka Raya <span class="muted" data-id="· tepi Sungai Kahayan">· Kahayan riverbank</span></h3><p class="where"><span data-id="Dermaga Rambang, Jl. Riau, Pahandut, tepi Sungai Kahayan">Dermaga Rambang, Jl. Riau, Pahandut, on the Kahayan River</span> · <a href="https://www.google.com/maps?q=-2.2038,113.9399" target="_blank" rel="noopener" data-id="Lihat di Google Maps ↗">Google Maps ↗</a></p><p id="city-pky"></p><div class="peak" id="peak-pky"></div></figcaption>
     </figure>
     <figure class="city">
-      <div class="city-frame"><iframe src="pocket/marina-bay.html?v=2" data-clear="inter" title="Pocket City diorama of Marina Bay Sands, Singapore" data-id-title="Diorama Pocket City Marina Bay Sands, Singapura"></iframe></div>
+      <div class="city-frame"><img class="city-still" data-still="marina-bay" alt="Still image of the Marina Bay Sands diorama" data-id-alt="Gambar diam diorama Marina Bay Sands" hidden><iframe data-src="pocket/marina-bay.html?v=2" data-clear="inter" title="Pocket City diorama of Marina Bay Sands, Singapore" data-id-title="Diorama Pocket City Marina Bay Sands, Singapura"></iframe></div>
       <figcaption><h3>Singapore <span class="muted" data-id="· Marina Bay Sands">· Marina Bay Sands</span></h3><p class="where"><span data-id="Hotel, SkyPark, The Shoppes, dan ArtScience Museum">Hotel, SkyPark, The Shoppes and ArtScience Museum</span> · <a href="https://www.google.com/maps?q=1.2842,103.8597" target="_blank" rel="noopener" data-id="Lihat di Google Maps ↗">Google Maps ↗</a></p><p id="city-sg"></p><div class="peak" id="peak-sg"></div></figcaption>
     </figure>
   </div>
@@ -299,6 +300,6 @@
 </div></section>
 
 </main>
-<script type="module" src="app.mjs?v=10"></script>
+<script type="module" src="app.mjs?v=11"></script>
 </body>
 </html>

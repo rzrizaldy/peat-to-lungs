@@ -1,11 +1,18 @@
 import { EXPOSURE_COLORS, HEAT_COLORS, INDEX_COLORS, PROVINCE_NAMES, TYPE_COLORS, createMap, resizeCanvas } from './map.mjs';
-import { PROCESS_STEPS, createProcess, createTerrain } from './iso.mjs';
+import { PROCESS_STEPS, createProcess, createTerrain, setStill } from './iso.mjs';
 import { lonLat } from './tools/model.mjs';
 
 const el = id => document.getElementById(id);
 const $$ = (s, root = document) => [...root.querySelectorAll(s)];
 const root = document.documentElement;
 const REDUCE = matchMedia('(prefers-reduced-motion: reduce)').matches;
+/* 3D animation switch. Off = "still": the dioramas become pre-rendered images (their pages are not
+   loaded at all), and the process cutaway and fire terrain draw one frame without looping. It starts
+   off for reduced motion, data saver or a low-memory device; the reader's choice is remembered. */
+const LOW_END = REDUCE || navigator.connection?.saveData === true
+  || (navigator.deviceMemory !== undefined && navigator.deviceMemory <= 2)
+  || (navigator.hardwareConcurrency !== undefined && navigator.hardwareConcurrency <= 2);
+let still = LOW_END;
 const store = {
   get(k, d) { try { return localStorage.getItem(k) ?? d; } catch { return d; } },
   set(k, v) { try { localStorage.setItem(k, v); } catch { /* storage disabled */ } },
@@ -61,7 +68,7 @@ function paintDots() {
 }
 function go(i) {
   i = Math.max(0, Math.min(slides.length - 1, i));
-  slides[i].scrollIntoView({ behavior: REDUCE ? 'auto' : 'smooth' });
+  slides[i].scrollIntoView({ behavior: REDUCE || still ? 'auto' : 'smooth' });
 }
 function setCurrent(i) {
   if (i < 0) return;
@@ -75,7 +82,7 @@ function setCurrent(i) {
     seg.classList.toggle('on', slides[i].dataset.part === part);
   }
   if (slides[i].id && location.hash !== `#${slides[i].id}`) history.replaceState(null, '', `#${slides[i].id}`);
-  if (slides[i].id === 'process' && process && !process.playing && !autoplayed) { autoplayed = true; process.play(); }
+  if (slides[i].id === 'process' && process && !process.playing && !autoplayed && !still) { autoplayed = true; process.play(); }
   if (slides[i].id === 'cities' && typeof cityIntro === 'function') cityIntro();
 }
 let autoplayed = false;
@@ -243,6 +250,7 @@ function renderCities() {
   renderPeak('pky'); renderPeak('sg');
   $$('#day-switch button').forEach(b => b.setAttribute('aria-pressed', b.dataset.day === cityDay));
   $$('#cities iframe').forEach(applyDay);
+  $$('#cities .city-still').forEach(img => { img.src = `assets/pocket/${img.dataset.still}-${cityDay}.webp`; });
 }
 $$('#cities iframe').forEach(f => f.addEventListener('load', () => applyDay(f)));
 el('day-switch').addEventListener('click', e => {
@@ -251,7 +259,7 @@ el('day-switch').addEventListener('click', e => {
 });
 // the one orchestrated moment: on first view, the haze rolls in over both cities
 function cityIntro() {
-  if (cityAuto || REDUCE) return;
+  if (cityAuto || REDUCE || still) return;
   cityAuto = true;
   setTimeout(() => { if (!cityTouched) { cityDay = 'haze'; renderCities(); } }, 5500);
 }
@@ -331,7 +339,7 @@ function showTerrain() {
 let terrainTimer = 0;
 function autoTerrain() {
   clearInterval(terrainTimer);
-  if (REDUCE) return;
+  if (REDUCE || still) return;
   terrainTimer = setInterval(() => {
     if (slides[current]?.id !== 'seasons') return;
     terrainYear = terrainYear === 2019 ? 2026 : 2019;
@@ -1041,9 +1049,37 @@ function geojson() {
   download(`zona-prioritas-${year}-${mode}-${radius}-${region}.geojson`, JSON.stringify({ type: 'FeatureCollection', features }), 'application/geo+json');
 }
 
+/* ================================================================ 3D animation switch */
+function renderMotion() {
+  const b = el('motion');
+  b.setAttribute('aria-pressed', String(!still));
+  b.textContent = still ? t('3D animation: off', 'Animasi 3D: mati') : t('3D animation: on', 'Animasi 3D: nyala');
+  b.title = t('Turn off to show still images, lighter on older devices', 'Matikan untuk menampilkan gambar diam, lebih ringan di perangkat lama');
+}
+function applyStill() {
+  document.documentElement.classList.toggle('still', still);
+  setStill(still || REDUCE);
+  for (const frame of $$('#cities .city-frame')) {
+    const iframe = frame.querySelector('iframe'), img = frame.querySelector('.city-still');
+    img.hidden = !still; iframe.hidden = still;
+    if (still) { if (iframe.getAttribute('src') !== 'about:blank') iframe.src = 'about:blank'; }   // unload the live scene
+    else if (!iframe.src || iframe.getAttribute('src') === 'about:blank') iframe.src = iframe.dataset.src;
+  }
+  $$('#cities .city-still').forEach(img => { img.src = `assets/pocket/${img.dataset.still}-${cityDay}.webp`; });
+  renderMotion();
+  if (ready) {
+    if (still) { process.pause?.(); clearInterval(terrainTimer); } else autoTerrain();
+    process.redraw(); showTerrain();
+  }
+}
+el('motion').addEventListener('click', () => { still = !still; store.set('peat-still', still ? '1' : '0'); applyStill(); });
+{ const saved = store.get('peat-still', ''); if (saved === '1' || saved === '0') still = saved === '1'; }
+applyStill();
+
 /* ================================================================ boot */
 function renderAll() {
   renderStatus();
+  renderMotion();
   renderRegionOptions();
   renderCities();
   renderFindings();
