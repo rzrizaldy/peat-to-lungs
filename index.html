@@ -13,7 +13,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Public+Sans:ital,wght@0,400;0,500;0,600;0,700;0,800;1,500&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="styles.css?v=7">
+  <link rel="stylesheet" href="styles.css?v=8">
 </head>
 <body>
 <a class="skip" href="#deck" data-id="Lompat ke konten">Skip to content</a>
@@ -76,7 +76,7 @@
 <section class="slide" id="intro" data-part="A" data-label="Start" data-id-label="Mulai"><div class="inner split hero reveal">
   <div class="copy">
     <h1 class="intro-title" data-id="Dari gambut ke paru-paru">From peat to lungs</h1>
-    <p class="lede" data-id="Setiap kemarau, gambut yang dikeringkan di Sumatra dan Kalimantan membara berminggu-minggu. Kami menelusuri asapnya dari tanah yang terbakar sampai ke orang yang menghirupnya, di 305 kecamatan Riau dan Kalimantan Tengah.">Every dry season, drained peat in Sumatra and Borneo smoulders for weeks. We followed the smoke from the burning ground to the people who breathe it, across 305 districts in Riau and Central Kalimantan.</p>
+    <p class="lede" data-id="Setiap kemarau, gambut yang dikeringkan di Sumatera dan Kalimantan membara berminggu-minggu. Kami menelusuri asapnya dari tanah yang terbakar sampai ke orang yang menghirupnya, di seluruh 13 provinsi kedua pulau, dan membandingkan 2019 dengan 2026.">Every dry season, drained peat in Sumatra and Borneo smoulders for weeks. We followed the smoke from the burning ground to the people who breathe it, across all 13 provinces of both islands, and compared 2019 with 2026.</p>
     <ul class="findings" id="findings" aria-label="Main findings" data-id-aria-label="Temuan utama"></ul>
   </div>
   <figure>
@@ -106,14 +106,14 @@
 <section class="slide" id="seasons" data-part="B" data-label="The fire moved" data-id-label="Api berpindah"><div class="inner split reveal">
   <div class="copy">
     <p class="kicker" data-id="Musim kebakaran">Fire seasons</p>
-    <h2 data-id="Api berpindah provinsi">The fire moved provinces</h2>
+    <h2 data-id="2026 lebih buruk, dan apinya pindah ke Kalimantan">2026 was worse, and the fire moved to Kalimantan</h2>
     <p class="standfirst" id="season-insight"></p>
     <p class="muted" id="season-why"></p>
     <figure class="chart-block">
       <h3 data-id="Deteksi api per hari">Fire detections per day</h3>
       <p class="chart-sub legend-row"><span><i class="swatch" style="background:var(--y2019)"></i>2019</span><span><i class="swatch" style="background:var(--y2026)"></i>2026</span></p>
       <canvas id="daily" role="img" aria-label="Daily fire detections, July to October, 2019 and 2026." data-id-aria-label="Deteksi api harian, Juli–Oktober, 2019 dan 2026."></canvas>
-      <p class="source" data-id="Sumber: NASA FIRMS VIIRS S-NPP, dalam batas provinsi; Agustus–Oktober 2026 near-real-time. Konteks iklim: BMKG, Copernicus CAMS.">Source: NASA FIRMS VIIRS S-NPP, inside each province; August–October 2026 is near-real-time. Climate context: BMKG, Copernicus CAMS.</p>
+      <p class="source" data-id="Sumber: NASA FIRMS VIIRS S-NPP, di dalam 13 provinsi; Agustus–Oktober 2026 near-real-time. Konteks iklim: BMKG, Copernicus CAMS.">Source: NASA FIRMS VIIRS S-NPP, inside the 13 provinces; August–October 2026 is near-real-time. Climate context: BMKG, Copernicus CAMS.</p>
     </figure>
   </div>
   <figure class="chart-block">
@@ -124,7 +124,7 @@
       <div class="terrain-labels" id="terrain-labels"></div>
     </div>
     <div class="year-toggle"><div class="seg" id="terrain-year" role="group" aria-label="Season" data-id-aria-label="Musim"><button type="button" data-year="2019" aria-pressed="true">2019</button><button type="button" data-year="2026" aria-pressed="false">2026</button></div><span class="small muted" data-id="Seret untuk memutar">Drag to rotate</span></div>
-    <p class="source" data-id="Sumber: NASA FIRMS VIIRS S-NPP; batas provinsi GADM 4.1, Natural Earth. Kernel kuartik, sel 8 km untuk tampilan.">Source: NASA FIRMS VIIRS S-NPP; province outlines GADM 4.1, Natural Earth. Quartic kernel, shown in 8 km blocks.</p>
+    <p class="source" data-id="Sumber: NASA FIRMS VIIRS S-NPP; batas provinsi GADM 4.1, Natural Earth. Kernel kuartik, sel 12 km untuk tampilan.">Source: NASA FIRMS VIIRS S-NPP; province outlines GADM 4.1, Natural Earth. Quartic kernel, shown in 12 km blocks.</p>
   </figure>
 </div></section>
 
@@ -156,8 +156,8 @@
   <div>
     <figure class="chart-block chart">
       <h3 data-id="Api di sekitar vs PM₂.₅, September 2019">Nearby fire vs PM₂.₅, September 2019</h3>
-      <p class="chart-sub legend-row"><span><i class="swatch" style="background:var(--riau)"></i>Riau</span><span><i class="swatch" style="background:var(--kalteng);border-radius:50%"></i><span data-id="Kalimantan Tengah">Central Kalimantan</span></span><span data-id="Garis: model 2019 · satu titik = satu kecamatan">Line: 2019 model · one dot per district</span></p>
-      <canvas id="scatter" role="img" aria-label="Scatterplot of fire density and September 2019 PM2.5 for 305 districts." data-id-aria-label="Diagram pencar kepadatan api dan PM2.5 September 2019 untuk 305 kecamatan."></canvas><div class="tip" id="scatter-tip" hidden></div>
+      <p class="chart-sub legend-row"><span><i class="swatch" style="background:var(--sumatra)"></i><span data-id="Sumatera">Sumatra</span></span><span><i class="swatch" style="background:var(--kalimantan);border-radius:50%"></i>Kalimantan</span><span data-id="Garis: model 2019 · satu titik = satu wilayah">Line: 2019 model · one dot per area</span></p>
+      <canvas id="scatter" role="img" aria-label="Scatterplot of fire density and September 2019 PM2.5 for every area on Sumatra and Kalimantan." data-id-aria-label="Diagram pencar kepadatan api dan PM2.5 September 2019 untuk setiap wilayah di Sumatera dan Kalimantan."></canvas><div class="tip" id="scatter-tip" hidden></div>
       <p class="source" data-id="Sumber: PM₂.₅ WashU ACAG V6.GL.03 berbobot penduduk WorldPop 2020; NASA FIRMS.">Source: WashU ACAG V6.GL.03 PM₂.₅, weighted by WorldPop 2020 population; NASA FIRMS.</p>
     </figure>
   </div>
@@ -187,22 +187,23 @@
 </div></section>
 
 <!-- 5c · matrix -->
-<section class="slide" id="matrix" data-part="C" data-label="Fire, smoke, time, people" data-id-label="Api, asap, waktu, warga"><div class="inner split reveal">
+<section class="slide" id="matrix" data-part="C" data-label="Fire, smoke, time, people" data-id-label="Api, asap, waktu, warga"><div class="inner split matrix-split reveal">
   <div class="copy">
     <p class="kicker" data-id="Siapa terdampak, berapa lama">Who breathed it, and for how long</p>
     <h2 data-id="Dua jenis wilayah butuh dua respons">Two kinds of places need two responses</h2>
     <p class="standfirst" id="matrix-insight"></p>
     <div class="quad-key" id="quad-key"></div>
-    <h4 style="margin-top:18px" data-id="Seberapa erat keempatnya berkaitan">How closely the four move together</h4>
-    <div class="table-scroll"><table class="corr" id="corr"></table></div>
-    <p class="small muted" id="matrix-note"></p>
+    <p class="small muted" id="matrix-corr" style="margin-top:14px"></p>
   </div>
   <figure class="chart-block">
-    <h3 data-id="Api di sekitar vs lama paparan, 2026">Fire nearby vs length of exposure, 2026</h3>
-    <p class="chart-sub" data-id="Satu lingkaran = satu kecamatan. Ukuran = penduduk; warna = rerata PM₂.₅ Juli–Oktober.">One circle per district. Size = population; colour = mean PM₂.₅, July–October.</p>
-    <div class="chart"><canvas id="quad" role="img" aria-label="Quadrant chart of fire nearby against days of unhealthy air for 305 districts, 2026." data-id-aria-label="Diagram kuadran api di sekitar terhadap hari udara tidak sehat untuk 305 kecamatan, 2026."></canvas><div class="tip" id="quad-tip" hidden></div></div>
+    <div class="quad-head">
+      <h3 data-id="Api di sekitar vs lama paparan, 2026">Fire nearby vs length of exposure, 2026</h3>
+      <div class="seg" id="quad-view" role="group" aria-label="View" data-id-aria-label="Tampilan"><button type="button" data-v="matrix" aria-pressed="true" data-id="Matriks">Matrix</button><button type="button" data-v="map" aria-pressed="false" data-id="Peta">Map</button></div>
+    </div>
+    <p class="chart-sub" id="quad-sub"></p>
+    <div class="chart"><canvas id="quad" role="img" aria-label="Quadrant chart of fire nearby against days of unhealthy air for every area on Sumatra and Kalimantan, 2026, coloured by quadrant." data-id-aria-label="Diagram kuadran api di sekitar terhadap hari udara tidak sehat untuk setiap wilayah di Sumatera dan Kalimantan, 2026, diwarnai per kuadran."></canvas><div class="tip" id="quad-tip" hidden></div></div>
     <div class="range" id="quad-legend" style="margin-top:8px"></div>
-    <p class="source" data-id="Sumber: kepadatan api NASA FIRMS (kernel 100 km); PM₂.₅ harian CAMS lewat Open-Meteo di titik label kecamatan; WorldPop 2020. Hari tidak sehat = rerata harian ≥ 55,5 µg/m³ (ISPU).">Source: NASA FIRMS fire density (100 km kernel); daily CAMS PM₂.₅ via Open-Meteo at each district's label point; WorldPop 2020. Unhealthy day = daily mean ≥ 55.5 µg/m³ (Indonesia's ISPU scale).</p>
+    <p class="source"><span data-id="Sumber: kepadatan api NASA FIRMS (kernel 100 km); PM₂.₅ harian CAMS lewat Open-Meteo di titik label wilayah; WorldPop 2020. Hari tidak sehat = rerata harian ≥ 55,5 µg/m³ (ISPU).">Source: NASA FIRMS fire density (100 km kernel); daily CAMS PM₂.₅ via Open-Meteo at each area's label point; WorldPop 2020. Unhealthy day = daily mean ≥ 55.5 µg/m³ (Indonesia's ISPU scale).</span> <span id="matrix-note"></span></p>
   </figure>
 </div></section>
 
@@ -219,13 +220,13 @@
       <option value="heat" data-id="Kepadatan api">Fire density</option>
       <option value="exposure" data-id="Paparan PM₂.₅">PM₂.₅ exposure</option>
       <option value="index" data-id="Indeks prioritas">Priority index</option>
-      <option value="cluster" data-id="Kelompok kecamatan">District groups</option></select></label>
-    <label><span data-id="Wilayah">Region</span><select id="region"><option value="all" data-id="Kedua provinsi">Both provinces</option><option value="ID14">Riau</option><option value="ID62" data-id="Kalimantan Tengah">Central Kalimantan</option></select></label>
+      <option value="cluster" data-id="Kelompok wilayah">Area groups</option></select></label>
+    <label><span data-id="Wilayah">Region</span><select id="region"></select></label>
   </form>
   <div class="explore">
     <div>
       <div class="map-frame">
-        <canvas id="study-map" role="img" aria-label="Thematic map of Riau and Central Kalimantan. Use the district list to select an area with the keyboard." data-id-aria-label="Peta tematik Riau dan Kalimantan Tengah. Gunakan daftar kecamatan untuk memilih wilayah dengan keyboard."></canvas>
+        <canvas id="study-map" role="img" aria-label="Thematic map of Sumatra and Kalimantan. Use the area list to select an area with the keyboard." data-id-aria-label="Peta tematik Sumatera dan Kalimantan. Gunakan daftar wilayah untuk memilih wilayah dengan keyboard."></canvas>
         <div class="map-tools"><button type="button" id="zoom-in" aria-label="Zoom in" data-id-aria-label="Perbesar">+</button><button type="button" id="zoom-out" aria-label="Zoom out" data-id-aria-label="Perkecil">−</button><button type="button" id="map-reset" aria-label="Reset view" data-id-aria-label="Atur ulang tampilan">↺</button></div>
         <div id="map-scale" class="map-scale"></div>
         <div id="map-tooltip" role="tooltip" hidden></div>
@@ -233,7 +234,7 @@
       <div class="map-footer"><div id="legend"></div><span><span data-id="Peta dasar">Basemap</span>: Esri, HERE, Garmin, © OpenStreetMap contributors</span></div>
     </div>
     <aside class="inspect">
-      <label for="district" class="small muted" data-id="Pilih kecamatan">Choose a district</label>
+      <label for="district" class="small muted" data-id="Pilih wilayah">Choose an area</label>
       <select id="district"></select>
       <div id="district-detail" aria-live="polite"></div>
     </aside>
@@ -253,7 +254,7 @@
     <figure class="chart-block">
       <div style="display:flex;justify-content:space-between;gap:10px;align-items:center;flex-wrap:wrap">
         <h3 style="margin:0" data-id="Penduduk di zona prioritas">Residents in priority zones</h3>
-        <select id="ranking-grain" aria-label="Group by" data-id-aria-label="Kelompokkan menurut"><option value="regency" data-id="Kabupaten/kota">Regency / city</option><option value="district" data-id="Kecamatan">District</option></select>
+        <select id="ranking-grain" aria-label="Group by" data-id-aria-label="Kelompokkan menurut"><option value="regency" data-id="Kabupaten/kota">Regency / city</option><option value="district" data-id="Wilayah">Area</option></select>
       </div>
       <p class="chart-sub" id="priority-caption" style="margin:4px 0 8px"></p>
       <div class="table-scroll"><table id="ranking"><thead><tr><th scope="col" id="ranking-area" data-id="Kabupaten/kota">Regency / city</th><th scope="col" data-id="Penduduk">Residents</th><th scope="col" data-id="Bagian">Share</th></tr></thead><tbody></tbody></table></div>
@@ -261,7 +262,7 @@
       <p class="source" data-id="Sumber: WorldPop 2020 (dipakai untuk kedua musim); analisis penulis.">Source: WorldPop 2020 (used for both seasons); author's analysis.</p>
     </figure>
     <figure class="chart-block">
-      <h3 data-id="Kelompok kecamatan serupa">Groups of similar districts</h3>
+      <h3 data-id="Kelompok wilayah serupa">Groups of similar areas</h3>
       <p class="chart-sub" id="cluster-caption"></p>
       <div class="cluster-list" id="clusters"></div>
     </figure>
@@ -282,10 +283,11 @@
     <p class="kicker" data-id="Batasan">Limits</p>
     <h2 data-id="Apa yang belum bisa dijawab">What this cannot tell you</h2>
     <div class="limits">
-      <div><h4 data-id="Angin tidak dimodelkan">Wind is not modelled</h4><p data-id="Kernel menyebar api ke segala arah. Galat model mengelompok di ruang (Moran's I 0,61), tanda bahwa arah asap penting.">The kernel spreads fire evenly in every direction. Model errors cluster in space (Moran's I 0.61), a sign that smoke direction matters.</p></div>
+      <div><h4 data-id="Angin tidak dimodelkan">Wind is not modelled</h4><p data-id="Kernel menyebar api ke segala arah. Galat model mengelompok di ruang (Moran's I 0,62), tanda bahwa arah asap penting.">The kernel spreads fire evenly in every direction. Model errors cluster in space (Moran's I 0.62), a sign that smoke direction matters.</p></div>
       <div><h4 data-id="2026 adalah perkiraan">2026 is an estimate</h4><p id="limit-2026"></p></div>
       <div><h4 data-id="Penduduk 2020 untuk kedua musim">2020 population for both seasons</h4><p data-id="WorldPop 2020 dipakai untuk 2019 dan 2026. Perpindahan penduduk tidak tercermin.">WorldPop 2020 stands in for both seasons, so migration is not reflected.</p></div>
-      <div><h4 data-id="Prioritas bersifat relatif">Priority is relative</h4><p data-id="Indeks dibakukan per musim, jadi indeks ini membandingkan lokasi di dalam satu musim.">The index is standardised within each season, so it ranks places within one season.</p></div>
+      <div><h4 data-id="Prioritas memakai tolok ukur 2019">Priority uses a 2019 yardstick</h4><p data-id="Kedua musim dibakukan terhadap sebaran 2019, jadi zona prioritas 2026 dapat dibandingkan langsung dengan 2019. Nilai 2026 tetap hasil model.">Both seasons are standardised against the 2019 distribution, so 2026 priority zones compare directly with 2019. The 2026 values are still model estimates.</p></div>
+      <div><h4 data-id="Dua tingkat wilayah">Two levels of area</h4><p data-id="Riau dan Kalimantan Tengah dipetakan per kecamatan, sama dengan analisis mendalam di ArcGIS Pro. Sebelas provinsi lain dipetakan per kabupaten/kota, jadi wilayahnya lebih besar dan nilainya lebih halus.">Riau and Central Kalimantan are mapped by kecamatan (sub-district), matching the ArcGIS Pro deep dive. The other eleven provinces are mapped by kabupaten (regency), so their areas are larger and their values smoother.</p></div>
     </div>
   </div>
   
@@ -297,6 +299,6 @@
 </div></section>
 
 </main>
-<script type="module" src="app.mjs?v=7"></script>
+<script type="module" src="app.mjs?v=8"></script>
 </body>
 </html>

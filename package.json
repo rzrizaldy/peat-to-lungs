@@ -5,7 +5,12 @@
   "scripts": {
     "start": "node serve.mjs",
     "build:data": "node tools/build-data.mjs && node tools/stats.mjs",
-    "test": "node --test tools/verify.test.mjs"
+    "test": "node --test tools/verify.test.mjs",
+    "fetch:islands": "bash tools/islands/fetch.sh",
+    "prepare:islands": ".venv/Scripts/python -W ignore tools/islands/prepare.py",
+    "build:islands": "npm run prepare:islands && node tools/build-data.mjs && node --max-old-space-size=8192 tools/fire-profile.mjs && node tools/stats.mjs && node --max-old-space-size=8192 tools/shape-reach.mjs && .venv/Scripts/python tools/district-exposure.py"
   },
-  "engines": { "node": ">=20" }
+  "engines": {
+    "node": ">=20"
+  }
 }

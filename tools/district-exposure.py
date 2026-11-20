@@ -1,6 +1,6 @@
-"""Daily PM2.5 exposure per district, July-October 2026 (CAMS via Open-Meteo).
+"""Daily PM2.5 exposure per area, July-October 2026 (CAMS via Open-Meteo).
 
-For each of the 305 districts (label point), fetch hourly CAMS PM2.5, take daily
+For each area in data/overview.json (label point), fetch hourly CAMS PM2.5, take daily
 means and summarise exposure length:
   mean      season mean PM2.5 (µg/m³)
   unhealthy days with a daily mean >= 55.5 µg/m³ (ISPU "unhealthy" band)
@@ -9,6 +9,7 @@ means and summarise exposure length:
 No 2019 daily product is available without an account, so this covers 2026.
 Responses are cached in .work/aq-cache/.  Writes data/exposure2026.json.
 """
+import hashlib
 import json
 import time
 import urllib.request
@@ -44,7 +45,8 @@ for k in range(0, len(zones), 100):
     lon = ",".join(f"{z['lonlat'][0]:.3f}" for z in chunk)
     url = ("https://air-quality-api.open-meteo.com/v1/air-quality?hourly=pm2_5&start_date=2026-07-01&end_date=2026-10-31"
            f"&timezone=Asia%2FJakarta&latitude={lat}&longitude={lon}")
-    data = get_json(url, f"district-{k}.json")
+    # cache key from the coordinates, so a new set of areas never reuses stale responses
+    data = get_json(url, f"area-{hashlib.sha1((lat + lon).encode()).hexdigest()[:12]}.json")
     data = data if isinstance(data, list) else [data]
     for z, d in zip(chunk, data):
         h = d["hourly"]["pm2_5"]
@@ -58,15 +60,16 @@ for k in range(0, len(zones), 100):
             run = run + 1 if v is not None and v >= 55.5 else 0
             best = max(best, run)
         rows.append({
+            "daily": [None if v is None else round(v, 1) for v in daily],
             "mean": round(sum(ok) / len(ok), 1),
             "unhealthy": sum(v >= 55.5 for v in ok),
             "over15": sum(v > 15 for v in ok),
             "longest": best,
         })
-    print("districts", k + len(chunk))
+    print("areas", k + len(chunk))
 
 (APP / "data/exposure2026.json").write_text(json.dumps({
-    "source": "CAMS global atmospheric composition forecasts via Open-Meteo; daily means of hourly PM2.5 at district label points, Jul 1 - Oct 31 2026 (WIB days)",
+    "source": "CAMS global atmospheric composition forecasts via Open-Meteo; daily means of hourly PM2.5 at area label points, Jul 1 - Oct 31 2026 (WIB days)",
     "thresholds": {"unhealthy": 55.5, "who": 15},
     "districts": rows,
 }, separators=(",", ":")))

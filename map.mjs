@@ -152,11 +152,11 @@ export function createMap(canvas, geography, zones, onSelection) {
     const { width, height, ratio } = resizeCanvas(canvas);
     if (!width || !height) return;
     const { region, layer, scenario, selected, percentiles } = display;
-    const visible = region === 'all' ? ['ID14', 'ID62'] : [region];
+    const visible = display.visible ?? Object.keys(grids);
     const areas = visible.map(id => provinceGeometry[id]);
     const left = Math.min(...areas.map(b => b.minX)), right = Math.max(...areas.map(b => b.maxX));
     const top = Math.min(...areas.map(b => b.minY)), bottom = Math.max(...areas.map(b => b.maxY));
-    const multiplier = region === 'all' ? 1.12 : 1.2;
+    const multiplier = visible.length > 1 ? 1.08 : 1.2;
     const scale = zoom * Math.min(width / ((right - left) * multiplier), height / ((bottom - top) * multiplier));
     const tx = width / 2 - (left + right) / 2 * scale + panX;
     const ty = height / 2 - (top + bottom) / 2 * scale + panY;

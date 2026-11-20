@@ -115,19 +115,47 @@ const scenarioFile = key => {
 let overview, geography, tests, stats, story, map, process, terrain, state, ready = false;
 let profile, shape, regional, basemapData, exposure;
 let selected = null, requestId = 0, modelKey = 'count-100', terrainYear = 2019, landYear = 2019;
-let statusText = ['Loading 305 districts…', 'Memuat 305 kecamatan…'], statusError = false;
+let statusText = ['Loading Sumatra and Kalimantan…', 'Memuat Sumatera dan Kalimantan…'], statusError = false;
 function renderStatus() { const s = el('app-status'); s.textContent = statusText[0] ? t(...statusText) : ''; s.classList.toggle('error', statusError); }
 function setStatus(en = '', id = '', error = false) { statusText = [en, id]; statusError = error; renderStatus(); }
 
-const provinceIds = region => (region === 'all' ? ['ID14', 'ID62'] : [region]);
-const provinceName = id => (id === 'ID62' ? t('Central Kalimantan', PROVINCE_NAMES[id]) : PROVINCE_NAMES[id]);
-const scopeName = region => (region === 'all' ? t('both provinces', 'kedua provinsi') : provinceName(region));
+/* Regions: two islands, 13 provinces. Riau (ID14) and Central Kalimantan (ID62) are mapped by
+   kecamatan, as in the ArcGIS Pro deep dive; the other provinces by kabupaten. */
+const ISLANDS = ['Sumatra', 'Kalimantan'];
+const FOCUS = ['ID14', 'ID62'];
+const PROVINCE_EN = { ID11: 'Aceh', ID12: 'North Sumatra', ID13: 'West Sumatra', ID14: 'Riau', ID15: 'Jambi', ID16: 'South Sumatra',
+  ID17: 'Bengkulu', ID18: 'Lampung', ID61: 'West Kalimantan', ID62: 'Central Kalimantan', ID63: 'South Kalimantan',
+  ID64: 'East Kalimantan', ID65: 'North Kalimantan' };
+const PROVINCE_ID = { ID11: 'Aceh', ID12: 'Sumatera Utara', ID13: 'Sumatera Barat', ID14: 'Riau', ID15: 'Jambi', ID16: 'Sumatera Selatan',
+  ID17: 'Bengkulu', ID18: 'Lampung', ID61: 'Kalimantan Barat', ID62: 'Kalimantan Tengah', ID63: 'Kalimantan Selatan',
+  ID64: 'Kalimantan Timur', ID65: 'Kalimantan Utara' };
+const allProvinces = () => Object.keys(overview.provinces);
+const islandOf = id => overview.provinces[id].island;
+const islandIds = island => allProvinces().filter(id => islandOf(id) === island);
+const islandName = island => (island === 'Sumatra' ? t('Sumatra', 'Sumatera') : 'Kalimantan');
+const islandColour = island => cssVar(island === 'Sumatra' ? '--sumatra' : '--kalimantan');
+const provinceIds = region => (region === 'all' ? allProvinces() : ISLANDS.includes(region) ? islandIds(region) : [region]);
+const provinceName = id => t(PROVINCE_EN[id] ?? id, PROVINCE_ID[id] ?? id);
+const scopeName = region => (region === 'all' ? t('Sumatra and Kalimantan', 'Sumatera dan Kalimantan') : ISLANDS.includes(region) ? islandName(region) : provinceName(region));
+const areaWord = (n = 2) => (n === 1 ? t('area', 'wilayah') : t('areas', 'wilayah'));
+const islandSeason = (island, y) => {
+  const out = { total: 0, peat: 0, cleared: 0, remaining: 0, area: 0, peatArea: 0, forest: 0, loss: 0 };
+  for (const id of islandIds(island)) {
+    const p = overview.provinces[id], s = p.seasons[y];
+    out.total += s.total; out.peat += s.peat; out.cleared += s.cleared; out.remaining += s.remaining;
+    out.area += p.area; out.peatArea += p.peat; out.forest += p.forest; out.loss += p.loss;
+  }
+  // hotspots per 100 km² of each land stratum, as build-data.mjs computes per province
+  out.rates = [100 * out.peat / out.peatArea, 100 * (out.total - out.peat) / (out.area - out.peatArea),
+    100 * out.cleared / out.loss, 100 * out.remaining / (out.forest - out.loss)];
+  return out;
+};
 const densityUnit = mode => (mode === 'frp' ? 'MW/km²' : t('detections/km²', 'deteksi/km²'));
 const modelLabel = key => { const [m, r] = key.split('-'); return `${m === 'frp' ? 'FRP' : t('Count', 'Jumlah')} · ${r} km`; };
 const currentIds = () => overview.zones.flatMap((z, i) => (provinceIds(state.region).includes(z.province) ? [i] : []));
-const seasonTotal = (id, y) => overview.provinces[id].seasons[y].total;
+const seasonTotal = (id, y) => (ISLANDS.includes(id) ? islandSeason(id, y).total : id === 'all' ? total(allProvinces().map(p => seasonTotal(p, y))) : overview.provinces[id].seasons[y].total);
 const change = id => 100 * (seasonTotal(id, 2026) / seasonTotal(id, 2019) - 1);
-const priorityPeople = (scenario, ids = ['ID14', 'ID62']) => total(ids.map(id => scenario.provinces[id].priorityPeople));
+const priorityPeople = (scenario, ids = allProvinces()) => total(ids.map(id => scenario.provinces[id].priorityPeople));
 const pLabel = p => (p < 0.001 ? 'p < 0.001' : `p = ${fmt(p, 3)}`);
 
 function clusterLabel(profile) {
@@ -230,16 +258,20 @@ function cityIntro() {
 
 /* ================================================================ intro */
 function renderFindings() {
-  const p26 = story[2026];
+  const p19 = story[2019], p26 = story[2026];
   const cal = stats.calibration['count-100'];
-  const kShare = p26.provinces.ID62.priorityPeople / priorityPeople(p26);
+  const pr19 = priorityPeople(p19), pr26 = priorityPeople(p26);
+  const kShare = priorityPeople(p26, islandIds('Kalimantan')) / pr26;
+  const sg = regional.singapore.daily;
+  const d19 = dose(sg[2019], 15), d26 = dose(sg[2026], 15);
+  const up = (a, b) => (b >= a ? t('rose', 'naik') : t('fell', 'turun'));
   el('findings').innerHTML = [
-    t(`<b>The fire moved.</b> From 2019 to 2026, detections fell ${fmt(Math.abs(change('ID14')))}% in Riau and rose ${fmt(change('ID62'))}% in Central Kalimantan.`,
-      `<b>Api berpindah.</b> Dari 2019 ke 2026, deteksi api turun ${fmt(Math.abs(change('ID14')))}% di Riau dan naik ${fmt(change('ID62'))}% di Kalimantan Tengah.`),
-    t(`<b>Fire nearby predicts smoke.</b> Fire within 100 km explains about ${fmt(cal.r2 * 100)}% of the differences in September 2019 PM₂.₅ between districts.`,
-      `<b>Api di sekitar memprediksi asap.</b> Api dalam radius 100 km menjelaskan sekitar ${fmt(cal.r2 * 100)}% perbedaan PM₂.₅ September 2019 antar-kecamatan.`),
-    t(`<b>Who to prepare.</b> In 2026, about ${millions(priorityPeople(p26))} people live in priority zones, ${fmt(kShare * 100)}% of them in Central Kalimantan.`,
-      `<b>Siapa yang disiapkan.</b> Pada 2026, sekitar ${millions(priorityPeople(p26))} orang tinggal di zona prioritas, ${fmt(kShare * 100)}% di Kalimantan Tengah.`),
+    t(`<b>2026 was worse.</b> Across Sumatra and Kalimantan, fire detections ${up(seasonTotal('all', 2019), seasonTotal('all', 2026))} ${fmt(Math.abs(change('all')))}%, from ${fmt(seasonTotal('all', 2019))} to ${fmt(seasonTotal('all', 2026))} (July–October). Kalimantan ${up(seasonTotal('Kalimantan', 2019), seasonTotal('Kalimantan', 2026))} ${fmt(Math.abs(change('Kalimantan')))}%; Sumatra ${up(seasonTotal('Sumatra', 2019), seasonTotal('Sumatra', 2026))} ${fmt(Math.abs(change('Sumatra')))}%.`,
+      `<b>2026 lebih buruk.</b> Di Sumatera dan Kalimantan, deteksi api ${up(seasonTotal('all', 2019), seasonTotal('all', 2026))} ${fmt(Math.abs(change('all')))}%, dari ${fmt(seasonTotal('all', 2019))} menjadi ${fmt(seasonTotal('all', 2026))} (Juli–Oktober). Kalimantan ${up(seasonTotal('Kalimantan', 2019), seasonTotal('Kalimantan', 2026))} ${fmt(Math.abs(change('Kalimantan')))}%; Sumatera ${up(seasonTotal('Sumatra', 2019), seasonTotal('Sumatra', 2026))} ${fmt(Math.abs(change('Sumatra')))}%.`),
+    t(`<b>More people in the smoke.</b> Measured against 2019, priority zones held ${millions(pr19)} people in 2019 and <strong>${millions(pr26)}</strong> in 2026, ${fmt(kShare * 100)}% of them in Kalimantan. Singapore's haze dose was ${fmt(d26 / d19, 1)}× that of 2019.`,
+      `<b>Lebih banyak warga di dalam asap.</b> Dengan tolok ukur 2019, zona prioritas dihuni ${millions(pr19)} orang pada 2019 dan <strong>${millions(pr26)}</strong> pada 2026, ${fmt(kShare * 100)}% di Kalimantan. Dosis kabut asap Singapura ${fmt(d26 / d19, 1)}× lipat 2019.`),
+    t(`<b>Fire nearby predicts smoke.</b> Fire within 100 km explains about ${fmt(cal.r2 * 100)}% of the differences in September 2019 PM₂.₅ between ${overview.zones.length} areas.`,
+      `<b>Api di sekitar memprediksi asap.</b> Api dalam radius 100 km menjelaskan sekitar ${fmt(cal.r2 * 100)}% perbedaan PM₂.₅ September 2019 antar ${overview.zones.length} wilayah.`),
   ].map(s => `<li><span>${s}</span></li>`).join('');
 }
 
@@ -277,23 +309,23 @@ function renderStepper(step) {
 
 /* ================================================================ seasons */
 function renderSeasons() {
-  const r = overview.provinces.ID14.seasons, k = overview.provinces.ID62.seasons;
-  const k19 = profile.ID62[2019], k26 = profile.ID62[2026];
-  const busy = y => profile.ID62[y].daily.filter(v => v >= 500).length;
+  const k19 = profile.Kalimantan[2019], k26 = profile.Kalimantan[2026];
+  const s19 = profile.Sumatra[2019], s26 = profile.Sumatra[2026];
+  const busy = (isl, y) => profile[isl][y].daily.filter(v => v >= 1000).length;
   el('season-insight').innerHTML = t(
-    `Riau fell ${fmt(Math.abs(change('ID14')))}% while Central Kalimantan doubled. In Central Kalimantan, September 2026 was close to 2019 (${fmt(k26.months[2])} detections against ${fmt(k19.months[2])}). October 2026 kept burning: <strong>${fmt(k26.months[3])}</strong> detections against ${fmt(k19.months[3])}. The province had <strong>${busy(2026)} days</strong> with 500+ detections, up from ${busy(2019)}.`,
-    `Riau turun ${fmt(Math.abs(change('ID14')))}% sementara Kalimantan Tengah berlipat dua. Di Kalimantan Tengah, September 2026 mendekati 2019 (${fmt(k26.months[2])} deteksi dibanding ${fmt(k19.months[2])}). Oktober 2026 terus terbakar: <strong>${fmt(k26.months[3])}</strong> deteksi dibanding ${fmt(k19.months[3])}. Provinsi ini mengalami <strong>${busy(2026)} hari</strong> dengan 500+ deteksi, naik dari ${busy(2019)}.`);
+    `Both islands together had <strong>${fmt(change('all'))}% more</strong> fire in 2026. Kalimantan ${change('Kalimantan') >= 0 ? 'rose' : 'fell'} ${fmt(Math.abs(change('Kalimantan')))}% while Sumatra ${change('Sumatra') >= 0 ? 'rose' : 'fell'} ${fmt(Math.abs(change('Sumatra')))}%. In Kalimantan, September 2026 was close to 2019 (${fmt(k26.months[2])} detections against ${fmt(k19.months[2])}), but October kept burning: <strong>${fmt(k26.months[3])}</strong> against ${fmt(k19.months[3])}. Kalimantan had <strong>${busy('Kalimantan', 2026)} days</strong> with 1,000+ detections, against ${busy('Kalimantan', 2019)} in 2019.`,
+    `Kedua pulau bersama-sama punya <strong>${fmt(change('all'))}% lebih banyak</strong> api pada 2026. Kalimantan ${change('Kalimantan') >= 0 ? 'naik' : 'turun'} ${fmt(Math.abs(change('Kalimantan')))}% sementara Sumatera ${change('Sumatra') >= 0 ? 'naik' : 'turun'} ${fmt(Math.abs(change('Sumatra')))}%. Di Kalimantan, September 2026 mendekati 2019 (${fmt(k26.months[2])} deteksi dibanding ${fmt(k19.months[2])}), tetapi Oktober terus terbakar: <strong>${fmt(k26.months[3])}</strong> dibanding ${fmt(k19.months[3])}. Kalimantan mengalami <strong>${busy('Kalimantan', 2026)} hari</strong> dengan 1.000+ deteksi, dibanding ${busy('Kalimantan', 2019)} pada 2019.`);
   el('season-why').textContent = t(
-    `Why: a strong El Niño and a positive Indian Ocean Dipole kept 2026 dry into October. Night-time detections rose to ${fmt(k26.nightShare * 100)}% from ${fmt(k19.nightShare * 100)}%, and ${fmt(k26.cellsBurning5PlusDays)} spots burned on five or more days, ${fmt(k26.cellsBurning5PlusDays / k19.cellsBurning5PlusDays, 1)}× as many as 2019: signs of peat smouldering for days.`,
-    `Penyebabnya: El Niño kuat dan Indian Ocean Dipole positif membuat 2026 tetap kering hingga Oktober. Deteksi malam naik menjadi ${fmt(k26.nightShare * 100)}% dari ${fmt(k19.nightShare * 100)}%, dan ${fmt(k26.cellsBurning5PlusDays)} titik terbakar lima hari atau lebih, ${fmt(k26.cellsBurning5PlusDays / k19.cellsBurning5PlusDays, 1)}× lipat 2019: tanda gambut membara berhari-hari.`);
+    `Why: a strong El Niño and a positive Indian Ocean Dipole kept 2026 dry into October. In Kalimantan, night-time detections rose to ${fmt(k26.nightShare * 100)}% from ${fmt(k19.nightShare * 100)}%, and ${fmt(k26.cellsBurning5PlusDays)} two-kilometre squares burned on five or more days, ${fmt(k26.cellsBurning5PlusDays / k19.cellsBurning5PlusDays, 1)}× as many as 2019: signs of peat smouldering for days. Sumatra had ${fmt(s26.cellsBurning5PlusDays)} such squares, against ${fmt(s19.cellsBurning5PlusDays)}.`,
+    `Penyebabnya: El Niño kuat dan Indian Ocean Dipole positif membuat 2026 tetap kering hingga Oktober. Di Kalimantan, deteksi malam naik menjadi ${fmt(k26.nightShare * 100)}% dari ${fmt(k19.nightShare * 100)}%, dan ${fmt(k26.cellsBurning5PlusDays)} kotak dua kilometer terbakar lima hari atau lebih, ${fmt(k26.cellsBurning5PlusDays / k19.cellsBurning5PlusDays, 1)}× lipat 2019: tanda gambut membara berhari-hari. Sumatera punya ${fmt(s26.cellsBurning5PlusDays)} kotak seperti itu, dibanding ${fmt(s19.cellsBurning5PlusDays)}.`);
   drawDaily();
   $$('#terrain-year button').forEach(b => b.setAttribute('aria-pressed', Number(b.dataset.year) === terrainYear));
   showTerrain();
 }
 function showTerrain() {
   terrain.show(story[terrainYear], {
-    names: { ID14: 'Riau', ID62: provinceName('ID62') }, peak: t('Highest', 'Tertinggi'),
-    totals: Object.fromEntries(['ID14', 'ID62'].map(id => [id, `${fmt(seasonTotal(id, terrainYear))} ${t('detections', 'deteksi')}`])),
+    names: Object.fromEntries(ISLANDS.map(i => [i, islandName(i)])), peak: t('Highest', 'Tertinggi'),
+    totals: Object.fromEntries(ISLANDS.map(i => [i, `${fmt(seasonTotal(i, terrainYear))} ${t('detections', 'deteksi')}`])),
   });
 }
 let terrainTimer = 0;
@@ -312,16 +344,16 @@ function autoTerrain() {
 function renderPeat() {
   const labels = t(['Peat', 'Non-peat', 'Forest lost 2001–19', 'Remaining forest'], ['Gambut', 'Non-gambut', 'Hutan hilang 2001–19', 'Hutan tersisa']);
   const risky = [true, false, true, false];
-  const max = Math.max(...Object.values(overview.provinces).flatMap(p => p.seasons[landYear].rates));
-  el('land').innerHTML = ['ID14', 'ID62'].map(id => {
-    const rates = overview.provinces[id].seasons[landYear].rates;
-    return `<div class="land-group"><h4><span>${provinceName(id)}</span><span class="muted small">${t('per 100 km²', 'per 100 km²')}</span></h4>
-      ${rates.map((v, j) => `<div class="land-row"><span>${labels[j]}</span><span class="track"><i style="width:${100 * v / max}%;background:${risky[j] ? 'var(--ember)' : 'var(--faint)'}"></i></span><strong>${fmt(v, 1)}</strong></div>`).join('')}</div>`;
-  }).join('');
-  const ratio = (id, a, b) => overview.provinces[id].seasons[landYear].rates[a] / overview.provinces[id].seasons[landYear].rates[b];
+  const rates = Object.fromEntries(ISLANDS.map(i => [i, islandSeason(i, landYear).rates]));
+  const max = Math.max(...ISLANDS.flatMap(i => [2019, 2026].flatMap(y => islandSeason(i, y).rates)));
+  el('land').innerHTML = ISLANDS.map(i => `<div class="land-group"><h4><span>${islandName(i)}</span><span class="muted small">${t('per 100 km²', 'per 100 km²')}</span></h4>
+      ${rates[i].map((v, j) => `<div class="land-row"><span>${labels[j]}</span><span class="track"><i style="width:${100 * v / max}%;background:${risky[j] ? 'var(--ember)' : 'var(--faint)'}"></i></span><strong>${fmt(v, 1)}</strong></div>`).join('')}</div>`).join('');
+  const ratio = (i, a, b) => rates[i][a] / rates[i][b];
+  const peatShare = y => { const all = ISLANDS.map(i => islandSeason(i, y)); return total(all.map(s => s.peat)) / total(all.map(s => s.total)); };
+  const landShare = total(ISLANDS.map(i => islandSeason(i, landYear).peatArea)) / total(ISLANDS.map(i => islandSeason(i, landYear).area));
   el('peat-insight').innerHTML = t(
-    `In ${landYear}, peat had <strong>${fmt(ratio('ID14', 0, 1), 1)}×</strong> (Riau) and <strong>${fmt(ratio('ID62', 0, 1), 1)}×</strong> (Central Kalimantan) the fire density of other land. Forest cleared since 2001 had <strong>${fmt(ratio('ID14', 2, 3), 1)}×</strong> and <strong>${fmt(ratio('ID62', 2, 3), 1)}×</strong> that of standing forest.`,
-    `Pada ${landYear}, gambut memiliki kepadatan api <strong>${fmt(ratio('ID14', 0, 1), 1)}×</strong> (Riau) dan <strong>${fmt(ratio('ID62', 0, 1), 1)}×</strong> (Kalimantan Tengah) dibanding lahan lain. Hutan yang dibuka sejak 2001 <strong>${fmt(ratio('ID14', 2, 3), 1)}×</strong> dan <strong>${fmt(ratio('ID62', 2, 3), 1)}×</strong> hutan yang masih berdiri.`);
+    `In ${landYear}, peat had <strong>${fmt(ratio('Sumatra', 0, 1), 1)}×</strong> (Sumatra) and <strong>${fmt(ratio('Kalimantan', 0, 1), 1)}×</strong> (Kalimantan) the fire density of other land. Peat covers ${fmt(landShare * 100)}% of the 13 provinces but held ${fmt(peatShare(landYear) * 100)}% of the fires. Forest cleared since 2001 burned at <strong>${fmt(ratio('Sumatra', 2, 3), 1)}×</strong> and <strong>${fmt(ratio('Kalimantan', 2, 3), 1)}×</strong> the rate of standing forest.`,
+    `Pada ${landYear}, gambut memiliki kepadatan api <strong>${fmt(ratio('Sumatra', 0, 1), 1)}×</strong> (Sumatera) dan <strong>${fmt(ratio('Kalimantan', 0, 1), 1)}×</strong> (Kalimantan) dibanding lahan lain. Gambut menutupi ${fmt(landShare * 100)}% dari 13 provinsi, tetapi menampung ${fmt(peatShare(landYear) * 100)}% api. Hutan yang dibuka sejak 2001 terbakar <strong>${fmt(ratio('Sumatra', 2, 3), 1)}×</strong> dan <strong>${fmt(ratio('Kalimantan', 2, 3), 1)}×</strong> laju hutan yang masih berdiri.`);
   $$('#land-year button').forEach(b => b.setAttribute('aria-pressed', Number(b.dataset.year) === landYear));
 }
 
@@ -337,21 +369,27 @@ async function renderSmoke() {
   const effect = cal.slope * (Math.log1p(q(0.75)) - Math.log1p(q(0.25)));
   const [, r] = modelKey.split('-');
   el('smoke-insight').innerHTML = t(
-    `Districts with more fire within ${r} km had dirtier air in September 2019. A high-fire district (top quarter) averaged about <strong>${fmt(effect)} µg/m³</strong> more PM₂.₅ than a low-fire one (bottom quarter). The WHO 24-hour guideline is 15.`,
-    `Kecamatan dengan lebih banyak api dalam ${r} km punya udara lebih kotor pada September 2019. Kecamatan api tinggi (kuartil atas) rata-rata sekitar <strong>${fmt(effect)} µg/m³</strong> PM₂.₅ lebih tinggi daripada kecamatan api rendah (kuartil bawah). Pedoman WHO 24 jam adalah 15.`);
-  const lin = shape.shape['100'].linear;
-  el('smoke-insight').innerHTML += ' ' + t(
-    `The relationship is close to a straight line: each extra 0.1 detections per km² within 100 km adds about <strong>${fmt(lin.coef[1] / 10)} µg/m³</strong>, from the cleanest district to the smokiest.`,
-    `Hubungannya mendekati garis lurus: setiap tambahan 0,1 deteksi per km² dalam 100 km menambah sekitar <strong>${fmt(lin.coef[1] / 10)} µg/m³</strong>, dari kecamatan terbersih sampai yang paling berasap.`);
+    `Across both islands, areas with more fire within ${r} km had dirtier air in September 2019. A high-fire area (top quarter) averaged about <strong>${fmt(effect)} µg/m³</strong> more PM₂.₅ than a low-fire one (bottom quarter). The WHO 24-hour guideline is 15.`,
+    `Di kedua pulau, wilayah dengan lebih banyak api dalam ${r} km punya udara lebih kotor pada September 2019. Wilayah api tinggi (kuartil atas) rata-rata sekitar <strong>${fmt(effect)} µg/m³</strong> PM₂.₅ lebih tinggi daripada wilayah api rendah (kuartil bawah). Pedoman WHO 24 jam adalah 15.`);
+  // marginal effect of 0.1 more detections/km² at light, medium and heavy fire (best-fitting curve)
+  const [mLow, , mHigh] = shape.marginal;
+  const forms = Object.entries(shape.shape['100']).sort((p, q) => q[1].cvR2 - p[1].cvR2);
+  const bent = forms[0][0] !== 'linear';
+  el('smoke-insight').innerHTML += ' ' + (bent ? t(
+    `The curve flattens as fire grows: 0.1 more detections per km² within 100 km adds about <strong>${fmt(mLow.perTenth)} µg/m³</strong> where fire is light, but about ${fmt(mHigh.perTenth)} where it is already heavy. Even a little fire nearby matters.`,
+    `Kurvanya melandai saat api bertambah: tambahan 0,1 deteksi per km² dalam 100 km menambah sekitar <strong>${fmt(mLow.perTenth)} µg/m³</strong> di tempat apinya sedikit, tetapi sekitar ${fmt(mHigh.perTenth)} di tempat apinya sudah banyak. Sedikit api di sekitar pun berpengaruh.`) : t(
+    `The relationship is close to a straight line: each extra 0.1 detections per km² within 100 km adds about <strong>${fmt(shape.shape['100'].linear.coef[1] / 10)} µg/m³</strong>, from the cleanest area to the smokiest.`,
+    `Hubungannya mendekati garis lurus: setiap tambahan 0,1 deteksi per km² dalam 100 km menambah sekitar <strong>${fmt(shape.shape['100'].linear.coef[1] / 10)} µg/m³</strong>, dari wilayah terbersih sampai yang paling berasap.`));
   const w = cal.withinProvince;
+  const pAll = Math.max(w.Sumatra.p, w.Kalimantan.p);
   el('smoke-tiles').innerHTML = [
-    [`${fmt(cal.r2 * 100)}%`, t('of the differences between districts explained by nearby fire', 'perbedaan antar-kecamatan dijelaskan oleh api di sekitar')],
+    [`${fmt(cal.r2 * 100)}%`, t(`of the differences between ${overview.zones.length} areas explained by nearby fire`, `perbedaan antar ${overview.zones.length} wilayah dijelaskan oleh api di sekitar`)],
     [`${fmt(cal.spatialCV.r2 * 100)}%`, t('still explained when whole regencies are hidden from the model', 'tetap terjelaskan saat seluruh kabupaten disembunyikan dari model')],
-    [`ρ ${fmt(w.ID14.rho, 2)} / ${fmt(w.ID62.rho, 2)}`, t('rank link inside Riau / Central Kalimantan, both p < 0.001', 'hubungan peringkat di dalam Riau / Kalimantan Tengah, keduanya p < 0,001')],
+    [`ρ ${fmt(w.Sumatra.rho, 2)} / ${fmt(w.Kalimantan.rho, 2)}`, t(`rank link inside Sumatra / Kalimantan, ${pLabel(pAll)}`, `hubungan peringkat di dalam Sumatera / Kalimantan, ${pLabel(pAll)}`)],
   ].map(([a, b]) => `<div><strong>${a}</strong><small>${b}</small></div>`).join('');
   el('smoke-caveat').textContent = t(
-    `The link holds when whole regencies are left out of the model and inside each province (p < 0.001). It is an association: wind and weather also move smoke, and the model leaves them out.`,
-    `Hubungan ini bertahan saat seluruh kabupaten dikeluarkan dari model dan di dalam tiap provinsi (p < 0,001). Ini asosiasi: angin dan cuaca juga menggerakkan asap, dan model belum memasukkannya.`);
+    `The link holds when whole regencies are left out of the model and inside each island. It is an association: wind and weather also move smoke, and the model leaves them out.`,
+    `Hubungan ini bertahan saat seluruh kabupaten dikeluarkan dari model dan di dalam tiap pulau. Ini asosiasi: angin dan cuaca juga menggerakkan asap, dan model belum memasukkannya.`);
   scatterData = { x: dens.map(Math.log1p), y: overview.zones.map(z => z.pm25), cal, mode: modelKey.split('-')[0] };
   drawScatter();
 }
@@ -379,14 +417,14 @@ function drawScatter() {
   // WHO reference
   ctx.setLineDash([3, 4]); ctx.strokeStyle = muted; ctx.beginPath(); ctx.moveTo(m.l, Y(15)); ctx.lineTo(width - m.r, Y(15)); ctx.stroke(); ctx.setLineDash([]);
   ctx.textAlign = 'left'; ctx.fillStyle = muted; ctx.fillText(t('WHO 24-h guideline 15', 'Pedoman WHO 24 jam 15'), width - m.r - 150, Y(15) - 5);
-  const colors = { ID14: cssVar('--riau'), ID62: cssVar('--kalteng') }, surface = cssVar('--paper');
+  const surface = cssVar('--paper');
   scatterPts = [];
   overview.zones.forEach((z, i) => {
     const px = X(x[i]), py = Y(y[i]);
     scatterPts.push([px, py, i]);
     ctx.beginPath();
-    if (z.province === 'ID14') ctx.rect(px - 3.5, py - 3.5, 7, 7); else ctx.arc(px, py, 4, 0, 7);
-    ctx.fillStyle = colors[z.province]; ctx.globalAlpha = 0.8; ctx.fill(); ctx.globalAlpha = 1;
+    if (z.island === 'Sumatra') ctx.rect(px - 3.5, py - 3.5, 7, 7); else ctx.arc(px, py, 4, 0, 7);
+    ctx.fillStyle = islandColour(z.island); ctx.globalAlpha = 0.75; ctx.fill(); ctx.globalAlpha = 1;
     ctx.strokeStyle = surface; ctx.lineWidth = 1; ctx.stroke();
   });
   ctx.strokeStyle = ink; ctx.lineWidth = 2; ctx.beginPath();
@@ -416,8 +454,15 @@ const layerTitles = {
   heat: ['Where is fire concentrated?', 'Di mana api terkonsentrasi?'],
   exposure: ['Where is smoke exposure higher?', 'Di mana paparan asap lebih tinggi?'],
   index: ['Where are the priority zones?', 'Di mana zona prioritas?'],
-  cluster: ['Which districts look alike?', 'Kecamatan mana yang mirip?'],
+  cluster: ['Which areas look alike?', 'Wilayah mana yang mirip?'],
 };
+function renderRegionOptions() {
+  const sel = el('region'), keep = sel.value || 'all';
+  const opt = (v, label) => `<option value="${v}">${label}</option>`;
+  sel.innerHTML = opt('all', t('Both islands', 'Kedua pulau'))
+    + ISLANDS.map(i => `<optgroup label="${islandName(i)}">${opt(i, t(`All of ${islandName(i)}`, `Seluruh ${islandName(i)}`))}${islandIds(i).map(id => opt(id, provinceName(id) + (FOCUS.includes(id) ? ' ★' : ''))).join('')}</optgroup>`).join('');
+  sel.value = keep;
+}
 function getFilters() {
   return { year: Number(document.querySelector('input[name="year"]:checked').value), region: el('region').value,
     layer: el('layer').value, mode: 'count', radius: 100 };  // the best-validated setting
@@ -469,17 +514,17 @@ function renderMapPanel() {
     const breaks = year === 2019 ? ['<50', '50', '80', '110', '150', '≥200'] : ['P0', 'P17', 'P33', 'P50', 'P67', 'P83+'];
     legend = `<div class="range">${breaks.map((b, i) => `<span><i class="swatch" style="background:${EXPOSURE_COLORS[i]}"></i>${b}</span>`).join(' ')}</div><span>${year === 2019 ? 'µg/m³' : t('model percentile', 'persentil model')}</span>`;
   } else if (layer === 'index') {
-    caption = t('Red outlines mark priority zones (index ≥ +1.5 SD). Each season is standardised separately.', 'Garis merah menandai zona prioritas (indeks ≥ +1,5 SD). Tiap musim dibakukan terpisah.');
+    caption = t('Red outlines mark priority zones (index ≥ +1.5 SD). Both seasons use the 2019 yardstick, so they compare directly.', 'Garis merah menandai zona prioritas (indeks ≥ +1,5 SD). Kedua musim memakai tolok ukur 2019, jadi bisa dibandingkan langsung.');
     legend = legendRamp(INDEX_COLORS, '−1.5 SD', '+1.5 SD', t('0.5 SD per class', '0,5 SD per kelas'));
   } else {
-    caption = t(`K-means groups all 305 districts into ${scenario.clusters.k} profiles for ${year}.`, `K-means mengelompokkan 305 kecamatan menjadi ${scenario.clusters.k} profil untuk ${year}.`);
+    caption = t(`K-means groups all ${overview.zones.length} areas into ${scenario.clusters.k} profiles for ${year}.`, `K-means mengelompokkan ${overview.zones.length} wilayah menjadi ${scenario.clusters.k} profil untuk ${year}.`);
     legend = `<div class="range">${scenario.clusters.profiles.map(p => `<span><i class="swatch" style="background:${TYPE_COLORS[p.type]}"></i>${clusterLabel(p)[0]}</span>`).join(' ')}</div>`;
   }
   el('map-title').textContent = t(...layerTitles[layer]);
   el('map-caption').textContent = caption;
   el('legend').innerHTML = legend;
   const list = currentIds().sort((a, b) => overview.zones[a].name.localeCompare(overview.zones[b].name, 'id'));
-  el('district').innerHTML = list.map(i => `<option value="${i}">${esc(overview.zones[i].name)} · ${esc(overview.zones[i].regency)}</option>`).join('');
+  el('district').innerHTML = list.map(i => { const z = overview.zones[i]; return `<option value="${i}">${esc(z.name)} · ${z.level === 'kabupaten' ? provinceName(z.province) : esc(z.regency)}</option>`; }).join('');
   renderDistrict();
 }
 function renderDistrict() {
@@ -496,12 +541,12 @@ function renderDistrict() {
     [t('Forest lost on peat', 'Hutan hilang di gambut'), `${fmt(d.peatLoss, 1)} km²`],
   ];
   el('district-detail').innerHTML = `<h3 id="district-title">${esc(d.name)}</h3>
-    <p class="district-meta">${esc(d.regency)} · ${provinceName(d.province)}</p>
+    <p class="district-meta">${d.level === 'kabupaten' ? t('Regency / city', 'Kabupaten/kota') : `${t('Sub-district', 'Kecamatan')} · ${esc(d.regency)}`} · ${provinceName(d.province)}</p>
     <dl class="district-metrics">${metrics.map(([a, b]) => `<div><dt>${a}</dt><dd>${b}</dd></div>`).join('')}</dl>
-    <p class="district-note">${r.priorityPeople >= 1 ? t(`<strong>${fmt(r.priorityPeople)}</strong> people live in priority cells.`, `<strong>${fmt(r.priorityPeople)}</strong> orang tinggal di sel prioritas.`) : t('No priority cells in this district.', 'Tidak ada sel prioritas di kecamatan ini.')}</p>
+    <p class="district-note">${r.priorityPeople >= 1 ? t(`<strong>${fmt(r.priorityPeople)}</strong> people live in priority cells.`, `<strong>${fmt(r.priorityPeople)}</strong> orang tinggal di sel prioritas.`) : t('No priority cells in this area.', 'Tidak ada sel prioritas di wilayah ini.')}</p>
     <p class="district-note"><i class="swatch" style="background:${TYPE_COLORS[profile.type]}"></i>${clusterLabel(profile)[0]}</p>
     ${r.extrapolated ? `<p class="district-note small muted">${t('2026 fire level is outside the 2019 training range; read this estimate with care.', 'Tingkat api 2026 di luar rentang data latih 2019; baca perkiraan ini dengan hati-hati.')}</p>` : ''}`;
-  map.update({ ...state, selected, language, provinceName });
+  map.update({ ...state, selected, language, provinceName, visible: provinceIds(state.region) });
 }
 function selectDistrict(i) { if (currentIds().includes(i)) { selected = i; renderDistrict(); } }
 
@@ -511,15 +556,20 @@ function renderPriority() {
   // fixed story comparison (count, 100 km, both provinces)
   const people = y => priorityPeople(story[y]);
   const maxPeople = Math.max(people(2019), people(2026));
+  const byIsland = (y, i) => priorityPeople(story[y], islandIds(i));
   el('versus').innerHTML = [2019, 2026].map(y => {
-    const p = story[y].provinces;
-    const bar = ['ID14', 'ID62'].map(id => `<i style="width:${100 * p[id].priorityPeople / maxPeople}%;background:var(--${id === 'ID14' ? 'riau' : 'kalteng'})" title="${provinceName(id)} ${fmt(p[id].priorityPeople)}"></i>`).join('');
+    const bar = ISLANDS.map(i => `<i style="width:${100 * byIsland(y, i) / maxPeople}%;background:${islandColour(i)}" title="${islandName(i)} ${fmt(byIsland(y, i))}"></i>`).join('');
     return `<div><span class="year">${y}</span><strong>${millions(people(y))}</strong><div class="bar">${bar}</div>
-      <small><i class="swatch" style="background:var(--riau)"></i>Riau ${fmt(p.ID14.priorityPeople / 1e6, 2)}M &nbsp; <i class="swatch" style="background:var(--kalteng)"></i>${provinceName('ID62')} ${fmt(p.ID62.priorityPeople / 1e6, 2)}M</small></div>`;
+      <small>${ISLANDS.map(i => `<i class="swatch" style="background:${islandColour(i)}"></i>${islandName(i)} ${fmt(byIsland(y, i) / 1e6, 2)}M`).join(' &nbsp; ')}</small></div>`;
   }).join('');
-  el('priority-insight').innerHTML = t(
-    `The risk moved with the fire. In 2019 priority zones held <strong>${millions(people(2019))}</strong> people across both provinces. In 2026 they hold <strong>${millions(people(2026))}</strong>, all in Central Kalimantan.`,
-    `Risiko berpindah bersama api. Pada 2019 zona prioritas mencakup <strong>${millions(people(2019))}</strong> orang di kedua provinsi. Pada 2026 mencakup <strong>${millions(people(2026))}</strong>, seluruhnya di Kalimantan Tengah.`);
+  const ratio = people(2026) / people(2019);
+  const topProv = y => allProvinces().map(id => [id, story[y].provinces[id].priorityPeople]).sort((a, b) => b[1] - a[1])[0];
+  const [lead26, lead26n] = topProv(2026);
+  el('priority-insight').innerHTML = ratio >= 1 ? t(
+    `Measured against the 2019 season, <strong>${fmt(ratio, 1)}×</strong> as many people lived in priority zones in 2026: <strong>${millions(people(2026))}</strong> against ${millions(people(2019))}. The risk moved with the fire, and ${provinceName(lead26)} alone held ${millions(lead26n)}.`,
+    `Diukur dengan musim 2019, <strong>${fmt(ratio, 1)}×</strong> lebih banyak orang tinggal di zona prioritas pada 2026: <strong>${millions(people(2026))}</strong> dibanding ${millions(people(2019))}. Risiko berpindah bersama api, dan ${provinceName(lead26)} sendiri dihuni ${millions(lead26n)}.`) : t(
+    `Measured against the 2019 season, priority zones held <strong>${millions(people(2026))}</strong> people in 2026 against ${millions(people(2019))} in 2019. The risk moved with the fire, and ${provinceName(lead26)} alone held ${millions(lead26n)}.`,
+    `Diukur dengan musim 2019, zona prioritas dihuni <strong>${millions(people(2026))}</strong> orang pada 2026 dibanding ${millions(people(2019))} pada 2019. Risiko berpindah bersama api, dan ${provinceName(lead26)} sendiri dihuni ${millions(lead26n)}.`);
   // ranking follows the map filters
   const districts = el('ranking-grain').value === 'district';
   const groups = new Map();
@@ -529,7 +579,7 @@ function renderPriority() {
     const g = groups.get(id) ?? { name: districts ? z.name : z.regency, province: z.province, people: 0, priority: 0, index: i };
     g.people += z.population; g.priority += scenario.indicators[i].priorityPeople; groups.set(id, g);
   }
-  el('ranking-area').textContent = districts ? t('District', 'Kecamatan') : t('Regency / city', 'Kabupaten/kota');
+  el('ranking-area').textContent = districts ? t('Area', 'Wilayah') : t('Regency / city', 'Kabupaten/kota');
   const rows = [...groups.values()].filter(g => g.priority >= 1).sort((a, b) => b.priority - a.priority).slice(0, 7);
   el('priority-caption').textContent = `${year} · ${scopeName(region)} · ${t('follows the map filters', 'mengikuti filter peta')}`;
   el('ranking').querySelector('tbody').innerHTML = rows.length ? rows.map(row => {
@@ -545,15 +595,15 @@ function renderPriority() {
     if (!members.length) return [];
     const [label, action] = clusterLabel(p);
     return `<div class="cluster-row"><span class="swatch" style="background:${TYPE_COLORS[p.type]}"></span><div><h4>${label}</h4>
-      <p>${members.length} ${t('districts', 'kecamatan')} · ${fmt(total(members.map(i => overview.zones[i].population)) / 1e6, 2)}M ${t('people', 'jiwa')}. ${action}</p></div></div>`;
+      <p>${members.length} ${areaWord(members.length)} · ${fmt(total(members.map(i => overview.zones[i].population)) / 1e6, 2)}M ${t('people', 'jiwa')}. ${action}</p></div></div>`;
   }).join('');
 }
 
 /* ================================================================ limits */
 function renderLimits() {
   el('limit-2026').textContent = t(
-    `No 2026 PM₂.₅ map exists yet. 2026 values are ranks from the 2019 model, and ${stats.extrapolation['count-100']} of 305 districts fall outside its training range.`,
-    `Belum ada peta PM₂.₅ 2026. Nilai 2026 adalah peringkat dari model 2019, dan ${stats.extrapolation['count-100']} dari 305 kecamatan berada di luar rentang data latihnya.`);
+    `No 2026 satellite PM₂.₅ map exists yet. 2026 values come from the 2019 model, and ${stats.extrapolation['count-100']} of ${overview.zones.length} areas fall outside its training range. The 2×2 uses CAMS daily model values instead.`,
+    `Belum ada peta PM₂.₅ satelit 2026. Nilai 2026 berasal dari model 2019, dan ${stats.extrapolation['count-100']} dari ${overview.zones.length} wilayah berada di luar rentang data latihnya. Matriks 2×2 memakai nilai harian model CAMS.`);
 }
 
 /* ================================================================ daily fire chart */
@@ -567,16 +617,16 @@ function drawDaily() {
   ctx.clearRect(0, 0, width, height);
   const ink = cssVar('--ink'), muted = cssVar('--muted'), line = cssVar('--line');
   const colors = { 2019: cssVar('--y2019'), 2026: cssVar('--y2026') };
-  const panels = [['ID62', 0.62], ['ID14', 0.38]];
+  const panels = [['Kalimantan', 0.6], ['Sumatra', 0.4]];
   let top = 0;
   ctx.font = '12px "Public Sans", sans-serif';
   for (const [id, share] of panels) {
-    const h = height * share, m = { l: 40, r: 8, t: 18, b: id === 'ID14' ? 20 : 8 };
+    const h = height * share, m = { l: 40, r: 8, t: 18, b: id === 'Sumatra' ? 20 : 8 };
     const max = Math.max(...[2019, 2026].flatMap(y => profile[id][y].daily));
-    const nice = [100, 200, 500, 1000, 2000, 5000, 10000].find(v => v >= max) ?? max;
+    const nice = [100, 200, 500, 1000, 2000, 5000, 10000, 20000].find(v => v >= max) ?? max;
     const X = d => m.l + (width - m.l - m.r) * d / 122, Y = v => top + h - m.b - (h - m.t - m.b) * v / nice;
     ctx.fillStyle = ink; ctx.font = '700 12.5px "Public Sans", sans-serif'; ctx.textAlign = 'left';
-    ctx.fillText(provinceName(id), m.l, top + 12);
+    ctx.fillText(islandName(id), m.l, top + 12);
     ctx.font = '12px "Public Sans", sans-serif';
     ctx.strokeStyle = line; ctx.fillStyle = muted; ctx.textAlign = 'right';
     for (const v of [0, nice / 2, nice]) { ctx.beginPath(); ctx.moveTo(m.l, Y(v)); ctx.lineTo(width - m.r, Y(v)); ctx.stroke(); ctx.fillText(fmt(v), m.l - 5, Y(v) + 4); }
@@ -585,15 +635,15 @@ function drawDaily() {
       profile[id][year].daily.forEach((v, d) => (d ? ctx.lineTo(X(d), Y(v)) : ctx.moveTo(X(d), Y(v))));
       ctx.stroke();
     }
-    if (id === 'ID14') {
+    if (id === 'Sumatra') {
       ctx.textAlign = 'center'; ctx.fillStyle = muted;
       [0, 31, 62, 92].forEach((d, i) => ctx.fillText(t(['Jul', 'Aug', 'Sep', 'Oct'], ['Jul', 'Agu', 'Sep', 'Okt'])[i], X(d + 15), height - 4));
     }
     // annotate the 2026 Kalimantan October tail
-    if (id === 'ID62') {
-      const d = profile.ID62[2026].daily.indexOf(Math.max(...profile.ID62[2026].daily));
+    if (id === 'Kalimantan') {
+      const d = profile.Kalimantan[2026].daily.indexOf(Math.max(...profile.Kalimantan[2026].daily));
       ctx.fillStyle = ink; ctx.textAlign = 'right';
-      ctx.fillText(t(`2026 peak ${dayLabel(2026, d)}`, `Puncak 2026 ${dayLabel(2026, d)}`), X(d) - 6, Y(profile.ID62[2026].daily[d]) + 4);
+      ctx.fillText(t(`2026 peak ${dayLabel(2026, d)}`, `Puncak 2026 ${dayLabel(2026, d)}`), X(d) - 6, Y(profile.Kalimantan[2026].daily[d]) + 4);
     }
     top += h;
   }
@@ -733,14 +783,30 @@ const spearman = (a, b) => {
   for (let i = 0; i < a.length; i += 1) { s += (ra[i] - m) * (rb[i] - m); sa += (ra[i] - m) ** 2; sb += (rb[i] - m) ** 2; }
   return s / Math.sqrt(sa * sb);
 };
+// BCG-style 2×2: each quadrant has one colour, used for the bubbles, the tints, the cards and the map.
+const QUADS = ['ll', 'hl', 'hs', 'ls'];
+const QUAD_NAME = {
+  ll: ['Protect people', 'Lindungi warga'], hl: ['Prevent fires, protect people', 'Cegah api, lindungi warga'],
+  hs: ['Prevent for those downwind', 'Cegah demi warga di arah angin'], ls: ['Monitor', 'Pantau'],
+};
+const QUAD_WHAT = {
+  ll: ['Little fire nearby, yet 30+ unhealthy days: the smoke comes from elsewhere. Early warnings, masks and clean-air rooms.', 'Sedikit api di sekitar, tetapi 30+ hari tidak sehat: asap datang dari tempat lain. Peringatan dini, masker, dan ruang udara bersih.'],
+  hl: ['Next to the fire and 30+ unhealthy days. Stop peat fires at the source and protect the people living beside them.', 'Dekat api dan 30+ hari tidak sehat. Hentikan kebakaran gambut di sumbernya dan lindungi warga di sekitarnya.'],
+  hs: ['Much fire, but the smoke moved on. Prevention here protects the neighbours downwind.', 'Banyak api, tetapi asapnya berpindah. Pencegahan di sini melindungi tetangga di arah angin.'],
+  ls: ['Little fire and short exposure. Routine monitoring.', 'Sedikit api dan paparan singkat. Pemantauan rutin.'],
+};
+const quadColour = k => cssVar(`--q-${k}`);
+let quadView = 'matrix', quadShapes = null;
 function matrixData() {
   const fire = story[2026].indicators.map(r => r.density);
   const ex = exposure.districts;
   const fireCut = [...fire].sort((a, b) => a - b)[Math.floor(fire.length / 2)];
   const quad = { hl: [], ll: [], hs: [], ls: [] };
-  overview.zones.forEach((z, i) => quad[(fire[i] >= fireCut ? 'h' : 'l') + (ex[i].unhealthy >= DAY_CUT ? 'l' : 's')].push(i));
-  const sum = ids => ({ n: ids.length, people: total(ids.map(i => overview.zones[i].population)), personDays: total(ids.map(i => overview.zones[i].population * ex[i].unhealthy)) });
-  return { fire, ex, fireCut, quad, stats: Object.fromEntries(Object.entries(quad).map(([k, v]) => [k, sum(v)])) };
+  const of = new Array(fire.length);
+  overview.zones.forEach((z, i) => { const k = (fire[i] >= fireCut ? 'h' : 'l') + (ex[i].unhealthy >= DAY_CUT ? 'l' : 's'); quad[k].push(i); of[i] = k; });
+  const sum = ids => ({ n: ids.length, people: total(ids.map(i => overview.zones[i].population)), personDays: total(ids.map(i => overview.zones[i].population * ex[i].unhealthy)),
+    island: Object.fromEntries(ISLANDS.map(isl => { const s = ids.filter(i => overview.zones[i].island === isl); return [isl, { n: s.length, people: total(s.map(i => overview.zones[i].population)) }]; })) });
+  return { fire, ex, fireCut, quad, of, stats: Object.fromEntries(Object.entries(quad).map(([k, v]) => [k, sum(v)])) };
 }
 function renderMatrix() {
   const { fire, ex, stats: q } = matrixData();
@@ -748,31 +814,26 @@ function renderMatrix() {
   const allPeople = total(pop);
   const longPeople = q.hl.people + q.ll.people;
   const personDays = total(overview.zones.map((z, i) => z.population * ex[i].unhealthy));
+  const lead = k => ISLANDS.reduce((a, b) => (q[k].island[a].people >= q[k].island[b].people ? a : b));
   el('matrix-insight').innerHTML = t(
-    `In 2026, <strong>${millions(longPeople)}</strong> people (${fmt(100 * longPeople / allPeople)}%) lived through ${DAY_CUT} or more days of unhealthy air. <strong>${millions(q.ll.people)}</strong> of them had little fire nearby; their smoke came from elsewhere. Together the two provinces logged about <strong>${fmt(personDays / 1e6)} million person-days</strong> of unhealthy air.`,
-    `Pada 2026, <strong>${millions(longPeople)}</strong> orang (${fmt(100 * longPeople / allPeople)}%) mengalami ${DAY_CUT} hari atau lebih udara tidak sehat. <strong>${millions(q.ll.people)}</strong> di antaranya hanya punya sedikit api di sekitar; asapnya datang dari tempat lain. Kedua provinsi mencatat sekitar <strong>${fmt(personDays / 1e6)} juta orang-hari</strong> udara tidak sehat.`);
-  // same layout as the chart: little fire on the left, long exposure on top
-  const key = [
-    ['ll', t('Little fire, long exposure', 'Sedikit api, paparan lama'), t('Smoke arrives from elsewhere: alerts, masks and clean-air rooms.', 'Asap datang dari tempat lain: peringatan, masker, dan ruang udara bersih.')],
-    ['hl', t('Much fire, long exposure', 'Banyak api, paparan lama'), t('Prevent the fires and protect the people.', 'Cegah api dan lindungi warga.')],
-    ['ls', t('Little fire, short exposure', 'Sedikit api, paparan singkat'), t('Routine monitoring.', 'Pemantauan rutin.')],
-    ['hs', t('Much fire, short exposure', 'Banyak api, paparan singkat'), t('Smoke moves on: prevention protects the neighbours downwind.', 'Asap berpindah: pencegahan melindungi tetangga di arah angin.')],
-  ];
-  el('quad-key').innerHTML = key.map(([k, h, p]) => `<div><b>${h}</b><span class="num">${q[k].n} ${t('districts', 'kecamatan')} · ${millions(q[k].people)}</span><small>${p}</small></div>`).join('');
-  const vars = [[t('Fire nearby', 'Api di sekitar'), fire], [t('Mean PM₂.₅', 'Rerata PM₂.₅'), ex.map(r => r.mean)], [t('Unhealthy days', 'Hari tidak sehat'), ex.map(r => r.unhealthy)], [t('Population', 'Penduduk'), pop]];
-  el('corr').innerHTML = `<thead><tr><th></th>${vars.slice(0, 3).map(([n]) => `<th>${n}</th>`).join('')}</tr></thead><tbody>${vars.slice(1).map(([n, a], i) => `<tr><th scope="row">${n}</th>${vars.slice(0, 3).map(([, b], j) => {
-    if (j > i) return '<td></td>';
-    const rho = spearman(a, b);
-    const tone = rho >= 0 ? 'var(--ember)' : 'var(--canal)';
-    return `<td style="background:color-mix(in srgb, ${tone} ${Math.round(Math.abs(rho) * 70)}%, transparent)">${fmt(rho, 2)}</td>`;
-  }).join('')}</tr>`).join('')}</tbody>`;
+    `In 2026, <strong>${millions(longPeople)}</strong> people (${fmt(100 * longPeople / allPeople)}%) on the two islands lived through ${DAY_CUT} or more days of unhealthy air, about <strong>${fmt(personDays / 1e6)} million person-days</strong> in all. They split into two groups that need different help: smoke from elsewhere (mostly ${islandName(lead('ll'))}) and smoke from fires next door (mostly ${islandName(lead('hl'))}).`,
+    `Pada 2026, <strong>${millions(longPeople)}</strong> orang (${fmt(100 * longPeople / allPeople)}%) di kedua pulau mengalami ${DAY_CUT} hari atau lebih udara tidak sehat, sekitar <strong>${fmt(personDays / 1e6)} juta orang-hari</strong>. Mereka terbagi dalam dua kelompok yang butuh bantuan berbeda: asap dari tempat lain (terutama ${islandName(lead('ll'))}) dan asap dari api di dekatnya (terutama ${islandName(lead('hl'))}).`);
+  el('quad-key').innerHTML = QUADS.map(k => {
+    const s = q[k], split = ISLANDS.map(isl => `${islandName(isl)} ${s.island[isl].n}`).join(' · ');
+    return `<div class="${k === 'ls' || k === 'hs' ? 'minor' : ''}"><b><i class="dot" style="background:${quadColour(k)}"></i>${t(...QUAD_NAME[k])}</b>`
+      + `<span class="num">${s.n} ${areaWord(s.n)} · ${millions(s.people)} ${t('people', 'jiwa')}</span><small>${split}</small><small>${t(...QUAD_WHAT[k])}</small></div>`;
+  }).join('');
+  const rFirePm = spearman(fire, ex.map(r => r.mean)), rPopFire = spearman(pop, fire);
+  el('matrix-corr').textContent = t(
+    `Across all ${overview.zones.length} areas, fire nearby and mean PM₂.₅ rise together (rank correlation ${fmt(rFirePm, 2)}). More populous areas had ${rPopFire < 0 ? 'slightly less' : 'slightly more'} fire nearby (${fmt(rPopFire, 2)}).`,
+    `Di ${overview.zones.length} wilayah, api di sekitar dan rerata PM₂.₅ naik bersama (korelasi peringkat ${fmt(rFirePm, 2)}). Wilayah yang lebih padat penduduk ${rPopFire < 0 ? 'sedikit lebih jauh dari' : 'sedikit lebih dekat ke'} api (${fmt(rPopFire, 2)}).`);
   const sg = regional.singapore.daily[2026], cams = regional.cities.Singapore.camsDaily2026;
   const pairs = sg.map((v, i) => [v, cams[i]]).filter(([a, b]) => a != null && b != null);
   const pr = (() => { const ma = total(pairs.map(p => p[0])) / pairs.length, mb = total(pairs.map(p => p[1])) / pairs.length; let s = 0, sa = 0, sb = 0; for (const [a, b] of pairs) { s += (a - ma) * (b - mb); sa += (a - ma) ** 2; sb += (b - mb) ** 2; } return s / Math.sqrt(sa * sb); })();
   const obs = pairs.filter(p => p[0] >= 55.5).length, mod = pairs.filter(p => p[1] >= 55.5).length;
   el('matrix-note').textContent = t(
-    `Rank correlation across 305 districts, 2026. The model behind these daily values tracked Singapore's official monitors closely (r = ${fmt(pr, 2)}) but read lower (${mod} unhealthy days where the monitors saw ${obs}), so the day counts here are conservative. There are no clinic records in this project; person-days of unhealthy air (people × days) stand in for the health burden.`,
-    `Korelasi peringkat di 305 kecamatan, 2026. Model di balik nilai harian ini mengikuti alat pemantau resmi Singapura dengan erat (r = ${fmt(pr, 2)}) tetapi lebih rendah (${mod} hari tidak sehat, sementara alat pemantau mencatat ${obs}), jadi jumlah hari di sini cenderung konservatif. Proyek ini tidak memiliki data puskesmas; orang-hari udara tidak sehat (penduduk × hari) dipakai untuk menggambarkan beban kesehatan.`);
+    `The CAMS model tracked Singapore's official monitors closely (r = ${fmt(pr, 2)}) but read lower (${mod} unhealthy days vs ${obs}), so day counts here are conservative. No clinic records were available; person-days (people × days) stand in for the health burden.`,
+    `Model CAMS mengikuti alat pemantau resmi Singapura dengan erat (r = ${fmt(pr, 2)}) tetapi lebih rendah (${mod} hari tidak sehat vs ${obs}), jadi jumlah hari di sini konservatif. Tidak ada data puskesmas; orang-hari (penduduk × hari) dipakai untuk menggambarkan beban kesehatan.`);
   drawQuad();
 }
 function drawQuad() {
@@ -781,64 +842,138 @@ function drawQuad() {
   if (!width || !exposure) return;
   const ctx = canvas.getContext('2d');
   ctx.clearRect(0, 0, width, height);
-  const { fire, ex, fireCut, stats: q } = matrixData();
-  const m = { l: 40, r: 10, t: 10, b: 34 };
-  const lx = d => Math.log10(d + 0.01), x0 = lx(0), x1 = lx(Math.max(...fire) * 1.15);
+  $$('#quad-view button').forEach(b => b.setAttribute('aria-pressed', b.dataset.v === quadView));
+  el('quad-sub').textContent = quadView === 'matrix'
+    ? t('One circle per area. Size = population; colour = quadrant. Lines split at the median fire level and 30 unhealthy days.', 'Satu lingkaran = satu wilayah. Ukuran = penduduk; warna = kuadran. Garis membagi di median api dan 30 hari tidak sehat.')
+    : t('Each area in its quadrant colour. Riau and Central Kalimantan by kecamatan; the other provinces by kabupaten.', 'Setiap wilayah diwarnai menurut kuadrannya. Riau dan Kalimantan Tengah per kecamatan; provinsi lain per kabupaten.');
+  el('quad-legend').innerHTML = QUADS.map(k => `<span class="small"><i class="legend-dot" style="background:${quadColour(k)}"></i>${t(...QUAD_NAME[k])}</span>`).join('')
+    + (quadView === 'matrix' ? `<span class="small muted">${t('Circle size = population', 'Ukuran lingkaran = penduduk')}</span>` : '');
+  if (quadView === 'map') { drawQuadMap(ctx, width, height); return; }
+  const { fire, ex, fireCut, of, stats: q } = matrixData();
+  const m = { l: 44, r: 10, t: 8, b: 40 };
+  const lx = d => Math.log10(d + 0.01), x0 = lx(Math.min(...fire)), x1 = lx(Math.max(...fire) * 1.15);
   const X = d => m.l + (width - m.l - m.r) * (lx(d) - x0) / (x1 - x0);
-  const Y = v => height - m.b - (height - m.t - m.b) * v / 95;
-  const ink = cssVar('--ink'), muted = cssVar('--muted'), line = cssVar('--line'), surface = cssVar('--paper');
+  const Y = v => height - m.b - (height - m.t - m.b) * v / 105;   // headroom above the maximum for the quadrant names
+  const ink = cssVar('--ink'), muted = cssVar('--muted'), faint = cssVar('--faint'), line = cssVar('--line'), surface = cssVar('--bg');
+  const xc = X(fireCut), yc = Y(DAY_CUT), L = m.l, R = width - m.r, T = m.t, B = height - m.b;
+  // quadrant tints in their own colour; the two long-exposure quadrants a little stronger
+  const tint = (k, x, y, w, h, pct) => { ctx.fillStyle = `color-mix(in srgb, ${quadColour(k)} ${pct}%, transparent)`; ctx.fillRect(x, y, w, h); };
+  tint('ll', L, T, xc - L, yc - T, 11); tint('hl', xc, T, R - xc, yc - T, 11);
+  tint('ls', L, yc, xc - L, B - yc, 6); tint('hs', xc, yc, R - xc, B - yc, 6);
   ctx.font = '12px "Public Sans", sans-serif';
-  ctx.strokeStyle = line; ctx.fillStyle = muted;
+  ctx.strokeStyle = line; ctx.fillStyle = muted; ctx.lineWidth = 1;
   ctx.textAlign = 'right';
-  for (const v of [0, 30, 60, 90]) { ctx.beginPath(); ctx.moveTo(m.l, Y(v)); ctx.lineTo(width - m.r, Y(v)); ctx.stroke(); ctx.fillText(v, m.l - 6, Y(v) + 4); }
+  for (const v of [0, 30, 60, 90]) { if (v !== DAY_CUT) { ctx.beginPath(); ctx.moveTo(L, Y(v)); ctx.lineTo(R, Y(v)); ctx.stroke(); } ctx.fillText(v, L - 6, Y(v) + 4); }
   ctx.textAlign = 'center';
-  for (const v of [0, 0.1, 0.5, 1, 3]) { if (X(v) <= width - m.r) ctx.fillText(fmt(v, v && v < 1 ? 1 : 0), X(v), height - m.b + 15); }
-  ctx.fillText(t('Fire nearby (detections per km², 100 km kernel, log scale)', 'Api di sekitar (deteksi per km², kernel 100 km, skala log)'), m.l + (width - m.l - m.r) / 2, height - 4);
-  ctx.save(); ctx.translate(11, m.t + (height - m.t - m.b) / 2); ctx.rotate(-Math.PI / 2); ctx.fillText(t('Days of unhealthy air, Jul–Oct', 'Hari udara tidak sehat, Jul–Okt'), 0, 0); ctx.restore();
-  // quadrant dividers
-  ctx.setLineDash([4, 4]); ctx.strokeStyle = ink; ctx.globalAlpha = 0.6;
-  ctx.beginPath(); ctx.moveTo(X(fireCut), m.t); ctx.lineTo(X(fireCut), height - m.b); ctx.stroke();
-  ctx.beginPath(); ctx.moveTo(m.l, Y(DAY_CUT)); ctx.lineTo(width - m.r, Y(DAY_CUT)); ctx.stroke();
-  ctx.setLineDash([]); ctx.globalAlpha = 1;
+  for (const v of [0.01, 0.03, 0.1, 0.3, 1, 3]) { if (X(v) <= R && X(v) >= L) ctx.fillText(fmt(v, v < 0.1 ? 2 : v < 1 ? 1 : 0), X(v), B + 15); }
+  ctx.fillStyle = ink; ctx.font = '600 12px "Public Sans", sans-serif';
+  ctx.fillText(width < 520 ? t('Fire nearby → (per km², log)', 'Api di sekitar → (per km², log)') : t('Fire nearby →  (detections per km², 100 km kernel, log scale)', 'Api di sekitar →  (deteksi per km², kernel 100 km, skala log)'), L + (R - L) / 2, height - 4);
+  ctx.save(); ctx.translate(12, T + (B - T) / 2); ctx.rotate(-Math.PI / 2); ctx.fillText(t('Days of unhealthy air, Jul–Oct →', 'Hari udara tidak sehat, Jul–Okt →'), 0, 0); ctx.restore();
+  // bubbles: largest first so small areas stay visible
   const maxPop = Math.max(...overview.zones.map(z => z.population));
-  const rgb = PM_COLORS;
   const order = overview.zones.map((z, i) => i).sort((a, b) => overview.zones[b].population - overview.zones[a].population);
   quadPts = [];
   for (const i of order) {
-    const z = overview.zones[i];
-    const px = X(fire[i]), py = Y(ex[i].unhealthy), r = 2 + 14 * Math.sqrt(z.population / maxPop);
+    const z = overview.zones[i], c = quadColour(of[i]);
+    const px = X(fire[i]), py = Y(ex[i].unhealthy), r = 2.5 + 16 * Math.sqrt(z.population / maxPop);
     ctx.beginPath(); ctx.arc(px, py, r, 0, 7);
-    ctx.fillStyle = rgb[PM_BREAKS.filter(b => ex[i].mean >= b).length]; ctx.globalAlpha = 0.9; ctx.fill(); ctx.globalAlpha = 1;
-    ctx.strokeStyle = cssVar('--muted'); ctx.lineWidth = 0.6; ctx.stroke();
+    ctx.fillStyle = c; ctx.globalAlpha = 0.6; ctx.fill(); ctx.globalAlpha = 1;
+    ctx.strokeStyle = surface; ctx.lineWidth = 0.8; ctx.stroke();
     quadPts.push([px, py, r, i]);
   }
-  // quadrant labels with people
-  ctx.font = '700 12px "Public Sans", sans-serif'; ctx.fillStyle = ink;
-  const lab = (k, x, y, align) => { ctx.textAlign = align; ctx.lineWidth = 3; ctx.strokeStyle = surface; const s = `${millions(q[k].people)}`; ctx.strokeText(s, x, y); ctx.fillText(s, x, y); };
-  lab('ll', m.l + 6, m.t + 14, 'left'); lab('hl', width - m.r - 6, m.t + 14, 'right');
-  lab('ls', m.l + 6, height - m.b - 8, 'left'); lab('hs', width - m.r - 6, height - m.b - 8, 'right');
-  el('quad-legend').innerHTML = `<span class="small muted">${t('Mean PM₂.₅ µg/m³', 'Rerata PM₂.₅ µg/m³')}</span>${PM_COLORS.map((c, i) => `<span class="small"><i class="swatch" style="background:${c}"></i>${i === 0 ? `<${PM_BREAKS[0]}` : i === PM_COLORS.length - 1 ? `≥${PM_BREAKS.at(-1)}` : `${PM_BREAKS[i - 1]}–${PM_BREAKS[i]}`}</span>`).join('')}`;
+  // quadrant cross: solid, labelled where it cuts
+  ctx.strokeStyle = ink; ctx.lineWidth = 1.2;
+  ctx.beginPath(); ctx.moveTo(xc, T); ctx.lineTo(xc, B); ctx.moveTo(L, yc); ctx.lineTo(R, yc); ctx.stroke();
+  const halo = (s, x, y, align, font, colour) => { ctx.font = font; ctx.textAlign = align; ctx.lineJoin = 'round'; ctx.lineWidth = 4; ctx.strokeStyle = surface; ctx.strokeText(s, x, y); ctx.fillStyle = colour; ctx.fillText(s, x, y); };
+  halo(t(`${DAY_CUT} days`, `${DAY_CUT} hari`), R - 4, yc - 5, 'right', '600 11.5px "Public Sans", sans-serif', ink);
+  halo(`median ${fmt(fireCut, 2)}`, xc + 5, B - 6, 'left', '600 11.5px "Public Sans", sans-serif', ink);
+  // quadrant names in their colour, BCG style: response in bold, group size underneath
+  // narrow screens: short names only (the cards beside the chart carry the counts)
+  const narrow = width < 520;
+  const SHORT = { ll: ['Protect', 'Lindungi'], hl: ['Prevent + protect', 'Cegah + lindungi'], hs: ['Downwind', 'Arah angin'], ls: ['Monitor', 'Pantau'] };
+  const corner = (k, x, y, align, strong) => {
+    halo(t(...(narrow ? SHORT : QUAD_NAME)[k]), x, y, align, `${strong ? 800 : 700} ${narrow ? 12 : strong ? 14 : 12.5}px "Public Sans", sans-serif`, `color-mix(in srgb, ${quadColour(k)} 72%, #000)`);
+    if (!narrow) halo(`${q[k].n} ${areaWord(q[k].n)} · ${millions(q[k].people)}`, x, y + 15, align, '500 12px "Public Sans", sans-serif', strong ? ink : faint);
+  };
+  corner('ll', L + 8, T + 16, 'left', true); corner('hl', R - 8, T + 16, 'right', true);
+  corner('ls', L + 8, B - 26, 'left', false); corner('hs', R - 8, B - 26, 'right', false);
 }
+// map view: every area filled with its quadrant colour, in ESRI:102028 (equal area) with north up
+function drawQuadMap(ctx, width, height) {
+  const { of } = matrixData();
+  if (!quadShapes) {
+    let x0 = Infinity, x1 = -Infinity, y0 = Infinity, y1 = -Infinity;
+    const boxes = geography.shapes.map(shape => {
+      let a = Infinity, b = -Infinity, c = Infinity, d = -Infinity;
+      for (const poly of shape) for (const [x, y] of poly[0]) { a = Math.min(a, x); b = Math.max(b, x); c = Math.min(c, y); d = Math.max(d, y); }
+      x0 = Math.min(x0, a); x1 = Math.max(x1, b); y0 = Math.min(y0, c); y1 = Math.max(y1, d);
+      return [a, b, c, d];
+    });
+    quadShapes = { boxes, bounds: [x0, x1, y0, y1] };
+  }
+  const [x0, x1, y0, y1] = quadShapes.bounds, pad = 10;
+  const s = Math.min((width - 2 * pad) / (x1 - x0), (height - 2 * pad) / (y1 - y0));
+  const ox = (width - (x1 - x0) * s) / 2, oy = (height - (y1 - y0) * s) / 2;
+  const P = ([x, y]) => [ox + (x - x0) * s, oy + (y1 - y) * s];
+  quadShapes.P = P; quadShapes.s = s; quadShapes.ox = ox; quadShapes.oy = oy;
+  ctx.fillStyle = cssVar('--map-sea'); ctx.fillRect(0, 0, width, height);
+  // neighbouring land (Natural Earth) for context
+  ctx.beginPath();
+  for (const poly of geography.base) for (const ring of poly) ring.forEach((p, k) => { const [a, b] = P(p); if (k) ctx.lineTo(a, b); else ctx.moveTo(a, b); });
+  ctx.fillStyle = cssVar('--map-land'); ctx.fill('evenodd');
+  const trace = shape => { ctx.beginPath(); for (const poly of shape) for (const ring of poly) { ring.forEach((p, k) => { const [a, b] = P(p); if (k) ctx.lineTo(a, b); else ctx.moveTo(a, b); }); ctx.closePath(); } };
+  geography.shapes.forEach((shape, i) => {
+    trace(shape); ctx.fillStyle = quadColour(of[i]); ctx.fill('evenodd');
+    ctx.strokeStyle = 'rgba(255,255,255,.55)'; ctx.lineWidth = 0.4; ctx.stroke();
+  });
+  ctx.strokeStyle = cssVar('--ink'); ctx.lineWidth = 0.9;
+  for (const g of Object.values(geography.grids)) { trace(g.outline); ctx.stroke(); }
+  // island and focus-province labels
+  const halo = (txt, x, y, font) => { ctx.font = font; ctx.textAlign = 'center'; ctx.lineJoin = 'round'; ctx.lineWidth = 4; ctx.strokeStyle = cssVar('--bg'); ctx.strokeText(txt, x, y); ctx.fillStyle = cssVar('--ink'); ctx.fillText(txt, x, y); };
+  for (const isl of ISLANDS) {
+    const ids = islandIds(isl).map(id => geography.grids[id]);
+    const cx = total(ids.map(g => g.x0 + g.width * g.step / 2)) / ids.length, cy = total(ids.map(g => g.y0 - g.height * g.step / 2)) / ids.length;
+    const [a, b] = P([cx, cy + (isl === 'Sumatra' ? 380e3 : 330e3)]);
+    halo(islandName(isl), a, b, 'italic 700 13px "Public Sans", sans-serif');
+  }
+  for (const id of FOCUS) {
+    const g = geography.grids[id];
+    const [a, b] = P([g.x0 + g.width * g.step / 2, g.y0 - g.height * g.step / 2]);
+    halo(`${provinceName(id)} ★`, a, b, '700 11.5px "Public Sans", sans-serif');
+  }
+  quadPts = [];
+}
+function quadMapHit(mx, my) {
+  if (!quadShapes?.P) return null;
+  const { s, ox, oy, bounds: [x0, , , y1] } = quadShapes;
+  const x = x0 + (mx - ox) / s, y = y1 - (my - oy) / s;
+  const inRing = (ring) => { let inside = false; for (let i = 0, j = ring.length - 1; i < ring.length; j = i++) { const [ax, ay] = ring[i], [bx, by] = ring[j]; if ((ay > y) !== (by > y) && x < (bx - ax) * (y - ay) / (by - ay) + ax) inside = !inside; } return inside; };
+  const i = quadShapes.boxes.findIndex(([a, b, c, d], k) => x >= a && x <= b && y >= c && y <= d
+    && geography.shapes[k].some(poly => inRing(poly[0]) && !poly.slice(1).some(inRing)));
+  return i < 0 ? null : i;
+}
+el('quad-view').addEventListener('click', e => { const b = e.target.closest('button[data-v]'); if (b) { quadView = b.dataset.v; el('quad-tip').hidden = true; drawQuad(); } });
 el('quad').addEventListener('pointermove', e => {
   if (!exposure) return;
   const r = el('quad').getBoundingClientRect();
   const mx = e.clientX - r.left, my = e.clientY - r.top;
-  let best = null, bd = Infinity;
-  for (const [px, py, rad, i] of quadPts) { const d = Math.hypot(px - mx, py - my); if (d < Math.max(rad, 6) && d < bd) { bd = d; best = [px, py, i]; } }
+  let best = null;
+  if (quadView === 'map') { const i = quadMapHit(mx, my); if (i !== null) best = [mx, my, i]; }
+  else { let bd = Infinity; for (const [px, py, rad, i] of quadPts) { const d = Math.hypot(px - mx, py - my); if (d < Math.max(rad, 6) && d < bd) { bd = d; best = [px, py, i]; } } }
   const tip = el('quad-tip');
   if (!best) { tip.hidden = true; return; }
-  const i = best[2], z = overview.zones[i], x = exposure.districts[i];
+  const i = best[2], z = overview.zones[i], x = exposure.districts[i], k = matrixData().of[i];
   tip.hidden = false;
-  tip.innerHTML = `<b>${esc(z.name)}</b> · ${provinceName(z.province)}<br>${fmt(x.unhealthy)} ${t('unhealthy days', 'hari tidak sehat')} · PM₂.₅ ${fmt(x.mean)} µg/m³<br>${fmt(z.population)} ${t('people', 'jiwa')}`;
-  tip.style.left = `${Math.min(r.width - 210, best[0] + 12)}px`; tip.style.top = `${Math.max(0, best[1] - 20)}px`;
+  tip.innerHTML = `<b>${esc(z.name)}</b> · ${provinceName(z.province)}<br><i class="legend-dot" style="background:${quadColour(k)}"></i>${t(...QUAD_NAME[k])}<br>${fmt(x.unhealthy)} ${t('unhealthy days', 'hari tidak sehat')} · PM₂.₅ ${fmt(x.mean)} µg/m³<br>${fmt(z.population)} ${t('people', 'jiwa')}`;
+  tip.style.left = `${Math.min(r.width - 220, best[0] + 12)}px`; tip.style.top = `${Math.max(0, best[1] - 20)}px`;
 });
 el('quad').addEventListener('pointerleave', () => { el('quad-tip').hidden = true; });
 
 /* ================================================================ actions */
 function renderActions() {
-  const k19 = profile.ID62[2019], k26 = profile.ID62[2026];
+  const k19 = profile.Kalimantan[2019], k26 = profile.Kalimantan[2026];
   const sg = regional.singapore.daily;
-  const lin = shape.shape['100'].linear.coef[1];
+  const lin = shape.marginal[1].perTenth * 10;   // per detection/km² at a middle fire level
   const low = shape.bins[0].pm;
   // top regencies in 2026 priority zones
   const groups = new Map();
@@ -849,17 +984,17 @@ function renderActions() {
     'Kebakaran ini bisa diperkirakan: gambut kering terbakar, asap menempuh sekitar 100 km, dan musim yang panjang melipatgandakan dampaknya. Empat langkah berikut lahir dari angka-angka itu.');
   const items = [
     [t('Plan for the full length of the season', 'Rencanakan untuk sepanjang musim'),
-      t(`September 2026 in Central Kalimantan looked like 2019 (${fmt(k26.months[2])} vs ${fmt(k19.months[2])} detections). October kept burning: ${fmt(k26.months[3])} vs ${fmt(k19.months[3])}. Keep fire crews, emergency status and health alerts running until the rain returns.`,
-        `September 2026 di Kalimantan Tengah mirip 2019 (${fmt(k26.months[2])} vs ${fmt(k19.months[2])} deteksi). Oktober terus terbakar: ${fmt(k26.months[3])} vs ${fmt(k19.months[3])}. Pertahankan regu pemadam, status darurat, dan peringatan kesehatan sampai hujan kembali.`)],
+      t(`September 2026 in Kalimantan looked like 2019 (${fmt(k26.months[2])} vs ${fmt(k19.months[2])} detections). October kept burning: ${fmt(k26.months[3])} vs ${fmt(k19.months[3])}. Keep fire crews, emergency status and health alerts running until the rain returns.`,
+        `September 2026 di Kalimantan mirip 2019 (${fmt(k26.months[2])} vs ${fmt(k19.months[2])} deteksi). Oktober terus terbakar: ${fmt(k26.months[3])} vs ${fmt(k19.months[3])}. Pertahankan regu pemadam, status darurat, dan peringatan kesehatan sampai hujan kembali.`)],
     [t('Rewet the peat that keeps burning', 'Basahi ulang gambut yang terus terbakar'),
-      t(`${fmt(k26.cellsBurning5PlusDays)} two-kilometre squares in Central Kalimantan burned on five or more days in 2026, ${fmt(k26.cellsBurning5PlusDays / k19.cellsBurning5PlusDays, 1)}× as many as in 2019. Smouldering peat is what makes smoke last. Canal blocking and rewetting there cut the longest exposure.`,
-        `${fmt(k26.cellsBurning5PlusDays)} kotak dua kilometer di Kalimantan Tengah terbakar lima hari atau lebih pada 2026, ${fmt(k26.cellsBurning5PlusDays / k19.cellsBurning5PlusDays, 1)}× lipat dibanding 2019. Gambut yang membara inilah yang membuat asap bertahan. Penyekatan kanal dan pembasahan di sana memangkas paparan terpanjang.`)],
+      t(`${fmt(k26.cellsBurning5PlusDays)} two-kilometre squares in Kalimantan burned on five or more days in 2026, ${fmt(k26.cellsBurning5PlusDays / k19.cellsBurning5PlusDays, 1)}× as many as in 2019. Smouldering peat is what makes smoke last. Canal blocking and rewetting there cut the longest exposure.`,
+        `${fmt(k26.cellsBurning5PlusDays)} kotak dua kilometer di Kalimantan terbakar lima hari atau lebih pada 2026, ${fmt(k26.cellsBurning5PlusDays / k19.cellsBurning5PlusDays, 1)}× lipat dibanding 2019. Gambut yang membara inilah yang membuat asap bertahan. Penyekatan kanal dan pembasahan di sana memangkas paparan terpanjang.`)],
     [t('Protect people within 100 km of fire clusters', 'Lindungi warga dalam radius 100 km dari klaster api'),
-      t(`Fire up to about 100 km away explains district air best, and each extra 0.1 detections per km² adds about ${fmt(lin / 10)} µg/m³. In 2026 the priority zones held ${millions(priorityPeople(story[2026]))} people, led by ${top}. Clean-air rooms, masks and school schedules belong there first.`,
-        `Api hingga sekitar 100 km paling menjelaskan kualitas udara kecamatan, dan setiap tambahan 0,1 deteksi per km² menambah sekitar ${fmt(lin / 10)} µg/m³. Pada 2026 zona prioritas dihuni ${millions(priorityPeople(story[2026]))} orang, terbanyak di ${top}. Ruang udara bersih, masker, dan jadwal sekolah perlu disiapkan di sana lebih dulu.`)],
+      t(`Fire up to about 100 km away explains local air best, and each extra 0.1 detections per km² adds roughly ${fmt(lin / 10)} µg/m³ at a middle fire level. In 2026 the priority zones held ${millions(priorityPeople(story[2026]))} people, led by ${top}. Clean-air rooms, masks and school schedules belong there first.`,
+        `Api hingga sekitar 100 km paling menjelaskan kualitas udara setempat, dan setiap tambahan 0,1 deteksi per km² menambah sekitar ${fmt(lin / 10)} µg/m³ pada tingkat api menengah. Pada 2026 zona prioritas dihuni ${millions(priorityPeople(story[2026]))} orang, terbanyak di ${top}. Ruang udara bersih, masker, dan jadwal sekolah perlu disiapkan di sana lebih dulu.`)],
     [t('Treat haze as a regional problem', 'Perlakukan kabut asap sebagai masalah kawasan'),
-      t(`Even the districts with the least fire nearby averaged ${fmt(low)} µg/m³ in September 2019, ${fmt(low / 15, 1)}× the WHO daily guideline, and Singapore logged ${runs(sg[2026], 37.5).days} haze days in 2026. Shared early warning under the ASEAN haze agreement belongs alongside local firefighting.`,
-        `Bahkan kecamatan dengan api paling sedikit di sekitarnya rata-rata ${fmt(low)} µg/m³ pada September 2019, ${fmt(low / 15, 1)}× pedoman harian WHO, dan Singapura mencatat ${runs(sg[2026], 37.5).days} hari berasap pada 2026. Peringatan dini bersama dalam kerangka perjanjian kabut asap ASEAN perlu berjalan bersama pemadaman lokal.`)],
+      t(`Even the areas with the least fire nearby averaged ${fmt(low)} µg/m³ in September 2019, ${fmt(low / 15, 1)}× the WHO daily guideline, and Singapore logged ${runs(sg[2026], 37.5).days} haze days in 2026. Shared early warning under the ASEAN haze agreement belongs alongside local firefighting.`,
+        `Bahkan wilayah dengan api paling sedikit di sekitarnya rata-rata ${fmt(low)} µg/m³ pada September 2019, ${fmt(low / 15, 1)}× pedoman harian WHO, dan Singapura mencatat ${runs(sg[2026], 37.5).days} hari berasap pada 2026. Peringatan dini bersama dalam kerangka perjanjian kabut asap ASEAN perlu berjalan bersama pemadaman lokal.`)],
   ];
   el('actions-list').innerHTML = items.map(([h, p]) => `<li><h3>${h}</h3><p>${p}</p></li>`).join('');
 }
@@ -872,24 +1007,24 @@ function download(name, contents, mime) {
 }
 function csv() {
   const { year, scenario, mode, radius, region, percentiles } = state;
-  const rows = [['adm3_pcode', 'kecamatan', 'kabupaten', 'province', 'year', 'kernel_mode', 'radius_km', 'local_hotspots',
+  const rows = [['pcode', 'name', 'level', 'kabupaten', 'province', 'year', 'kernel_mode', 'radius_km', 'local_hotspots',
     'kernel_density_per_km2', 'population_2020', 'pm25_2019_historical_ug_m3', 'pm25_2026_model_ug_m3', 'pm25_2026_percentile',
     'model_extrapolation', 'priority_population', 'mean_index_z', 'cluster']];
   for (const i of currentIds()) {
     const z = overview.zones[i], r = scenario.indicators[i];
-    rows.push([z.id, z.name, z.regency, PROVINCE_NAMES[z.province], year, mode, radius, z.counts[year === 2019 ? 0 : 1],
+    rows.push([z.id, z.name, z.level, z.regency, PROVINCE_ID[z.province], year, mode, radius, z.counts[year === 2019 ? 0 : 1],
       r.density, Math.round(z.population), year === 2019 ? z.pm25.toFixed(3) : '', year === 2026 ? r.exposure : '',
       year === 2026 ? percentiles[i].toFixed(2) : '', year === 2026 ? r.extrapolated : '', r.priorityPeople, r.index ?? '', String.fromCharCode(65 + r.cluster)]);
   }
   const quote = v => { const s = String(v); const safe = typeof v === 'string' && /^[=+@\t\r-]/.test(s) ? `'${s}` : s; return `"${safe.replaceAll('"', '""')}"`; };
-  download(`kecamatan-${year}-${mode}-${radius}-${region}.csv`, '﻿' + rows.map(r => r.map(quote).join(',')).join('\r\n'), 'text/csv;charset=utf-8');
+  download(`wilayah-${year}-${mode}-${radius}-${region}.csv`, '﻿' + rows.map(r => r.map(quote).join(',')).join('\r\n'), 'text/csv;charset=utf-8');
 }
 function geojson() {
   const { year, scenario, mode, radius, region } = state;
   const features = provinceIds(region).map(id => {
     const grid = geography.grids[id], data = scenario.provinces[id];
     const convert = ([x, y]) => lonLat(grid.x0 + x * grid.step, grid.y0 - y * grid.step).map(v => Number(v.toFixed(7)));
-    return { type: 'Feature', id, properties: { province: PROVINCE_NAMES[id], year, kernel: mode, radius_km: radius,
+    return { type: 'Feature', id, properties: { province: PROVINCE_ID[id], year, kernel: mode, radius_km: radius,
       threshold_z: overview.config.threshold, cell_km: overview.config.cellKm, grid_area_km2: data.priorityArea, estimated_people_2020: data.priorityPeople },
     geometry: { type: 'MultiPolygon', coordinates: data.priorityShapes.map(poly => poly.map(ring => ring.map(convert).reverse())) } };
   });
@@ -899,6 +1034,7 @@ function geojson() {
 /* ================================================================ boot */
 function renderAll() {
   renderStatus();
+  renderRegionOptions();
   renderCities();
   renderFindings();
   renderStepper(process.step);

@@ -1,4 +1,4 @@
-// Season profile of the raw VIIRS S-NPP detections, both provinces, 2019 vs 2026.
+// Season profile of the raw VIIRS S-NPP detections per province and per island, 2019 vs 2026.
 // Reads the coursework RawData folder read-only (PEAT_PROJECT_DIR) and writes
 // .work/dated-points.json (for the lag test) and data/fire-profile.json.
 //
@@ -56,11 +56,16 @@ for (const [year, list] of Object.entries(files)) {
       const [x, y] = albers(Number(f[iLon]), Number(f[iLat]));
       const month = Number(date.slice(5, 7));
       const day = Math.round((Date.parse(date) - Date.parse(`${year}-07-01`)) / 864e5);
+      const hits = [];
       for (const id of Object.keys(provinces)) {
         const b = provinces[id].box;
         if (x < b[0] - halo || x > b[1] + halo || y < b[2] - halo || y > b[3] + halo) continue;
         ((dated[id] ??= {})[year] ??= []).push([Math.round(x), Math.round(y), frp, month, day]);
-        if (!inside(id, x, y)) continue;
+        if (inside(id, x, y)) hits.push(id);
+      }
+      // each province it falls in, plus its island as a whole (Sumatra / Kalimantan)
+      if (hits.length) hits.push(geography.grids[hits[0]].island);
+      for (const id of hits) {
         const p = ((profile[id] ??= {})[year] ??= { n: 0, months: [0, 0, 0, 0], night: 0, high: 0, frp: [], daily: new Array(123).fill(0), cells: new Map(), typeNot0: 0 });
         p.n += 1; p.months[month - 7] += 1; p.daily[day] += 1; p.frp.push(frp);
         if (f[iDn] === 'N') p.night += 1;

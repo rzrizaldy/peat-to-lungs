@@ -27,6 +27,9 @@
   --y2026: #c7781a;
   --riau: #3c8a3a;
   --kalteng: #6e5ac8;
+  --sumatra: #3c8a3a; --kalimantan: #6e5ac8;
+  /* 2x2 quadrants: protect (blue), prevent+protect (red-orange), prevent downwind (amber), monitor (grey) */
+  --q-ll: #2b6cb0; --q-hl: #c2410c; --q-hs: #d69e2e; --q-ls: #b4b9b1;
   --map-sea: #dfe6e2;
   --map-land: #f3f4ee;
   --map-line: #bcc6b9;
@@ -295,7 +298,13 @@ tr.best td { font-weight: 700; }
   .city-frame { height: 46vh; }
 }
 
-#quad { width: 100%; aspect-ratio: 4 / 3.2; display: block; }
+#quad { width: 100%; aspect-ratio: 16 / 10.5; display: block; }
+.matrix-split { grid-template-columns: minmax(0, 4fr) minmax(0, 8fr); gap: 48px; align-items: start; }
+.quad-key .dot { display: inline-block; width: 11px; height: 11px; border-radius: 50%; margin-right: 7px; vertical-align: 0; }
+.quad-key .act { display: block; font-size: 13px; font-weight: 700; color: var(--ink); margin-top: 6px; }
+.matrix-split .quad-key { grid-template-columns: minmax(0, 1fr); }
+.matrix-split .quad-key > div:nth-child(even) { padding-left: 0; border-left: 0; }
+.legend-dot { display: inline-block; width: 10px; height: 10px; border-radius: 50%; margin-right: 5px; vertical-align: -1px; }
 .quad-key { display: grid; grid-template-columns: 1fr 1fr; gap: 0; border-top: 1px solid var(--line); }
 .quad-key > div { padding: 9px 12px 9px 0; border-bottom: 1px solid var(--line); }
 .quad-key > div:nth-child(even) { padding-left: 12px; border-left: 1px solid var(--line); }
@@ -343,3 +352,9 @@ table.corr td:empty { background: none; }
 }
 .city .where { font-size: 13px; color: var(--faint); margin: -2px 0 6px; }
 .city .where a { color: var(--forest); font-weight: 600; text-underline-offset: 2px; }
+.quad-head { display: flex; justify-content: space-between; align-items: center; gap: 10px; flex-wrap: wrap; }
+.quad-head h3 { margin: 0; }
+.quad-key .minor b { font-size: 13.5px; }
+.quad-key .minor small:last-child { display: none; }
+.tip .legend-dot { width: 8px; height: 8px; margin-right: 4px; }
+@media (max-width: 640px) { #quad { aspect-ratio: 4 / 3.8; } }

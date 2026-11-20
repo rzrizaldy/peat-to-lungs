@@ -161,12 +161,13 @@ export function validate(densities, zones, repetitions = 500) {
     const estimated = indices.map(i => predict(model, densities[i]));
     return scores(indices.map(i => y[i]), estimated);
   };
-  const byProvince = Object.fromEntries(['ID14', 'ID62'].map(
-    id => [id, all.filter(i => zones[i].province === id)]
+  // cross-island transfer: fit on one island, test on the other
+  const byIsland = Object.fromEntries(['Sumatra', 'Kalimantan'].map(
+    id => [id, all.filter(i => zones[i].island === id)]
   ));
   const transfers = [
-    evaluate(fitLine(byProvince.ID14, x, y), byProvince.ID62),
-    evaluate(fitLine(byProvince.ID62, x, y), byProvince.ID14),
+    evaluate(fitLine(byIsland.Sumatra, x, y), byIsland.Kalimantan),
+    evaluate(fitLine(byIsland.Kalimantan, x, y), byIsland.Sumatra),
   ];
   const rng = seedRandom(42);
   const holdout = [];

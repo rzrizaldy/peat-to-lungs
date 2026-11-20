@@ -229,13 +229,15 @@ export function createProcess(canvas, { onStep } = {}) {
 
 /* ================================================================ terrain */
 // Real fire-density grids (count kernel, 100 km) raised as an oblique
-// heightfield over a Natural Earth basemap, both provinces in their true
-// positions. One colour/height scale for both seasons. Peaks are annotated
+// heightfield over a Natural Earth basemap, all 13 provinces of Sumatra and
+// Kalimantan in their true positions. One colour/height scale for both seasons. Peaks are annotated
 // with the district underneath (newsroom-style direct labels).
 export function createTerrain(canvas, labelsEl, geography, zones, basemap) {
   const ctx = canvas.getContext('2d');
-  const order = ['ID14', 'ID62'];
-  const B = 8000; // block size in metres (4 x 2 km cells)
+  const order = Object.keys(geography.grids);
+  const B = 12000; // block size in metres (6 x 2 km cells)
+  const islandOf = id => geography.grids[id].island;
+  const islands = [...new Set(order.map(islandOf))];
   const blocks = {};
   for (const id of order) {
     const g = geography.grids[id];
@@ -268,7 +270,9 @@ export function createTerrain(canvas, labelsEl, geography, zones, basemap) {
     return inside;
   };
   const gadm = basemap?.provinces ?? [];
-  const provincesMap = gadm.map(p => ({ study: p.name === 'Riau' || p.name === 'Kalimantan Tengah', rings: p.rings.map(r => r.map(toFrame)) }));
+  const STUDY = new Set(['Aceh', 'Sumatera Utara', 'Sumatera Barat', 'Riau', 'Jambi', 'Sumatera Selatan', 'Bengkulu', 'Lampung',
+    'Kalimantan Barat', 'Kalimantan Tengah', 'Kalimantan Selatan', 'Kalimantan Timur', 'Kalimantan Utara']);
+  const provincesMap = gadm.map(p => ({ study: STUDY.has(p.name), rings: p.rings.map(r => r.map(toFrame)) }));
   // keep only Natural Earth shapes outside Indonesia (Malaysia, Brunei, Singapore) as context
   const neighbours = geography.base.filter(poly => {
     if (!gadm.length) return true;
@@ -314,7 +318,7 @@ export function createTerrain(canvas, labelsEl, geography, zones, basemap) {
       out[id].forEach((v, i) => { if (v > best) { best = v; at = i; } });
       const b = blocks[id], bx = at % b.w, by = Math.floor(at / b.w);
       const zone = districtAt(b.x0 + (bx + 0.5) * B, b.y0 - (by + 0.5) * B);
-      peaks[id] = { x: b.ox + bx + 0.5, y: b.oy + by + 0.5, name: zone ? zone.name : '' };
+      peaks[id] = { x: b.ox + bx + 0.5, y: b.oy + by + 0.5, name: zone ? zone.name : '', v: best };
     }
     return out;
   }
@@ -404,11 +408,12 @@ export function createTerrain(canvas, labelsEl, geography, zones, basemap) {
       ctx.beginPath(); ctx.moveTo(...top[0]); for (let e = 1; e < 4; e += 1) ctx.lineTo(...top[e]); ctx.closePath();
       ctx.fillStyle = color(v); ctx.fill();
     }
-    // direct labels: province name + total, leader line to the highest block
+    // direct labels: island name + total, leader line to the island's highest block
     const html = [];
-    for (const id of order) {
+    for (const isl of islands) {
+      const id = order.filter(p => islandOf(p) === isl && peaks[p] && values[p]).sort((p, q) => peaks[q].v - peaks[p].v)[0];
+      if (!id) continue;
       const b = blocks[id], pk = peaks[id];
-      if (!pk || !values[id]) continue;
       const pv = Math.max(...values[id]);
       const [px, py] = project(geo, pk.x, pk.y, zOf(pv));
       const outline = [[0, 0], [b.w, 0], [0, b.h], [b.w, b.h]].map(([dx, dy]) => project(geo, b.ox + dx, b.oy + dy, 0));
@@ -416,9 +421,9 @@ export function createTerrain(canvas, labelsEl, geography, zones, basemap) {
       ctx.strokeStyle = c.ink; ctx.lineWidth = 1;
       ctx.beginPath(); ctx.moveTo(px, py - 2); ctx.lineTo(px, ly + 34); ctx.stroke();
       ctx.beginPath(); ctx.arc(px, py - 2, 2.2, 0, 7); ctx.fillStyle = c.ink; ctx.fill();
-      const name = labels.names?.[id] ?? id;
+      const name = labels.names?.[isl] ?? isl;
       const peak = pk.name && pv > 0.08 ? `<em>${labels.peak ?? 'Peak'}: ${pk.name}</em>` : '';
-      html.push(`<span style="left:${Math.min(width - 100, Math.max(100, px))}px;top:${ly - 12}px"><b>${name}</b> ${labels.totals?.[id] ?? ''}${peak}</span>`);
+      html.push(`<span style="left:${Math.min(width - 100, Math.max(100, px))}px;top:${ly - 12}px"><b>${name}</b> ${labels.totals?.[isl] ?? ''}${peak}</span>`);
     }
     labelsEl.innerHTML = html.join('');
     if (k < 1) raf = requestAnimationFrame(draw); else raf = 0;

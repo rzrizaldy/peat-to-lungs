@@ -125,11 +125,11 @@ function clusterBootstrap(density, reps = 2000, seed = 11) {
   return { lo: quantile(slopes, 0.025), hi: quantile(slopes, 0.975), share_positive: slopes.filter(s => s > 0).length / reps, reps, clusters: regencies.length };
 }
 
-// Province fixed effects: demean x and y within province; slope is the
-// within-province association once the Riau–Kalteng level gap is removed.
+// Province fixed effects: demean x and y within each of the 13 provinces; slope is the
+// within-province association once province level gaps are removed.
 function fixedEffects(density) {
   const x = density.map(Math.log1p);
-  const groups = ['ID14', 'ID62'].map(id => all.filter(i => zones[i].province === id));
+  const groups = [...new Set(zones.map(z => z.province))].map(id => all.filter(i => zones[i].province === id));
   const xd = new Array(n), yd = new Array(n);
   for (const g of groups) {
     const mx = sum(g.map(i => x[i])) / g.length, my = sum(g.map(i => y[i])) / g.length;
@@ -138,7 +138,7 @@ function fixedEffects(density) {
   const sxy = sum(all.map(i => xd[i] * yd[i])), sxx = sum(all.map(i => xd[i] ** 2)), syy = sum(all.map(i => yd[i] ** 2));
   const slope = sxy / sxx;
   const sse = sum(all.map(i => (yd[i] - slope * xd[i]) ** 2));
-  const df = n - 3;
+  const df = n - 1 - groups.length;
   const se = Math.sqrt(sse / df / sxx);
   return { slope, se, t: slope / se, p: tPValue(Math.abs(slope / se), df), withinR2: 1 - sse / syy };
 }
@@ -172,8 +172,9 @@ for (const mode of MODES) for (const radius of RADII) {
     moranPM25: round(moransI(y)),
     spatialCV: Object.fromEntries(Object.entries(leaveOneRegencyOut(density)).map(([k, v]) => [k, round(v, 3)])),
     fixedEffects: Object.fromEntries(Object.entries(fixedEffects(density)).map(([k, v]) => [k, k === 'p' ? v : round(v, 4)])),
-    withinProvince: Object.fromEntries(['ID14', 'ID62'].map(id => {
-      const idx = all.filter(i => zones[i].province === id);
+    // rank link inside each island, and inside the two ArcGIS focus provinces
+    withinProvince: Object.fromEntries(['Sumatra', 'Kalimantan', 'ID14', 'ID62'].map(id => {
+      const idx = all.filter(i => zones[i].island === id || zones[i].province === id);
       const s = spearmanTest(idx, y, x);
       return [id, { rho: round(s.rho, 3), p: round(s.p, 4), n: s.n }];
     })),
@@ -199,7 +200,8 @@ try {
     equalWeights: { weights: [1 / 3, 1 / 3, 1 / 3], pop: popScale },
     noPopulation: { weights: [0.43, 0, 0.57], pop: popScale },
   };
-  sensitivity = { setting: 'count-100', threshold: PRIORITY_THRESHOLD, years: {} };
+  sensitivity = { setting: 'count-100', threshold: PRIORITY_THRESHOLD, baseline: 2019, years: {} };
+  const ref = {};   // per variant: z-score yardsticks fixed on 2019, as in build-data.mjs
   for (const year of [2019, 2026]) {
     const surfaces = {};
     for (const [id, grid] of provinces) {
@@ -215,9 +217,10 @@ try {
       const cols = Object.fromEntries(provinces.map(([id, grid]) => [id, [
         surfaces[id], grid.pop.map(p => v.pop(p / cellKm2)), year === 2019 ? grid.pm : grid.zone.map(i => exposureZone[i]),
       ]]));
-      const toZ = v.weights.map((_, j) => normalizer(Object.values(cols).flatMap(c => c[j])));
+      const toZ = ref[name]?.toZ ?? v.weights.map((_, j) => normalizer(Object.values(cols).flatMap(c => c[j])));
       const idx = Object.fromEntries(provinces.map(([id, grid]) => [id, grid.cells.map((_, i) => sum(v.weights.map((w, j) => w * toZ[j](cols[id][j][i]))))]));
-      const toIdx = normalizer(Object.values(idx).flat());
+      const toIdx = ref[name]?.toIdx ?? normalizer(Object.values(idx).flat());
+      ref[name] ??= { toZ, toIdx };
       const res = {};
       for (const [id, grid] of provinces) {
         const pri = new Set();

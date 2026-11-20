@@ -11,10 +11,11 @@ const out = new URL('../data/', import.meta.url);
 await mkdir(out, { recursive: true });
 const inputs = JSON.parse(await readFile(new URL('gis-inputs.json', work), 'utf8'));
 const { zones, provinces } = inputs;
-assert.equal(new Set(zones.map(z => z.id)).size, 305);
+assert.equal(new Set(zones.map(z => z.id)).size, zones.length);
 const round = (value, places = 5) => Number(value.toFixed(places));
 const snapshots = new Map();
 const stage = (name, value) => snapshots.set(name, JSON.stringify(value));
+// regression check: the two ArcGIS focus provinces must keep their validated season totals
 const expected = { ID14: [22874, 3158], ID62: [80126, 164333] };
 const provinceEntries = Object.entries(provinces);
 const compactGrids = {};
@@ -29,20 +30,20 @@ for (const [id, grid] of provinceEntries) {
   assert(grid.pm.every(Number.isFinite));
   assert(Math.abs(sum(grid.pop) - sum(indices.map(i => zones[i].population))) < 0.2);
   const { width, height, step, x0, y0, cells, outline } = grid;
-  compactGrids[id] = { width, height, step, x0, y0, cells, outline };
+  compactGrids[id] = { width, height, step, x0, y0, cells, outline, island: grid.island, name: grid.name, short: grid.short };
   const area = sum(indices.map(i => zones[i].area));
   const population = sum(indices.map(i => zones[i].population));
   const peat = sum(indices.map(i => zones[i].peat));
   const forest = sum(indices.map(i => zones[i].forest));
   const loss = sum(indices.map(i => zones[i].loss));
   const pm25 = sum(indices.map(i => zones[i].population * zones[i].pm25)) / population;
-  metadata[id] = { area, population, peat, forest, loss, pm25, n: indices.length,
+  metadata[id] = { name: grid.name, short: grid.short, island: grid.island, area, population, peat, forest, loss, pm25, n: indices.length,
     pmFallbackCells: grid.pmFallbackCells, nativeSeamPixels: grid.nativeSeamPixels, seasons: {} };
   for (const [i, year] of YEARS.entries()) {
     const counts = grid.seasons[year];
     assert.equal(sum(counts.months), counts.total);
-    assert.equal(sum(indices.map(j => zones[j].counts[i])), expected[id][i]);
-    assert.equal(counts.total, expected[id][i]);
+    assert.equal(sum(indices.map(j => zones[j].counts[i])), counts.total);
+    if (expected[id]) assert.equal(counts.total, expected[id][i], `${id} ${year} hotspot total`);
     metadata[id].seasons[year] = {
       ...counts,
       // Hotspots per 100 km² of each land stratum.
@@ -61,7 +62,7 @@ for (const z of zones) {
 stage('geography.json', {
   base: inputs.base, grids: compactGrids, shapes: zones.map(z => z.shape),
 });
-stage('overview.json', { zones: zones.map(({ shape, ...other }) => other), provinces: metadata,
+stage('overview.json', { zones: zones.map(({ shape, ...other }) => other), provinces: metadata, islands: inputs.islands,
   config: { radii: RADII, years: YEARS, weights: INDEX_WEIGHTS, threshold: PRIORITY_THRESHOLD,
     cellKm: provinces.ID14.step / 1000 } });
 
@@ -96,7 +97,7 @@ for (const radius of RADII) {
         surfaces[year][id] = grid.cells.map(cell => surface[cell]);
       }
       assert(localDensity[year].every(Number.isFinite));
-      assert.equal(localDensity[year].filter(Number.isFinite).length, 305);
+      assert.equal(localDensity[year].filter(Number.isFinite).length, zones.length);
     }
     const commonFireScale = YEARS.flatMap(year => Object.values(surfaces[year]).flat())
       .sort((a, b) => a - b);
@@ -105,6 +106,10 @@ for (const radius of RADII) {
     const training = { min: Math.min(...localDensity[2019]), max: Math.max(...localDensity[2019]) };
     analysis[key] = { ...fit, training, fireScaleMax: cap, fallbackZones: [...fallback] };
 
+    // One yardstick for both seasons: z-scores and the +1.5 SD priority cut are fixed on the
+    // 2019 distribution, so a worse 2026 shows up as more priority area instead of being
+    // re-standardised away. YEARS runs 2019 first.
+    let reference = null;
     for (const year of YEARS) {
       const density = localDensity[year];
       const exposure = year === 2019 ? zones.map(z => z.pm25) : density.map(d => predict(fit.fitted, d));
@@ -116,11 +121,12 @@ for (const radius of RADII) {
         id, [surfaces[year][id], grid.pop.map(pop => popScale(pop / (grid.step / 1000) ** 2)),
           year === 2019 ? grid.pm : grid.zone.map(i => exposure[i])],
       ]));
-      const toZ = INDEX_WEIGHTS.map((_, j) => normalizer(Object.values(gridColumns).flatMap(cols => cols[j])));
+      const toZ = reference?.toZ ?? INDEX_WEIGHTS.map((_, j) => normalizer(Object.values(gridColumns).flatMap(cols => cols[j])));
       const indices = Object.fromEntries(provinceEntries.map(([id, grid]) => [
         id, grid.cells.map((_, i) => sum(INDEX_WEIGHTS.map((weight, j) => weight * toZ[j](gridColumns[id][j][i])))),
       ]));
-      const toIndexZ = normalizer(Object.values(indices).flat());
+      const toIndexZ = reference?.toIndexZ ?? normalizer(Object.values(indices).flat());
+      reference ??= { toZ, toIndexZ };
       const zoneMeans = new Float64Array(zones.length);
       const zoneCells = new Uint32Array(zones.length);
       const priorityPopulation = new Float64Array(zones.length);
@@ -176,4 +182,4 @@ for (const radius of RADII) {
 }
 stage('validation.json', analysis);
 await Promise.all([...snapshots.entries()].map(([name, body]) => writeFile(new URL(name, out), body)));
-console.log('Verified 12 web scenarios and 305 kecamatan.');
+console.log(`Verified 12 web scenarios and ${zones.length} areas.`);
