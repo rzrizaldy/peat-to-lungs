@@ -102,16 +102,8 @@ document.addEventListener('keydown', e => {
   } else if (e.key === 'Home') { e.preventDefault(); go(0); } else if (e.key === 'End') { e.preventDefault(); go(slides.length - 1); }
 });
 
-/* ================================================================ theme */
-function setTheme(theme) {
-  if (theme) root.dataset.theme = theme; else delete root.dataset.theme;
-  if (ready) { drawScatter(); drawDaily(); drawSingapore(); drawRegion(); drawQuad(); process.redraw(); terrain.redraw(); map.update({ ...state, selected, language, provinceName }); }
-}
-el('theme').addEventListener('click', () => {
-  const dark = root.dataset.theme === 'dark' || (!root.dataset.theme && matchMedia('(prefers-color-scheme: dark)').matches);
-  const next = dark ? 'light' : 'dark';
-  store.set('peat-theme', next); setTheme(next);
-});
+/* ================================================================ theme: light only */
+root.dataset.theme = 'light';
 
 /* ================================================================ data */
 const cache = new Map();
@@ -181,9 +173,46 @@ function applyDay(frame) {
   if (cityDay === 'haze') { sel.value = 'haze'; sel.dispatchEvent(new Event('change')); }
   else { sel.value = ''; d.querySelector(`[data-s="${frame.dataset.clear}"]`)?.click(); }
 }
+// US EPA AQI for 24-hour PM2.5 (2024 breakpoints) and its category colours
+const AQI_BANDS = [[0, 9, 0, 50, 'Good', 'Baik', '#00e400'], [9.1, 35.4, 51, 100, 'Moderate', 'Sedang', '#ffff00'],
+  [35.5, 55.4, 101, 150, 'Unhealthy for sensitive groups', 'Tidak sehat bagi kelompok sensitif', '#ff7e00'],
+  [55.5, 125.4, 151, 200, 'Unhealthy', 'Tidak sehat', '#ff0000'], [125.5, 225.4, 201, 300, 'Very unhealthy', 'Sangat tidak sehat', '#8f3f97'],
+  [225.5, Infinity, 301, null, 'Hazardous', 'Berbahaya', '#7e0023']];
+function aqiOf(pm) {
+  const c = Math.round(pm * 10) / 10;
+  const [lo, hi, a0, a1, en, id, colour] = AQI_BANDS.find(b => c <= b[1]);
+  const value = a1 === null ? null : Math.round(a0 + (c - lo) * (a1 - a0) / (hi - lo));
+  return { value, label: t(en, id), colour };
+}
+let PEAKS = null;
+function peaks() {
+  if (PEAKS || !regional) return PEAKS;
+  const top = arr => arr.reduce((b, v, i) => (v != null && v > b[0] ? [v, i] : b), [-1, -1]);
+  const day = i => new Date(Date.UTC(2026, 6, 1) + i * 864e5);
+  const [pv, pi] = top(regional.cities['Palangka Raya'].camsDaily2026), [sv, si] = top(regional.singapore.daily[2026]);
+  PEAKS = { pky: { pm: pv, date: day(pi), src: ['model estimate (CAMS)', 'estimasi model (CAMS)'] },
+            sg: { pm: sv, date: day(si), src: ['measured (NEA stations)', 'terukur (stasiun NEA)'] } };
+  return PEAKS;
+}
+function renderPeak(key) {
+  const box = el(`peak-${key}`), p = peaks()?.[key];
+  if (!box || !p) return;
+  const a = aqiOf(p.pm), cigs = Math.round(p.pm / 22), on = cityDay === 'haze';
+  const date = p.date.toLocaleDateString(t('en-GB', 'id-ID'), { day: 'numeric', month: 'long', timeZone: 'UTC' });
+  box.className = `peak ${on ? '' : 'off'}`;
+  box.innerHTML = `<div class="peak-num">${fmt(p.pm)}<small>µg/m³</small></div>
+    <div class="peak-meta">${t(`Worst day: PM₂.₅ daily average, ${date} 2026, ${p.src[0]}`, `Hari terburuk: rerata harian PM₂.₅, ${date} 2026, ${p.src[1]}`)}
+      <div class="peak-tags"><span class="aqi" style="background:${a.colour}">${t('US AQI', 'AQI AS')}: ${a.label}${a.value ? ` · ${a.value}` : ` · ${t('above the scale', 'melampaui skala')}`}</span>
+      <span class="who">${fmt(p.pm / 15)}× ${t('WHO daily guideline', 'pedoman harian WHO')}</span></div></div>
+    <div class="cigs"><p class="cigs-label">${t(`Breathing it for one day ≈ ${cigs} cigarettes`, `Menghirupnya seharian ≈ ${cigs} batang rokok`)}</p>
+      <div class="cig-row" aria-hidden="true">${Array.from({ length: cigs }, (_, i) => `<svg style="transition-delay:${on ? i * 35 : 0}ms"><use href="#i-cig"/></svg>`).join('')}</div></div>
+    ${on ? '' : `<p class="peak-hint">${t('Switch to the haze to see the worst day.', 'Pilih kabut asap untuk melihat hari terburuk.')}</p>`}`;
+  if (on) requestAnimationFrame(() => requestAnimationFrame(() => box.classList.add('on')));   // let the cigarettes appear one by one
+}
 function renderCities() {
   el('city-pky').textContent = t(...CITY_TEXT.pky[cityDay]);
   el('city-sg').textContent = t(...CITY_TEXT.sg[cityDay]);
+  renderPeak('pky'); renderPeak('sg');
   $$('#day-switch button').forEach(b => b.setAttribute('aria-pressed', b.dataset.day === cityDay));
   $$('#cities iframe').forEach(applyDay);
 }
@@ -926,7 +955,6 @@ async function start() {
   }
 }
 
-setTheme(store.get('peat-theme', ''));
 applyLanguage(store.get('peat-dashboard-language', 'en'));
 el('language').addEventListener('change', e => { applyLanguage(e.target.value); store.set('peat-dashboard-language', language); });
 if (location.hash) { const i = slides.findIndex(s => `#${s.id}` === location.hash); if (i > 0) requestAnimationFrame(() => slides[i].scrollIntoView()); }

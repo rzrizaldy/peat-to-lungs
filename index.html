@@ -3,8 +3,9 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light">
   <meta name="description" content="How peat fires in Riau and Central Kalimantan turn into smoke that people breathe, district by district, in 2019 and 2026." data-id-content="Bagaimana kebakaran gambut di Riau dan Kalimantan Tengah menjadi asap yang dihirup warga, per kecamatan, pada 2019 dan 2026.">
-  <meta name="theme-color" content="#16211b">
+  <meta name="theme-color" content="#eef1ea">
   <meta property="og:title" content="From Peat to Lungs">
   <meta property="og:description" content="Fire, smoke and people across 305 districts in Riau and Central Kalimantan, 2019 and 2026.">
   <meta property="og:image" content="assets/peat-to-lungs.png">
@@ -12,14 +13,14 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Public+Sans:ital,wght@0,400;0,500;0,600;0,700;0,800;1,500&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="styles.css?v=6">
+  <link rel="stylesheet" href="styles.css?v=7">
 </head>
 <body>
 <a class="skip" href="#deck" data-id="Lompat ke konten">Skip to content</a>
 <svg width="0" height="0" style="position:absolute" aria-hidden="true">
   <symbol id="i-mark" viewBox="0 0 32 32"><path d="M2 14 16 7l14 7-14 7z" fill="var(--moss)"/><path d="M2 14v5l14 7v-5z" fill="var(--peat-2)"/><path d="M30 14v5l-14 7v-5z" fill="var(--peat)"/><path d="M2 19v4l14 7v-4z" fill="var(--mineral)"/><path d="M30 19v4l-14 7v-4z" fill="color-mix(in srgb,var(--mineral) 70%,#000)"/><path d="M17 3c1 2 3 3 3 5.5a3 3 0 0 1-6 0c0-1.3.7-2.2 1.4-2.8.1.9.5 1.4 1 1.6-.2-1.5.1-3 .6-4.3z" fill="var(--ember)"/></symbol>
   <symbol id="i-down" viewBox="0 0 24 24"><path d="M12 17.5 4.5 10l1.8-1.8 5.7 5.7 5.7-5.7 1.8 1.8z" fill="currentColor"/></symbol>
-  <symbol id="i-moon" viewBox="0 0 24 24"><path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5z" fill="currentColor"/></symbol>
+  <symbol id="i-cig" viewBox="0 0 24 8"><rect x="0.5" y="1.5" width="17" height="5" rx="1" fill="#f6f3ec" stroke="#8a8378" stroke-width=".8"/><rect x="12.5" y="1.5" width="5" height="5" fill="#d9a35b"/><rect x="17.5" y="1.5" width="3" height="5" rx="1" fill="#c2410c"/><path d="M22 2c1 1-1 2 0 4" stroke="#a59e93" stroke-width=".8" fill="none"/></symbol>
 </svg>
 
 <header class="topbar">
@@ -37,7 +38,6 @@
         <option value="en" lang="en">EN</option>
         <option value="id" lang="id">ID</option>
       </select>
-      <button type="button" class="icon-btn" id="theme" aria-label="Switch light or dark theme" data-id-aria-label="Ganti tema terang atau gelap"><svg aria-hidden="true"><use href="#i-moon"/></svg></button>
     </div>
   </div>
 </header>
@@ -62,14 +62,14 @@
   <div class="cities">
     <figure class="city">
       <div class="city-frame"><iframe src="pocket/palangka-raya.html?v=2" data-clear="dry" title="Pocket City diorama of Dermaga Rambang, Palangka Raya" data-id-title="Diorama Pocket City Dermaga Rambang, Palangka Raya"></iframe></div>
-      <figcaption><h3>Palangka Raya <span class="muted" data-id="· tepi Sungai Kahayan">· Kahayan riverbank</span></h3><p id="city-pky"></p></figcaption>
+      <figcaption><h3>Palangka Raya <span class="muted" data-id="· tepi Sungai Kahayan">· Kahayan riverbank</span></h3><p class="where"><span data-id="Dermaga Rambang, Jl. Riau, Pahandut, tepi Sungai Kahayan">Dermaga Rambang, Jl. Riau, Pahandut, on the Kahayan River</span> · <a href="https://www.google.com/maps?q=-2.2038,113.9399" target="_blank" rel="noopener" data-id="Lihat di Google Maps ↗">Google Maps ↗</a></p><p id="city-pky"></p><div class="peak" id="peak-pky"></div></figcaption>
     </figure>
     <figure class="city">
       <div class="city-frame"><iframe src="pocket/marina-bay.html?v=2" data-clear="inter" title="Pocket City diorama of Marina Bay Sands, Singapore" data-id-title="Diorama Pocket City Marina Bay Sands, Singapura"></iframe></div>
-      <figcaption><h3>Singapore <span class="muted" data-id="· Marina Bay Sands">· Marina Bay Sands</span></h3><p id="city-sg"></p></figcaption>
+      <figcaption><h3>Singapore <span class="muted" data-id="· Marina Bay Sands">· Marina Bay Sands</span></h3><p class="where"><span data-id="Hotel, SkyPark, The Shoppes, dan ArtScience Museum">Hotel, SkyPark, The Shoppes and ArtScience Museum</span> · <a href="https://www.google.com/maps?q=1.2842,103.8597" target="_blank" rel="noopener" data-id="Lihat di Google Maps ↗">Google Maps ↗</a></p><p id="city-sg"></p><div class="peak" id="peak-sg"></div></figcaption>
     </figure>
   </div>
-  <p class="source" data-id="Diorama: Pocket City oleh April Zhu (MIT), data peta © kontributor OpenStreetMap. Orang, perahu, dan lalu lintas bersifat ilustrasi. Sumber teks: DJKN, Prokalteng, NEA, Wikipedia.">Dioramas: Pocket City by April Zhu (MIT), map data © OpenStreetMap contributors. People, boats and traffic are illustrative. Text sources: DJKN, Prokalteng, NEA, Wikipedia.</p>
+  <p class="source" data-id="Diorama: Pocket City oleh April Zhu (MIT), data peta © kontributor OpenStreetMap. Orang, perahu, dan lalu lintas bersifat ilustrasi. Sumber teks: DJKN, Prokalteng, NEA, Wikipedia. Hari terburuk: Palangka Raya dari model CAMS lewat Open-Meteo, Singapura diukur NEA. AQI US EPA (2024); pedoman 24 jam WHO 15 µg/m³ (2021); sehari di 22 µg/m³ ≈ satu batang rokok (Berkeley Earth).">Dioramas: Pocket City by April Zhu (MIT), map data © OpenStreetMap contributors. People, boats and traffic are illustrative. Text sources: DJKN, Prokalteng, NEA, Wikipedia. Worst days: Palangka Raya from the CAMS model via Open-Meteo, Singapore measured by NEA. US EPA AQI (2024); WHO 24-hour guideline 15 µg/m³ (2021); one day at 22 µg/m³ ≈ one cigarette (Berkeley Earth).</p>
 </div><a class="next" href="#intro" aria-label="Next slide" data-id-aria-label="Slide berikutnya"><svg aria-hidden="true"><use href="#i-down"/></svg></a></section>
 
 <!-- 1 · intro -->
@@ -297,6 +297,6 @@
 </div></section>
 
 </main>
-<script type="module" src="app.mjs?v=6"></script>
+<script type="module" src="app.mjs?v=7"></script>
 </body>
 </html>
