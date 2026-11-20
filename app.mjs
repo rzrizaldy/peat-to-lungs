@@ -117,7 +117,7 @@ function setMode(mode) {
 $$('button[data-mode]').forEach(b => b.addEventListener('click', () => setMode(b.dataset.mode)));
 function setTheme(theme) {
   if (theme) root.dataset.theme = theme; else delete root.dataset.theme;
-  if (ready) { drawScatter(); process.redraw(); terrain.redraw(); map.update({ ...state, selected, language, provinceName }); }
+  if (ready) { drawScatter(); drawDaily(); drawSingapore(); drawRegion(); process.redraw(); terrain.redraw(); map.update({ ...state, selected, language, provinceName }); }
 }
 el('theme').addEventListener('click', () => {
   const dark = root.dataset.theme === 'dark' || (!root.dataset.theme && matchMedia('(prefers-color-scheme: dark)').matches);
@@ -133,6 +133,7 @@ const scenarioFile = key => {
   return cache.get(key);
 };
 let overview, geography, tests, stats, story, map, process, terrain, state, ready = false;
+let profile, shape, regional, basemapData;
 let selected = null, requestId = 0, modelKey = 'count-100', terrainYear = 2019, landYear = 2019;
 let statusText = ['Loading 305 districts…', 'Memuat 305 kecamatan…'], statusError = false;
 function renderStatus() { const s = el('app-status'); s.textContent = statusText[0] ? t(...statusText) : ''; s.classList.toggle('error', statusError); }
@@ -204,26 +205,22 @@ function renderStepper(step) {
   el('iso-steps').innerHTML = STEPS.map((s, i) =>
     `<button type="button" data-step="${i}" aria-current="${i === step}" class="${i < step ? 'done' : ''}">${i + 1} ${t(...s.name)}</button>`).join('');
   const s = STEPS[step];
-  el('iso-caption').innerHTML = `<h3>${step + 1}. ${t(...s.name)}</h3><p>${t(...s.story)}</p>
-    <div class="arcgis adv"><b>${t('In ArcGIS Pro', 'Di ArcGIS Pro')}</b>${t(...s.arc)}</div>`;
+  el('iso-caption').innerHTML = `<h3>${step + 1}. ${t(...s.name)}</h3><p>${t(...s.story)}</p>`;
   el('iso-play').textContent = process?.playing ? t('Pause', 'Jeda') : t('Play', 'Putar');
 }
 
 /* ================================================================ seasons */
 function renderSeasons() {
   const r = overview.provinces.ID14.seasons, k = overview.provinces.ID62.seasons;
+  const k19 = profile.ID62[2019], k26 = profile.ID62[2026];
+  const busy = y => profile.ID62[y].daily.filter(v => v >= 500).length;
   el('season-insight').innerHTML = t(
-    `Riau fell from <strong>${fmt(r[2019].total)}</strong> detections in 2019 to <strong>${fmt(r[2026].total)}</strong> in 2026 (${pct(change('ID14'))}). Central Kalimantan doubled, from <strong>${fmt(k[2019].total)}</strong> to <strong>${fmt(k[2026].total)}</strong> (${pct(change('ID62'))}).`,
-    `Riau turun dari <strong>${fmt(r[2019].total)}</strong> deteksi pada 2019 menjadi <strong>${fmt(r[2026].total)}</strong> pada 2026 (${pct(change('ID14'))}). Kalimantan Tengah berlipat dua, dari <strong>${fmt(k[2019].total)}</strong> menjadi <strong>${fmt(k[2026].total)}</strong> (${pct(change('ID62'))}).`);
-  const limit = Math.max(...Object.values(overview.provinces).flatMap(p => [2019, 2026].flatMap(y => p.seasons[y].months)));
-  const months = t(['Jul', 'Aug', 'Sep', 'Oct'], ['Jul', 'Agu', 'Sep', 'Okt']);
-  el('months').innerHTML = ['ID14', 'ID62'].map(id => {
-    const s = overview.provinces[id].seasons;
-    return `<div class="month-chart"><h4>${provinceName(id)}</h4><div class="month-bars">${months.map((m, i) => {
-      const a = s[2019].months[i], b = s[2026].months[i];
-      return `<div class="pair" title="${m} · 2019: ${fmt(a)} · 2026: ${fmt(b)}" role="img" aria-label="${m}: 2019 ${fmt(a)}, 2026 ${fmt(b)}"><i style="height:${100 * a / limit}%;background:var(--y2019)"></i><i style="height:${100 * b / limit}%;background:var(--y2026)"></i></div>`;
-    }).join('')}</div><div class="month-axis">${months.map(m => `<span>${m}</span>`).join('')}</div></div>`;
-  }).join('');
+    `Riau fell ${fmt(Math.abs(change('ID14')))}% while Central Kalimantan doubled. September was not the difference: <strong>${fmt(k26.months[2])}</strong> detections in 2026 against ${fmt(k19.months[2])} in 2019. October was: <strong>${fmt(k26.months[3])}</strong> against ${fmt(k19.months[3])}. Central Kalimantan had ${busy(2026)} days with 500+ detections, up from ${busy(2019)}.`,
+    `Riau turun ${fmt(Math.abs(change('ID14')))}% sementara Kalimantan Tengah berlipat dua. Bedanya bukan di September: <strong>${fmt(k26.months[2])}</strong> deteksi pada 2026 dibanding ${fmt(k19.months[2])} pada 2019. Bedanya di Oktober: <strong>${fmt(k26.months[3])}</strong> dibanding ${fmt(k19.months[3])}. Kalimantan Tengah mengalami ${busy(2026)} hari dengan 500+ deteksi, naik dari ${busy(2019)}.`);
+  el('season-why').textContent = t(
+    `Why: a strong El Niño and a positive Indian Ocean Dipole kept 2026 dry into October. Night-time detections rose to ${fmt(k26.nightShare * 100)}% from ${fmt(k19.nightShare * 100)}%, and ${fmt(k26.cellsBurning5PlusDays)} spots burned on five or more days, ${fmt(k26.cellsBurning5PlusDays / k19.cellsBurning5PlusDays, 1)}× as many as 2019: signs of peat smouldering for days rather than brief surface fires.`,
+    `Penyebabnya: El Niño kuat dan Indian Ocean Dipole positif membuat 2026 tetap kering hingga Oktober. Deteksi malam naik menjadi ${fmt(k26.nightShare * 100)}% dari ${fmt(k19.nightShare * 100)}%, dan ${fmt(k26.cellsBurning5PlusDays)} titik terbakar lima hari atau lebih, ${fmt(k26.cellsBurning5PlusDays / k19.cellsBurning5PlusDays, 1)}× lipat 2019: tanda gambut membara berhari-hari, bukan api permukaan sesaat.`);
+  drawDaily();
   $$('#terrain-year button').forEach(b => b.setAttribute('aria-pressed', Number(b.dataset.year) === terrainYear));
   showTerrain();
 }
@@ -276,6 +273,20 @@ async function renderSmoke() {
   el('smoke-insight').innerHTML = t(
     `Districts with more fire within ${r} km had dirtier air in September 2019. A high-fire district (top quarter) averaged about <strong>${fmt(effect)} µg/m³</strong> more PM₂.₅ than a low-fire one (bottom quarter). The WHO 24-hour guideline is 15.`,
     `Kecamatan dengan lebih banyak api dalam ${r} km punya udara lebih kotor pada September 2019. Kecamatan api tinggi (kuartil atas) rata-rata sekitar <strong>${fmt(effect)} µg/m³</strong> PM₂.₅ lebih tinggi daripada kecamatan api rendah (kuartil bawah). Pedoman WHO 24 jam adalah 15.`);
+  const lin = shape.shape['100'].linear;
+  el('smoke-insight').innerHTML += ' ' + t(
+    `The relationship is close to a straight line: each extra 0.1 detections per km² within 100 km adds about <strong>${fmt(lin.coef[1] / 10)} µg/m³</strong>. It does not accelerate, and it does not level off.`,
+    `Hubungannya mendekati garis lurus: setiap tambahan 0,1 deteksi per km² dalam 100 km menambah sekitar <strong>${fmt(lin.coef[1] / 10)} µg/m³</strong>. Tidak makin cepat, dan tidak mendatar.`);
+  const sh = shape.shape['100'], names = { linear: t('Linear', 'Linear'), quadratic: t('Quadratic', 'Kuadratik'), saturating: t('Saturating', 'Jenuh'), exponential: t('Exponential', 'Eksponensial'), log: t('Logarithmic (index model)', 'Logaritmik (model indeks)'), sqrt: t('Square root', 'Akar'), power: t('Power law', 'Pangkat') };
+  const row = (a, b, c) => `<tr><td>${a}</td><td>${b}</td><td>${c}</td></tr>`;
+  el('shape-table').innerHTML = `<thead><tr><th>${t('Test', 'Uji')}</th><th>${t('Regency-out R²', 'R² tanpa kabupaten')}</th><th>AIC</th></tr></thead><tbody>`
+    + Object.keys(names).map(k => row(names[k], fmt(sh[k].cvR2, 3), fmt(sh[k].aic, 0))).join('')
+    + `<tr><th colspan="3">${t('Kernel radius (logarithmic form)', 'Radius kernel (bentuk logaritmik)')}</th></tr>`
+    + Object.entries(shape.reach).map(([r, v]) => row(`${r} km${Number(r) === shape.bestRadius ? ' ★' : ''}`, fmt(v.cvR2, 3), '')).join('')
+    + `<tr><th colspan="3">${t('Fire month used to explain September PM₂.₅', 'Bulan api untuk menjelaskan PM₂.₅ September')}</th></tr>`
+    + [['7', t('July', 'Juli')], ['8', t('August', 'Agustus')], ['9', t('September', 'September')], ['10', t('October (placebo: after the fact)', 'Oktober (plasebo: sesudahnya)')]].map(([m, n]) => row(n, fmt(shape.timing.single[m].cvR2, 3), '')).join('')
+    + row(t('August + September', 'Agustus + September'), fmt(shape.timing.sepAug.cvR2, 3), '')
+    + '</tbody>';
   const w = cal.withinProvince;
   el('smoke-tiles').innerHTML = [
     [`${fmt(cal.r2 * 100)}%`, t('of the differences between districts explained by nearby fire', 'perbedaan antar-kecamatan dijelaskan oleh api di sekitar')],
@@ -348,6 +359,11 @@ function drawScatter() {
   });
   ctx.strokeStyle = ink; ctx.lineWidth = 2; ctx.beginPath();
   ctx.moveTo(X(0), Y(cal.intercept)); ctx.lineTo(X(xmax), Y(cal.intercept + cal.slope * xmax)); ctx.stroke();
+  // decile means (count, 100 km) show the curve's shape without assuming a model
+  if (modelKey === 'count-100') {
+    ctx.fillStyle = ink;
+    for (const b of shape.bins) { const px = X(Math.log1p(b.density)), py = Y(b.pm); ctx.beginPath(); ctx.moveTo(px, py - 5); ctx.lineTo(px + 5, py); ctx.lineTo(px, py + 5); ctx.lineTo(px - 5, py); ctx.closePath(); ctx.fill(); }
+  }
 }
 el('scatter').addEventListener('pointermove', e => {
   const r = el('scatter').getBoundingClientRect();
@@ -520,32 +536,208 @@ function renderPriority() {
     `Silhouette per k: ${cands.map(c => `k=${c.k} ${fmt(c.silhouette, 2)}`).join(', ')}. Web memilih yang tertinggi. Multivariate Clustering ArcGIS memilih k dengan pseudo-F, jadi bandingkan keduanya. Silhouette sekitar 0,4 berarti kelompok saling tumpang tindih: anggap sebagai profil, bukan tipe kaku.`);
 }
 
-/* ================================================================ recipe */
-function renderRecipe() {
-  const c = stats.calibration['count-100'];
-  const v = tests['count-100'];
-  const p19 = priorityPeople(story[2019]), p26 = priorityPeople(story[2026]);
-  const fallback = v.fallbackZones.map(id => overview.zones.find(z => z.id === id)?.name ?? id).join(', ');
-  const steps = [
-    [true, ['Project everything to one equal-area system', 'Proyeksikan semua ke satu sistem setara luas'], ['<code>Project</code> / <code>Project Raster</code> to Asia South Albers Equal Area Conic (WKID 102028); nearest neighbour for class rasters.', '<code>Project</code> / <code>Project Raster</code> ke Asia South Albers Equal Area Conic (WKID 102028); nearest neighbour untuk raster kelas.'], ['305 valid districts', '305 kecamatan valid']],
-    [true, ['Peat and forest loss per district', 'Gambut dan kehilangan hutan per kecamatan'], ['<code>Pairwise Intersect</code> + <code>Summary Statistics</code> (Tabulate Intersection failed with error 160196); <code>Zonal Statistics as Table</code> SUM on 30 m loss.', '<code>Pairwise Intersect</code> + <code>Summary Statistics</code> (Tabulate Intersection gagal, galat 160196); <code>Zonal Statistics as Table</code> SUM pada kehilangan hutan 30 m.'], ['Peat 38,637.6 / 28,109.8 km²', 'Gambut 38.637,6 / 28.109,8 km²']],
-    [true, ['Hotspots per district', 'Hotspot per kecamatan'], ['<code>Summarize Within</code>, checked with an independent <code>Spatial Join</code>.', '<code>Summarize Within</code>, dicek dengan <code>Spatial Join</code> terpisah.'], ['Riau 22,874 / 3,158 · Kalteng 80,126 / 164,333', 'Riau 22.874 / 3.158 · Kalteng 80.126 / 164.333']],
-    [true, ['Population-weighted PM₂.₅', 'PM₂.₅ berbobot penduduk'], ['Sample PM₂.₅ at WorldPop cell centres, then SUM(PM × pop) / SUM(pop) by district.', 'Ambil PM₂.₅ di pusat sel WorldPop, lalu SUM(PM × penduduk) / SUM(penduduk) per kecamatan.'], ['101.67 / 154.87 µg/m³', '101,67 / 154,87 µg/m³']],
-    [false, ['Kernel density surfaces', 'Permukaan kepadatan kernel'], ['<code>Kernel Density</code>: buffered hotspots, population field NONE and FRP, cell 2,000 m, radius 25,000 / 50,000 / 100,000 m, km², planar.', '<code>Kernel Density</code>: hotspot ber-buffer, population field NONE dan FRP, sel 2.000 m, radius 25.000 / 50.000 / 100.000 m, km², planar.'], ['Shape matches the fire terrain slide', 'Bentuk sama dengan slide terrain api']],
-    [false, ['District mean of each surface', 'Rerata permukaan per kecamatan'], [`<code>Zonal Statistics as Table</code> MEAN by adm3_pcode → <code>Join Field</code>. Two small districts hold no cell centre (${esc(fallback)}): use the cell under their label point.`, `<code>Zonal Statistics as Table</code> MEAN per adm3_pcode → <code>Join Field</code>. Dua kecamatan kecil tidak memuat pusat sel (${esc(fallback)}): pakai sel di bawah titik labelnya.`], ['12 fields (2 seasons × 2 weights × 3 radii)', '12 kolom (2 musim × 2 bobot × 3 radius)']],
-    [false, ['Calibrate smoke on fire', 'Kalibrasi asap terhadap api'], ['<code>Calculate Field</code> Ln(1 + KDE) → <code>Ordinary Least Squares</code> with PM25_pw as the dependent variable. Read the coefficient table and Koenker test.', '<code>Calculate Field</code> Ln(1 + KDE) → <code>Ordinary Least Squares</code> dengan PM25_pw sebagai variabel terikat. Baca tabel koefisien dan uji Koenker.'], [`R² ${fmt(c.r2, 2)} · slope ${fmt(c.slope)}`, `R² ${fmt(c.r2, 2)} · kemiringan ${fmt(c.slope)}`]],
-    [false, ['Test the residuals for clustering', 'Uji pengelompokan residual'], ['<code>Spatial Autocorrelation (Global Moran\'s I)</code> on residuals, K nearest neighbors 8, row standardization.', '<code>Spatial Autocorrelation (Global Moran\'s I)</code> pada residual, K nearest neighbors 8, row standardization.'], [`I ≈ ${fmt(c.moranResiduals.I, 2)}`, `I ≈ ${fmt(c.moranResiduals.I, 2)}`]],
-    [false, ['Validate on unseen districts', 'Validasi pada kecamatan yang tidak dilihat'], ['Random 30% hold-out (<code>Subset Features</code>, repeat) and leave-one-regency-out in ModelBuilder (<code>Iterate Field Values</code> on the regency code).', 'Hold-out acak 30% (<code>Subset Features</code>, ulangi) dan tanpa-satu-kabupaten di ModelBuilder (<code>Iterate Field Values</code> pada kode kabupaten).'], [`hold-out ${fmt(v.ranges.r2[0], 2)} · regency-out ${fmt(c.spatialCV.r2, 2)}`, `hold-out ${fmt(v.ranges.r2[0], 2)} · tanpa kabupaten ${fmt(c.spatialCV.r2, 2)}`]],
-    [false, ['Estimate 2026 smoke ranks', 'Perkirakan peringkat asap 2026'], ['Apply the 2019 coefficients with <code>Calculate Field</code>; flag districts whose 2026 fire density lies outside the 2019 range.', 'Terapkan koefisien 2019 dengan <code>Calculate Field</code>; tandai kecamatan dengan kepadatan api 2026 di luar rentang 2019.'], [`${stats.extrapolation['count-100']} districts flagged`, `${stats.extrapolation['count-100']} kecamatan ditandai`]],
-    [false, ['Build the priority index', 'Bangun indeks prioritas'], ['ModelBuilder: <code>Raster Calculator</code> z-scores with Ln(1 + people/km²), weights 0.3 / 0.3 / 0.4, <code>Reclassify</code> in 0.5 SD classes, priority ≥ +1.5 SD.', 'ModelBuilder: z-score dengan <code>Raster Calculator</code> memakai Ln(1 + jiwa/km²), bobot 0,3 / 0,3 / 0,4, <code>Reclassify</code> per 0,5 SD, prioritas ≥ +1,5 SD.'], [`${fmt(p19 / 1e6, 2)}M (2019) · ${fmt(p26 / 1e6, 2)}M (2026)`, `${fmt(p19 / 1e6, 2)} jt (2019) · ${fmt(p26 / 1e6, 2)} jt (2026)`]],
-    [false, ['Group similar districts', 'Kelompokkan kecamatan serupa'], ['<code>Multivariate Clustering</code> (K-means): fire density, % forest loss on peat, PM₂.₅, Ln population density; evaluate 3–6 groups.', '<code>Multivariate Clustering</code> (K-means): kepadatan api, % kehilangan hutan di gambut, PM₂.₅, Ln kepadatan penduduk; uji 3–6 kelompok.'], ['web: k = 3 (silhouette)', 'web: k = 3 (silhouette)']],
-    [false, ['Map the results', 'Petakan hasilnya'], ['Classify with ½ SD steps or quantiles rather than Natural Breaks, so maps compare across seasons.', 'Klasifikasi dengan kelas ½ SD atau kuantil, bukan Natural Breaks, agar peta bisa dibandingkan antar-musim.'], ['Same classes in both seasons', 'Kelas sama untuk kedua musim']],
-  ];
-  el('recipe').innerHTML = steps.map(([, title, how, check]) =>
-    `<li><div><b>${t(...title)}</b><p>${t(...how)}</p><span class="check">${t('Check', 'Cek')}: ${t(...check)}</span></div></li>`).join('');
+/* ================================================================ limits */
+function renderLimits() {
   el('limit-2026').textContent = t(
     `No 2026 PM₂.₅ map exists yet. 2026 values are ranks from the 2019 model, and ${stats.extrapolation['count-100']} of 305 districts fall outside its training range.`,
     `Belum ada peta PM₂.₅ 2026. Nilai 2026 adalah peringkat dari model 2019, dan ${stats.extrapolation['count-100']} dari 305 kecamatan berada di luar rentang data latihnya.`);
+}
+
+/* ================================================================ daily fire chart */
+const dayDate = (year, d) => new Date(Date.UTC(year, 6, 1) + d * 864e5);
+const dayLabel = (year, d) => dayDate(year, d).toLocaleDateString(t('en-US', 'id-ID'), { month: 'short', day: 'numeric', timeZone: 'UTC' });
+function drawDaily() {
+  const canvas = el('daily');
+  const { width, height } = resizeCanvas(canvas);
+  if (!width || !profile) return;
+  const ctx = canvas.getContext('2d');
+  ctx.clearRect(0, 0, width, height);
+  const ink = cssVar('--ink'), muted = cssVar('--muted'), line = cssVar('--line');
+  const colors = { 2019: cssVar('--y2019'), 2026: cssVar('--y2026') };
+  const panels = [['ID62', 0.62], ['ID14', 0.38]];
+  let top = 0;
+  ctx.font = '12px "Public Sans", sans-serif';
+  for (const [id, share] of panels) {
+    const h = height * share, m = { l: 40, r: 8, t: 18, b: id === 'ID14' ? 20 : 8 };
+    const max = Math.max(...[2019, 2026].flatMap(y => profile[id][y].daily));
+    const nice = [100, 200, 500, 1000, 2000, 5000, 10000].find(v => v >= max) ?? max;
+    const X = d => m.l + (width - m.l - m.r) * d / 122, Y = v => top + h - m.b - (h - m.t - m.b) * v / nice;
+    ctx.fillStyle = ink; ctx.font = '700 12.5px "Public Sans", sans-serif'; ctx.textAlign = 'left';
+    ctx.fillText(provinceName(id), m.l, top + 12);
+    ctx.font = '12px "Public Sans", sans-serif';
+    ctx.strokeStyle = line; ctx.fillStyle = muted; ctx.textAlign = 'right';
+    for (const v of [0, nice / 2, nice]) { ctx.beginPath(); ctx.moveTo(m.l, Y(v)); ctx.lineTo(width - m.r, Y(v)); ctx.stroke(); ctx.fillText(fmt(v), m.l - 5, Y(v) + 4); }
+    for (const year of [2019, 2026]) {
+      ctx.beginPath(); ctx.strokeStyle = colors[year]; ctx.lineWidth = 2;
+      profile[id][year].daily.forEach((v, d) => (d ? ctx.lineTo(X(d), Y(v)) : ctx.moveTo(X(d), Y(v))));
+      ctx.stroke();
+    }
+    if (id === 'ID14') {
+      ctx.textAlign = 'center'; ctx.fillStyle = muted;
+      [0, 31, 62, 92].forEach((d, i) => ctx.fillText(t(['Jul', 'Aug', 'Sep', 'Oct'], ['Jul', 'Agu', 'Sep', 'Okt'])[i], X(d + 15), height - 4));
+    }
+    // annotate the 2026 Kalimantan October tail
+    if (id === 'ID62') {
+      const d = profile.ID62[2026].daily.indexOf(Math.max(...profile.ID62[2026].daily));
+      ctx.fillStyle = ink; ctx.textAlign = 'right';
+      ctx.fillText(t(`2026 peak ${dayLabel(2026, d)}`, `Puncak 2026 ${dayLabel(2026, d)}`), X(d) - 6, Y(profile.ID62[2026].daily[d]) + 4);
+    }
+    top += h;
+  }
+}
+
+/* ================================================================ borders */
+const PM_BREAKS = [15, 35, 55, 100, 150, 250];
+const PM_COLORS = ['#efedf5', '#d9d4e8', '#bfb6d9', '#a194c6', '#8473b0', '#665494', '#463870'];
+let regionKey = 'w19', regionCache = {}, sgPts = [];
+const decodeBytes = b64 => { const s = atob(b64); const a = new Uint8Array(s.length); for (let i = 0; i < s.length; i += 1) a[i] = s.charCodeAt(i); return a; };
+function regionTile(key) {
+  if (regionCache[key]) return regionCache[key];
+  const g = key === 'w19' ? regional.washu2019 : regional.cams2026;
+  const bytes = decodeBytes(key === 'w19' ? g.pm : key === 'c26s' ? g.sep : g.oct);
+  const tile = document.createElement('canvas');
+  tile.width = g.w; tile.height = g.h;
+  const c = tile.getContext('2d'), img = c.createImageData(g.w, g.h);
+  const rgb = PM_COLORS.map(h => [1, 3, 5].map(i => parseInt(h.slice(i, i + 2), 16)));
+  bytes.forEach((v, i) => {
+    if (!v) return;
+    const col = rgb[PM_BREAKS.filter(b => v >= b).length];
+    img.data.set([...col, 255], 4 * i);
+  });
+  c.putImageData(img, 0, 0);
+  regionCache[key] = { tile, g };
+  return regionCache[key];
+}
+let outlines = null;
+function regionOutlines() {
+  if (outlines) return outlines;
+  const toLL = rings => rings.map(r => r.map(([x, y]) => lonLat(x, y)));
+  outlines = [...geography.base.flatMap(poly => toLL(poly)), ...basemapData.provinces.flatMap(p => toLL(p.rings))];
+  return outlines;
+}
+function drawRegion() {
+  const canvas = el('region-map');
+  const { width, height } = resizeCanvas(canvas);
+  if (!width || !regional) return;
+  const ctx = canvas.getContext('2d');
+  const [lon0, lon1, lat0, lat1] = regional.box;
+  const X = lon => width * (lon - lon0) / (lon1 - lon0), Y = lat => height * (lat1 - lat) / (lat1 - lat0);
+  ctx.fillStyle = cssVar('--map-sea'); ctx.fillRect(0, 0, width, height);
+  const { tile, g } = regionTile(regionKey);
+  ctx.imageSmoothingEnabled = regionKey === 'w19';
+  // WashU cell centres start at the box edge; CAMS 0.5° points are centres of cells
+  const half = regionKey === 'w19' ? 0 : g.step / 2;
+  ctx.drawImage(tile, X(lon0 - half), Y(lat1 + half), X(lon0 - half + g.w * g.step) - X(lon0 - half), Y(lat1 + half - g.h * g.step) - Y(lat1 + half));
+  ctx.strokeStyle = cssVar('--ink'); ctx.globalAlpha = 0.55; ctx.lineWidth = 0.7;
+  ctx.beginPath();
+  for (const ring of regionOutlines()) { ring.forEach(([lo, la], i) => (i ? ctx.lineTo(X(lo), Y(la)) : ctx.moveTo(X(lo), Y(la)))); ctx.closePath(); }
+  ctx.stroke(); ctx.globalAlpha = 1;
+  ctx.font = '600 12px "Public Sans", sans-serif';
+  const field = regionKey === 'w19' ? 'washuSep2019' : regionKey === 'c26s' ? 'camsSep2026' : 'camsOct2026';
+  for (const [name, c] of Object.entries(regional.cities)) {
+    if (!['Singapore', 'Kuala Lumpur', 'Pekanbaru', 'Palangka Raya', 'Pontianak', 'Jambi', 'Kuching'].includes(name)) continue;
+    const x = X(c.lon), y = Y(c.lat);
+    ctx.fillStyle = cssVar('--ink'); ctx.beginPath(); ctx.arc(x, y, 3, 0, 7); ctx.fill();
+    const label = `${name} ${c[field] == null ? '' : fmt(c[field])}`;
+    ctx.lineWidth = 3; ctx.strokeStyle = cssVar('--bg'); ctx.textAlign = name === 'Kuala Lumpur' || name === 'Pekanbaru' || name === 'Jambi' ? 'right' : 'left';
+    const dx = ctx.textAlign === 'right' ? -6 : 6;
+    ctx.strokeText(label, x + dx, y - 5); ctx.fillText(label, x + dx, y - 5);
+  }
+  el('region-legend').innerHTML = `<span class="small muted">PM₂.₅ µg/m³</span>${PM_COLORS.map((c, i) => `<span class="small"><i class="swatch" style="background:${c}"></i>${i === 0 ? `<${PM_BREAKS[0]}` : i === PM_COLORS.length - 1 ? `≥${PM_BREAKS.at(-1)}` : `${PM_BREAKS[i - 1]}–${PM_BREAKS[i]}`}</span>`).join('')}`;
+  el('region-source').textContent = regionKey === 'w19'
+    ? t('Source: WashU ACAG V6.GL.03 satellite-derived PM₂.₅, September 2019 mean.', 'Sumber: PM₂.₅ turunan satelit WashU ACAG V6.GL.03, rerata September 2019.')
+    : t('Source: CAMS global atmospheric-composition model (Copernicus) via Open-Meteo, 2026 monthly mean. No satellite PM₂.₅ map exists for 2026 yet, so compare patterns, not exact levels, with 2019.',
+      'Sumber: model komposisi atmosfer global CAMS (Copernicus) lewat Open-Meteo, rerata bulanan 2026. Belum ada peta PM₂.₅ satelit untuk 2026, jadi bandingkan pola, bukan nilai persis, dengan 2019.');
+  $$('#region-pick button').forEach(b => b.setAttribute('aria-pressed', b.dataset.k === regionKey));
+}
+const runs = (a, th) => { let best = 0, cur = 0, days = 0; for (const v of a) { if (v != null && v >= th) { cur += 1; days += 1; best = Math.max(best, cur); } else cur = 0; } return { days, longest: best }; };
+const dose = (a, th) => a.reduce((s, v) => s + (v != null && v > th ? v - th : 0), 0);
+function renderBorders() {
+  const sg = regional.singapore.daily;
+  const r19 = runs(sg[2019], 37.5), r26 = runs(sg[2026], 37.5);
+  const d19 = dose(sg[2019], 15), d26 = dose(sg[2026], 15);
+  const pk = y => { const v = Math.max(...sg[y].filter(x => x != null)); return [v, sg[y].indexOf(v)]; };
+  const [p19] = pk(2019), [p26, i26] = pk(2026);
+  el('border-insight').innerHTML = t(
+    `Singapore has no peat fires of its own and lies about 1,000 km from Central Kalimantan. In 2026 its official monitors recorded <strong>${r26.days}</strong> days above 37.5 µg/m³, against ${r19.days} in 2019, with one episode lasting <strong>${r26.longest} days</strong>; in October its environment agency traced the smoke to Kalimantan. The peak was ${fmt(p26 / p19, 1)}× higher, but the total dose was <strong>${fmt(d26 / d19, 1)}×</strong> larger, because the smoke stayed.`,
+    `Singapura tidak punya kebakaran gambut sendiri dan berjarak sekitar 1.000 km dari Kalimantan Tengah. Pada 2026 alat pemantau resminya mencatat <strong>${r26.days}</strong> hari di atas 37,5 µg/m³, dibanding ${r19.days} pada 2019, dengan satu episode selama <strong>${r26.longest} hari</strong>; pada Oktober badan lingkungannya menelusuri asap itu ke Kalimantan. Puncaknya ${fmt(p26 / p19, 1)}× lebih tinggi, tetapi dosis totalnya <strong>${fmt(d26 / d19, 1)}×</strong> lebih besar, karena asapnya bertahan.`);
+  el('sg-numbers').innerHTML = [
+    [`${r19.days} → ${r26.days}`, t('days above 37.5 µg/m³', 'hari di atas 37,5 µg/m³')],
+    [`${r19.longest} → ${r26.longest}`, t('days in the longest episode', 'hari pada episode terpanjang')],
+    [`${fmt(d26 / d19, 1)}×`, t('dose above the WHO guideline (level × days), 2026 vs 2019', 'dosis di atas pedoman WHO (kadar × hari), 2026 vs 2019')],
+  ].map(([a, b]) => `<div><strong>${a}</strong><small>${b}</small></div>`).join('');
+  void i26;
+  drawSingapore();
+  drawRegion();
+}
+function drawSingapore() {
+  const canvas = el('sg-chart');
+  const { width, height } = resizeCanvas(canvas);
+  if (!width || !regional) return;
+  const ctx = canvas.getContext('2d');
+  ctx.clearRect(0, 0, width, height);
+  const sg = regional.singapore.daily;
+  const m = { l: 36, r: 8, t: 8, b: 20 };
+  const max = 150;
+  const X = d => m.l + (width - m.l - m.r) * d / 122, Y = v => height - m.b - (height - m.t - m.b) * Math.min(v, max) / max;
+  ctx.font = '12px "Public Sans", sans-serif';
+  ctx.strokeStyle = cssVar('--line'); ctx.fillStyle = cssVar('--muted'); ctx.textAlign = 'right';
+  for (const v of [0, 50, 100, 150]) { ctx.beginPath(); ctx.moveTo(m.l, Y(v)); ctx.lineTo(width - m.r, Y(v)); ctx.stroke(); ctx.fillText(v, m.l - 5, Y(v) + 4); }
+  ctx.setLineDash([3, 4]); ctx.strokeStyle = cssVar('--muted');
+  for (const v of [15, 37.5]) { ctx.beginPath(); ctx.moveTo(m.l, Y(v)); ctx.lineTo(width - m.r, Y(v)); ctx.stroke(); }
+  ctx.setLineDash([]);
+  ctx.textAlign = 'center';
+  [0, 31, 62, 92].forEach((d, i) => ctx.fillText(t(['Jul', 'Aug', 'Sep', 'Oct'], ['Jul', 'Agu', 'Sep', 'Okt'])[i], X(d + 15), height - 4));
+  sgPts = [];
+  for (const year of [2019, 2026]) {
+    ctx.beginPath(); ctx.strokeStyle = cssVar(year === 2019 ? '--y2019' : '--y2026'); ctx.lineWidth = 2;
+    let pen = false;
+    sg[year].forEach((v, d) => { if (v == null) { pen = false; return; } if (pen) ctx.lineTo(X(d), Y(v)); else { ctx.moveTo(X(d), Y(v)); pen = true; } });
+    ctx.stroke();
+  }
+  for (let d = 0; d < 123; d += 1) sgPts.push([X(d), d]);
+}
+el('sg-chart').addEventListener('pointermove', e => {
+  if (!regional) return;
+  const r = el('sg-chart').getBoundingClientRect();
+  const mx = e.clientX - r.left;
+  const hit = sgPts.reduce((b, p) => (Math.abs(p[0] - mx) < Math.abs(b[0] - mx) ? p : b), sgPts[0] ?? [0, 0]);
+  const d = hit[1], sg = regional.singapore.daily, tip = el('sg-tip');
+  tip.hidden = false;
+  tip.innerHTML = `${dayLabel(2019, d)}<br>2019: ${fmt(sg[2019][d], 0)} · 2026: ${fmt(sg[2026][d], 0)} µg/m³`;
+  tip.style.left = `${Math.min(r.width - 150, hit[0] + 10)}px`; tip.style.top = '10px';
+});
+el('sg-chart').addEventListener('pointerleave', () => { el('sg-tip').hidden = true; });
+el('region-pick').addEventListener('click', e => { const b = e.target.closest('button[data-k]'); if (b) { regionKey = b.dataset.k; drawRegion(); } });
+
+/* ================================================================ actions */
+function renderActions() {
+  const k19 = profile.ID62[2019], k26 = profile.ID62[2026];
+  const sg = regional.singapore.daily;
+  const lin = shape.shape['100'].linear.coef[1];
+  const low = shape.bins[0].pm;
+  // top regencies in 2026 priority zones
+  const groups = new Map();
+  overview.zones.forEach((z, i) => { const v = story[2026].indicators[i].priorityPeople; if (v > 0) groups.set(z.regency, (groups.get(z.regency) ?? 0) + v); });
+  const top = [...groups.entries()].sort((a, b) => b[1] - a[1]).slice(0, 3).map(([n]) => n).join(', ');
+  el('actions-lede').textContent = t(
+    'The fires are predictable: dry peat burns, smoke travels about 100 km, and a long season multiplies the harm. Four actions follow from the numbers.',
+    'Kebakaran ini bisa diperkirakan: gambut kering terbakar, asap menempuh sekitar 100 km, dan musim yang panjang melipatgandakan dampaknya. Empat langkah berikut lahir dari angka-angka itu.');
+  const items = [
+    [t('Plan for the length of the season, not just its peak', 'Rencanakan untuk panjang musim, bukan hanya puncaknya'),
+      t(`September 2026 in Central Kalimantan looked like 2019 (${fmt(k26.months[2])} vs ${fmt(k19.months[2])} detections). October did not: ${fmt(k26.months[3])} vs ${fmt(k19.months[3])}. Keep fire crews, emergency status and health alerts running until the rain returns, not to a fixed date.`,
+        `September 2026 di Kalimantan Tengah mirip 2019 (${fmt(k26.months[2])} vs ${fmt(k19.months[2])} deteksi). Oktober tidak: ${fmt(k26.months[3])} vs ${fmt(k19.months[3])}. Pertahankan regu pemadam, status darurat, dan peringatan kesehatan sampai hujan kembali, bukan sampai tanggal tertentu.`)],
+    [t('Rewet the peat that keeps burning', 'Basahi ulang gambut yang terus terbakar'),
+      t(`${fmt(k26.cellsBurning5PlusDays)} two-kilometre squares in Central Kalimantan burned on five or more days in 2026, ${fmt(k26.cellsBurning5PlusDays / k19.cellsBurning5PlusDays, 1)}× as many as in 2019. Smouldering peat is what makes smoke last. Canal blocking and rewetting there cut the longest exposure.`,
+        `${fmt(k26.cellsBurning5PlusDays)} kotak dua kilometer di Kalimantan Tengah terbakar lima hari atau lebih pada 2026, ${fmt(k26.cellsBurning5PlusDays / k19.cellsBurning5PlusDays, 1)}× lipat dibanding 2019. Gambut yang membara inilah yang membuat asap bertahan. Penyekatan kanal dan pembasahan di sana memangkas paparan terpanjang.`)],
+    [t('Protect people within 100 km of fire clusters', 'Lindungi warga dalam radius 100 km dari klaster api'),
+      t(`Fire up to about 100 km away explains district air best, and each extra 0.1 detections per km² adds about ${fmt(lin / 10)} µg/m³. In 2026 the priority zones held ${millions(priorityPeople(story[2026]))} people, led by ${top}. Clean-air rooms, masks and school schedules belong there first.`,
+        `Api hingga sekitar 100 km paling menjelaskan kualitas udara kecamatan, dan setiap tambahan 0,1 deteksi per km² menambah sekitar ${fmt(lin / 10)} µg/m³. Pada 2026 zona prioritas dihuni ${millions(priorityPeople(story[2026]))} orang, terbanyak di ${top}. Ruang udara bersih, masker, dan jadwal sekolah perlu disiapkan di sana lebih dulu.`)],
+    [t('Treat haze as a regional problem', 'Perlakukan kabut asap sebagai masalah kawasan'),
+      t(`Even the districts with the least fire nearby averaged ${fmt(low)} µg/m³ in September 2019, ${fmt(low / 15, 1)}× the WHO daily guideline, and Singapore logged ${runs(sg[2026], 37.5).days} haze days in 2026. Shared early warning under the ASEAN haze agreement matters as much as local firefighting.`,
+        `Bahkan kecamatan dengan api paling sedikit di sekitarnya rata-rata ${fmt(low)} µg/m³ pada September 2019, ${fmt(low / 15, 1)}× pedoman harian WHO, dan Singapura mencatat ${runs(sg[2026], 37.5).days} hari berasap pada 2026. Peringatan dini bersama dalam kerangka perjanjian kabut asap ASEAN sama pentingnya dengan pemadaman lokal.`)],
+  ];
+  el('actions-list').innerHTML = items.map(([h, p]) => `<li><h3>${h}</h3><p>${p}</p></li>`).join('');
 }
 
 /* ================================================================ downloads */
@@ -588,13 +780,16 @@ function renderAll() {
   renderSeasons();
   renderPeat();
   renderSmoke();
-  renderRecipe();
+  renderLimits();
+  renderBorders();
+  renderActions();
   if (state) { renderMapPanel(); renderPriority(); }
 }
 async function start() {
   try {
-    const [o, g, v, s, s19, s26, basemap] = await Promise.all(['data/overview.json', 'data/geography.json', 'data/validation.json', 'data/stats.json',
-      'data/scenario-2019-count-100.json', 'data/scenario-2026-count-100.json', 'data/basemap.json'].map(readJSON));
+    const [o, g, v, s, s19, s26, basemap, fp, sh, rg] = await Promise.all(['data/overview.json', 'data/geography.json', 'data/validation.json', 'data/stats.json',
+      'data/scenario-2019-count-100.json', 'data/scenario-2026-count-100.json', 'data/basemap.json', 'data/fire-profile.json', 'data/shape.json', 'data/regional.json'].map(readJSON));
+    profile = fp; shape = sh; regional = rg; basemapData = basemap;
     overview = o; geography = g; tests = v; stats = s; story = { 2019: s19, 2026: s26 };
     cache.set('2019-count-100', Promise.resolve(s19)); cache.set('2026-count-100', Promise.resolve(s26));
     map = createMap(el('study-map'), geography, overview.zones, selectDistrict);
@@ -607,6 +802,9 @@ async function start() {
     el('terrain-year').addEventListener('click', e => { const b = e.target.closest('button[data-year]'); if (!b) return; clearInterval(terrainTimer); terrainYear = Number(b.dataset.year); renderSeasons(); });
     el('land-year').addEventListener('click', e => { const b = e.target.closest('button[data-year]'); if (b) { landYear = Number(b.dataset.year); renderPeat(); } });
     new ResizeObserver(drawScatter).observe(el('scatter'));
+    new ResizeObserver(drawDaily).observe(el('daily'));
+    new ResizeObserver(drawSingapore).observe(el('sg-chart'));
+    new ResizeObserver(drawRegion).observe(el('region-map'));
     el('filters').addEventListener('change', refresh);
     el('district').addEventListener('change', e => selectDistrict(Number(e.target.value)));
     el('ranking-grain').addEventListener('change', () => state && renderPriority());

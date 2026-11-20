@@ -12,7 +12,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Public+Sans:ital,wght@0,400;0,500;0,600;0,700;0,800;1,500&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="styles.css?v=2">
+  <link rel="stylesheet" href="styles.css?v=3">
 </head>
 <body>
 <a class="skip" href="#deck" data-id="Lompat ke konten">Skip to content</a>
@@ -32,7 +32,7 @@
       <a class="chapter-seg" href="#limits" data-part="D"><b data-id="Batasan">Limits</b><i></i></a>
     </nav>
     <div class="header-tools">
-      <span id="counter">1 / 8</span>
+      <span id="counter">1 / 10</span>
       <div class="modes" role="group" aria-label="Reading mode" data-id-aria-label="Mode baca">
         <button type="button" data-mode="story" aria-pressed="true" data-id="Cerita">Story</button>
         <button type="button" data-mode="advanced" aria-pressed="false" data-id="Lanjutan">Advanced</button>
@@ -90,13 +90,13 @@
     <p class="kicker" data-id="Musim kebakaran">Fire seasons</p>
     <h2 data-id="Api berpindah provinsi">The fire moved provinces</h2>
     <p class="standfirst" id="season-insight"></p>
+    <p class="muted" id="season-why"></p>
     <figure class="chart-block">
-      <h3 data-id="Deteksi api per bulan">Fire detections per month</h3>
+      <h3 data-id="Deteksi api per hari">Fire detections per day</h3>
       <p class="chart-sub legend-row"><span><i class="swatch" style="background:var(--y2019)"></i>2019</span><span><i class="swatch" style="background:var(--y2026)"></i>2026</span></p>
-      <div class="months" id="months"></div>
-      <p class="source" data-id="Sumber: NASA FIRMS VIIRS S-NPP, deteksi dalam batas provinsi. Agustus–Oktober 2026 data near-real-time.">Source: NASA FIRMS VIIRS S-NPP, detections inside each province. August–October 2026 is near-real-time data.</p>
+      <canvas id="daily" role="img" aria-label="Daily fire detections, July to October, 2019 and 2026." data-id-aria-label="Deteksi api harian, Juli–Oktober, 2019 dan 2026."></canvas>
+      <p class="source" data-id="Sumber: NASA FIRMS VIIRS S-NPP, dalam batas provinsi; Agustus–Oktober 2026 near-real-time. Konteks iklim: BMKG, Copernicus CAMS.">Source: NASA FIRMS VIIRS S-NPP, inside each province; August–October 2026 is near-real-time. Climate context: BMKG, Copernicus CAMS.</p>
     </figure>
-    <div class="arcgis adv"><b data-id="Catatan analis">Analyst notes</b><span data-id="Hotspot adalah anomali panas, bukan luas terbakar. Di ArcGIS: Summarize Within memberi jumlah lokal; Kernel Density memakai titik dalam buffer 100 km agar api di seberang batas ikut dihitung.">A hotspot is a thermal anomaly, not burned area. In ArcGIS: Summarize Within gives local counts; Kernel Density uses points inside a 100 km buffer so fires just across a border still count.</span></div>
   </div>
   <figure class="chart-block">
     <h3 data-id="Seberapa banyak api di sekitar setiap tempat">How much fire surrounds each place</h3>
@@ -117,7 +117,6 @@
     <h2 data-id="Api terkumpul di gambut yang dibuka">Fire clusters on cleared peat</h2>
     <p class="standfirst" id="peat-insight"></p>
     <p class="muted small" data-id="Ini perbandingan deskriptif, bukan bukti sebab-akibat. Kategori bisa tumpang tindih: gambut juga bisa berhutan.">A descriptive comparison, not proof of cause. Categories overlap: peat can also be forest.</p>
-    <div class="arcgis adv"><b data-id="Cara menghitung di ArcGIS">How to compute it in ArcGIS</b><span data-id="Hitung titik di tiap lapisan dengan Spatial Join atau Extract Values to Points (gambut 0/1, kehilangan hutan 0/1), lalu Summary Statistics. Bagi dengan luas lapisan dari Pairwise Intersect (gambut) dan Zonal Statistics as Table (piksel 30 m).">Count points in each layer with Spatial Join or Extract Values to Points (peat 0/1, forest loss 0/1), then Summary Statistics. Divide by layer area from Pairwise Intersect (peat) and Zonal Statistics as Table (30 m pixels).</span></div>
   </div>
   <figure class="chart-block">
     <h3 data-id="Deteksi api per 100 km² menurut jenis lahan">Fire detections per 100 km², by land type</h3>
@@ -138,6 +137,8 @@
     <div class="adv">
       <div class="seg" id="model-pick" role="group" aria-label="Model setting" data-id-aria-label="Pengaturan model"></div>
       <div class="table-scroll" style="margin-top:12px"><table id="stat-table"></table></div>
+      <h4 style="margin-top:16px" data-id="Bentuk kurva, jangkauan, dan waktu">Curve shape, reach and timing</h4>
+      <div class="table-scroll"><table id="shape-table"></table></div>
     </div>
   </div>
   <div>
@@ -148,10 +149,31 @@
       <p class="source" data-id="Sumber: PM₂.₅ WashU ACAG V6.GL.03 berbobot penduduk WorldPop 2020; NASA FIRMS.">Source: WashU ACAG V6.GL.03 PM₂.₅, weighted by WorldPop 2020 population; NASA FIRMS.</p>
     </figure>
     <div class="adv" style="margin-top:14px"><h4 data-id="Cara membaca uji">How to read the tests</h4><ul class="read-list" id="read-list"></ul>
-      <div class="arcgis"><b data-id="Ulangi di ArcGIS Pro">Repeat it in ArcGIS Pro</b><span data-idh="<code>Calculate Field</code> LN_KDE = Ln(1 + KDE_MEAN) → <code>Ordinary Least Squares</code> PM25_pw ~ LN_KDE → <code>Spatial Autocorrelation (Global Moran's I)</code> pada residual, K nearest neighbors = 8. Ekspektasi: R² ≈ 0,55, Moran's I residual ≈ 0,61.">
-        <code>Calculate Field</code> LN_KDE = Ln(1 + KDE_MEAN) → <code>Ordinary Least Squares</code> PM25_pw ~ LN_KDE → <code>Spatial Autocorrelation (Global Moran's I)</code> on the residuals, K nearest neighbors = 8. Expect R² ≈ 0.55 and residual Moran's I ≈ 0.61.</span></div>
     </div>
   </div>
+</div></section>
+
+<!-- 5b · borders -->
+<section class="slide" id="borders" data-part="B" data-label="Smoke crosses borders" data-id-label="Asap melintasi batas"><div class="inner split even reveal">
+  <div class="copy">
+    <p class="kicker" data-id="Melintasi batas">Beyond the border</p>
+    <h2 data-id="Asap tidak berhenti di perbatasan">Smoke does not stop at the border</h2>
+    <p class="standfirst" id="border-insight"></p>
+    <figure class="chart-block">
+      <h3 data-id="PM₂.₅ harian di Singapura, Juli–Oktober">Daily PM₂.₅ in Singapore, July–October</h3>
+      <p class="chart-sub legend-row"><span><i class="swatch" style="background:var(--y2019)"></i>2019</span><span><i class="swatch" style="background:var(--y2026)"></i>2026</span><span data-id="Garis putus: pedoman WHO 15 dan target antara 37,5 µg/m³">Dashed: WHO guideline 15 and interim target 37.5 µg/m³</span></p>
+      <div class="chart"><canvas id="sg-chart" role="img" aria-label="Daily PM2.5 in Singapore, 2019 and 2026." data-id-aria-label="PM2.5 harian di Singapura, 2019 dan 2026."></canvas><div class="tip" id="sg-tip" hidden></div></div>
+      <div class="numbers" id="sg-numbers"></div>
+      <p class="source" data-id="Sumber: NEA Singapura, PM₂.₅ per jam (data.gov.sg), rerata nasional harian. Sumber yang sama untuk kedua tahun.">Source: Singapore NEA hourly PM₂.₅ (data.gov.sg), daily national mean. Same source in both years.</p>
+    </figure>
+  </div>
+  <figure class="chart-block">
+    <h3 data-id="Rerata bulanan PM₂.₅ di kawasan">Monthly mean PM₂.₅ across the region</h3>
+    <div class="seg" id="region-pick" role="group" aria-label="Map" data-id-aria-label="Peta" style="margin:6px 0 10px"><button type="button" data-k="w19" aria-pressed="true">Sep 2019</button><button type="button" data-k="c26s" aria-pressed="false">Sep 2026</button><button type="button" data-k="c26o" aria-pressed="false">Oct 2026</button></div>
+    <div class="chart"><canvas id="region-map" role="img" aria-label="Map of monthly PM2.5 over Sumatra, Borneo, Malaysia and Singapore." data-id-aria-label="Peta PM2.5 bulanan di Sumatra, Kalimantan, Malaysia, dan Singapura."></canvas></div>
+    <div class="range" id="region-legend" style="margin-top:8px"></div>
+    <p class="source" id="region-source"></p>
+  </figure>
 </div></section>
 
 <!-- 6 · explore -->
@@ -202,8 +224,6 @@
       <h4 style="margin-top:14px" data-id="Uji sensitivitas indeks">Index sensitivity test</h4>
       <div class="table-scroll"><table id="sensitivity"></table></div>
       <p class="small muted" id="sensitivity-note" style="margin-top:8px"></p>
-      <div class="arcgis"><b data-id="Bangun di ModelBuilder">Build it in ModelBuilder</b><span data-idh="<code>Raster Calculator</code>: z(x) = (x − mean) / std memakai <code>Get Raster Properties</code>. Indeks = 0,3·z(KDE) + 0,3·z(Ln(1 + jiwa/km²)) + 0,4·z(PM₂.₅), lalu dibakukan ulang. <code>Con</code>(indeks ≥ 1,5) → <code>Raster to Polygon</code> (tanpa simplify) → <code>Zonal Statistics as Table</code> SUM penduduk.">
-        <code>Raster Calculator</code>: z(x) = (x − mean) / std using <code>Get Raster Properties</code>. Index = 0.3·z(KDE) + 0.3·z(Ln(1 + people/km²)) + 0.4·z(PM₂.₅), then re-standardise. <code>Con</code>(index ≥ 1.5) → <code>Raster to Polygon</code> (no simplify) → <code>Zonal Statistics as Table</code> SUM of population.</span></div>
     </div>
   </div>
   <div class="stack">
@@ -226,8 +246,16 @@
   </div>
 </div></section>
 
+<!-- 7b · actions -->
+<section class="slide" id="actions" data-part="C" data-label="What this means" data-id-label="Artinya apa"><div class="inner reveal">
+  <p class="kicker" data-id="Untuk kebijakan">For policy</p>
+  <h2 data-id="Apa artinya bagi pembuat kebijakan">What this means for policy</h2>
+  <p class="lede" id="actions-lede"></p>
+  <ol class="actions-list" id="actions-list"></ol>
+</div></section>
+
 <!-- 8 · limits + credits -->
-<section class="slide" id="limits" data-part="D" data-label="Limits and method" data-id-label="Batasan dan metode"><div class="inner split reveal">
+<section class="slide" id="limits" data-part="D" data-label="Limits and sources" data-id-label="Batasan dan sumber"><div class="inner reveal">
   <div class="copy">
     <p class="kicker" data-id="Batasan">Limits</p>
     <h2 data-id="Apa yang belum bisa dijawab">What this cannot tell you</h2>
@@ -237,21 +265,16 @@
       <div><h4 data-id="Penduduk 2020 untuk kedua musim">2020 population for both seasons</h4><p data-id="WorldPop 2020 dipakai untuk 2019 dan 2026. Perpindahan penduduk tidak tercermin.">WorldPop 2020 stands in for both seasons, so migration is not reflected.</p></div>
       <div><h4 data-id="Prioritas bersifat relatif">Priority is relative</h4><p data-id="Indeks dibakukan per musim. Bandingkan lokasi di dalam satu musim, bukan besarnya risiko antar-tahun.">The index is standardised within each season. Compare places within a season, not the size of risk across years.</p></div>
     </div>
-    <p class="story-only muted small" style="margin-top:18px" data-id="Mode Lanjutan menampilkan cara mengulang analisis ini di ArcGIS Pro, langkah demi langkah.">Advanced mode shows how to reproduce this analysis in ArcGIS Pro, step by step.</p>
   </div>
-  <div class="adv">
-    <h3 data-id="Cara mengulang analisis ini di ArcGIS Pro">How to reproduce this in ArcGIS Pro</h3>
-    <p class="small muted" data-id="Setiap langkah menyebut alat dan parameternya. Angka cek adalah hasil yang semestinya kurang lebih sama.">Each step names the tool and its parameters. Check numbers are the results your run should roughly match.</p>
-    <ol class="recipe" id="recipe"></ol>
-  </div>
+  
   <div class="credits">
     <p><strong>Rizaldy Utomo</strong> · <span data-id="Proyek GIS, Carnegie Mellon University, 2026">GIS project, Carnegie Mellon University, 2026</span></p>
-    <p data-id="Data: NASA FIRMS VIIRS S-NPP, batas BPS/OCHA HDX, gambut Global Forest Watch, kehilangan hutan Hansen v1.12, MapBiomas Indonesia 2000, WorldPop 2020, PM₂.₅ WashU ACAG V6.GL.03 (Sept 2019), GADM 4.1, Natural Earth; peta dasar Esri Light Gray Canvas.">Data: NASA FIRMS VIIRS S-NPP, BPS/OCHA HDX boundaries, Global Forest Watch peat, Hansen v1.12 forest loss, MapBiomas Indonesia 2000, WorldPop 2020, WashU ACAG V6.GL.03 PM₂.₅ (Sept 2019), GADM 4.1, Natural Earth; Esri Light Gray Canvas basemap.</p>
+    <p data-id="Data: NASA FIRMS VIIRS S-NPP, batas BPS/OCHA HDX, gambut Global Forest Watch, kehilangan hutan Hansen v1.12, MapBiomas Indonesia 2000, WorldPop 2020, PM₂.₅ WashU ACAG V6.GL.03 (Sept 2019), CAMS lewat Open-Meteo (2026), NEA Singapura lewat data.gov.sg, GADM 4.1, Natural Earth; peta dasar Esri Light Gray Canvas. Konteks: BMKG, Copernicus CAMS, laporan kabut asap NEA.">Data: NASA FIRMS VIIRS S-NPP, BPS/OCHA HDX boundaries, Global Forest Watch peat, Hansen v1.12 forest loss, MapBiomas Indonesia 2000, WorldPop 2020, WashU ACAG V6.GL.03 PM₂.₅ (Sept 2019), CAMS via Open-Meteo (2026), Singapore NEA via data.gov.sg, GADM 4.1, Natural Earth; Esri Light Gray Canvas basemap. Context: BMKG, Copernicus CAMS, NEA haze updates.</p>
     <p data-id="Ilustrasi pembuka dibuat dengan ImageGen. Semua model berjalan di browser dari data statis; tidak ada pelacakan.">Opening illustration made with ImageGen. All models run from static data in your browser; no tracking.</p>
   </div>
 </div></section>
 
 </main>
-<script type="module" src="app.mjs?v=2"></script>
+<script type="module" src="app.mjs?v=3"></script>
 </body>
 </html>
