@@ -1,0 +1,24 @@
+{
+ "lat": 1.2841905,
+ "lon": 103.8596694,
+ "rotation": -2,
+ "size": 600.0,
+ "asked": {
+  "lat": 1.2842,
+  "lon": 103.8594
+ },
+ "moved_m": 30.0,
+ "famous_inside": [
+  "Apple Marina Bay Sands",
+  "IMBA Theatre",
+  "Marina Bay Sands Tower 1",
+  "Marina Bay Sands Tower 2",
+  "Marina Bay Sands Tower 3",
+  "SkyPark",
+  "The Shoppes at Marina Bay Sands"
+ ],
+ "famous_cut": [],
+ "keep_missing": [],
+ "place": "",
+ "osm_base": "2026-11-20T20:02:06Z"
+}

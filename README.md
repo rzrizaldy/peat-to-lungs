@@ -5,7 +5,7 @@
 A scroll-snap data story about peat fires, smoke and people in Riau and Central Kalimantan (305 districts, 2019 and 2026). It is the web companion to a CMU 94-802A GIS project, whose official deliverables are being built in ArcGIS Pro.
 
 - One story, in plain language, with the key numbers and how sure we are about each.
-- Opens on two hand-drawn isometric dioramas (Pocket City): Dermaga Rambang in Palangka Raya and Merlion Park on Marina Bay, switched together between a clear day and the October 2026 haze.
+- Opens on two hand-drawn isometric dioramas (Pocket City): Dermaga Rambang in Palangka Raya and Marina Bay Sands in Singapore, switched together between a clear day and the October 2026 haze.
 - English by default, Indonesian (`ID`) in the header. Light and dark themes.
 
 ## Run locally
@@ -69,7 +69,7 @@ python pocket-city/skill/scripts/prep.py --osm ... --plot ... --drive left --out
 python pocket-city/skill/scripts/build.py --scene ... --city pocket-city/pky/work/city.json --out pocket/palangka-raya.html
 ```
 
-Marina Bay uses `--lat 1.28681 --lon 103.85453 --size 210`, a hand-built Merlion (`sg/work/landmarks.js`) and `sg/work/fix_water.py`, because the bay is mapped as the Marina Reservoir relation and the coastline fill put the water on the wrong side. Illustrative boats were thinned to what the places show. The kit's haze tint takes a strength per scene (`haze: 0.66` Palangka Raya, `0.42` Singapore).
+Singapore (`pocket-city/mbs/`) is a 600 m square on Marina Bay Sands (`--lat 1.2842 --lon 103.8594 --size 600`). The towers (each a straight west leg and a curved east leg leaning in), the SkyPark deck with its pool, the ArtScience Museum (round base and ten fingers up to 60 m; the mapped parts stop at 26 m and were removed) and the Apple dome are hand-built in `mbs/work/landmarks.js`; The Shoppes' wave roof uses the mapped roof strips. The kit's 600 m size cap was raised in our copy. An earlier Merlion Park version is kept in `pocket-city/sg/`. Illustrative boats were thinned to what the places show. The kit's haze tint takes a strength per scene (`haze: 0.66` Palangka Raya, `0.42` Singapore).
 
 ## Sources
 

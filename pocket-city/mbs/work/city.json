@@ -1,0 +1,798 @@
+{
+ "name": "Singapore",
+ "title": "Marina Bay Sands, Singapore",
+ "region": "Marina Bay",
+ "place": "Marina Bay Sands × ArtScience Museum",
+ "flag": "<svg aria-hidden='true' viewBox='0 0 30 20'><rect width='30' height='10' fill='#d7383f'/><rect y='10' width='30' height='10' fill='#fbf7ee'/><circle cx='7' cy='5' r='3' fill='#fbf7ee'/><circle cx='8.2' cy='5' r='2.7' fill='#d7383f'/></svg>",
+ "timezone": "Asia/Singapore",
+ "level": 3.8,
+ "styles": {
+  "default": {
+   "facade": "office",
+   "wall": [
+    "#e3e2dc",
+    "#d9dcd8"
+   ],
+   "roof": "flat",
+   "flatRoof": "#cfccc3",
+   "levels": 3,
+   "floor": 4.2,
+   "glass": [
+    "#a9c3c8",
+    "#9db8bf"
+   ],
+   "frame": "#d9d6cc",
+   "shop": "poi",
+   "awning": false,
+   "parapet": 0.8
+  },
+  "rules": [
+   {
+    "if": {
+     "maxArea": 40
+    },
+    "set": {
+     "facade": "plain",
+     "levels": 1,
+     "floor": 3.2,
+     "wall": [
+      "#ece6d8"
+     ],
+     "shop": "none"
+    }
+   },
+   {
+    "if": {
+     "name": "Shoppes"
+    },
+    "set": {
+     "facade": "glass",
+     "wall": [
+      "#e9ebe8"
+     ],
+     "glass": [
+      "#b7cfd3"
+     ],
+     "flatRoof": "#f1efe9",
+     "shop": "poi"
+    }
+   },
+   {
+    "if": {
+     "name": "Theatre|IMBA|Expo|Convention"
+    },
+    "set": {
+     "facade": "plain",
+     "wall": [
+      "#d8d8d2"
+     ],
+     "flatRoof": "#c9c6bd"
+    }
+   }
+  ]
+ },
+ "buildings": {
+  "w827847264": {
+   "facade": "plain",
+   "wall": "#f3f1ec",
+   "flatRoof": "#f6f4ef",
+   "roof": "flat",
+   "parapet": 0,
+   "rooftop": "none"
+  },
+  "w827847265": {
+   "facade": "plain",
+   "wall": "#f3f1ec",
+   "flatRoof": "#f6f4ef",
+   "roof": "flat",
+   "parapet": 0,
+   "rooftop": "none"
+  },
+  "w827847266": {
+   "facade": "plain",
+   "wall": "#f3f1ec",
+   "flatRoof": "#f6f4ef",
+   "roof": "flat",
+   "parapet": 0,
+   "rooftop": "none"
+  },
+  "w827847267": {
+   "facade": "plain",
+   "wall": "#f3f1ec",
+   "flatRoof": "#f6f4ef",
+   "roof": "flat",
+   "parapet": 0,
+   "rooftop": "none"
+  },
+  "w827847268": {
+   "facade": "plain",
+   "wall": "#f3f1ec",
+   "flatRoof": "#f6f4ef",
+   "roof": "flat",
+   "parapet": 0,
+   "rooftop": "none"
+  },
+  "w827847269": {
+   "facade": "plain",
+   "wall": "#f3f1ec",
+   "flatRoof": "#f6f4ef",
+   "roof": "flat",
+   "parapet": 0,
+   "rooftop": "none"
+  },
+  "w827847270": {
+   "facade": "plain",
+   "wall": "#f3f1ec",
+   "flatRoof": "#f6f4ef",
+   "roof": "flat",
+   "parapet": 0,
+   "rooftop": "none"
+  },
+  "w827847271": {
+   "facade": "plain",
+   "wall": "#f3f1ec",
+   "flatRoof": "#f6f4ef",
+   "roof": "flat",
+   "parapet": 0,
+   "rooftop": "none"
+  },
+  "w827847272": {
+   "facade": "plain",
+   "wall": "#f3f1ec",
+   "flatRoof": "#f6f4ef",
+   "roof": "flat",
+   "parapet": 0,
+   "rooftop": "none"
+  },
+  "w827847273": {
+   "facade": "plain",
+   "wall": "#f3f1ec",
+   "flatRoof": "#f6f4ef",
+   "roof": "flat",
+   "parapet": 0,
+   "rooftop": "none"
+  },
+  "w827847274": {
+   "facade": "plain",
+   "wall": "#f3f1ec",
+   "flatRoof": "#f6f4ef",
+   "roof": "flat",
+   "parapet": 0,
+   "rooftop": "none"
+  },
+  "w827847275": {
+   "facade": "plain",
+   "wall": "#f3f1ec",
+   "flatRoof": "#f6f4ef",
+   "roof": "flat",
+   "parapet": 0,
+   "rooftop": "none"
+  },
+  "w827847276": {
+   "facade": "plain",
+   "wall": "#f3f1ec",
+   "flatRoof": "#f6f4ef",
+   "roof": "flat",
+   "parapet": 0,
+   "rooftop": "none"
+  },
+  "w827847277": {
+   "facade": "plain",
+   "wall": "#f3f1ec",
+   "flatRoof": "#f6f4ef",
+   "roof": "flat",
+   "parapet": 0,
+   "rooftop": "none"
+  },
+  "w827847278": {
+   "facade": "plain",
+   "wall": "#f3f1ec",
+   "flatRoof": "#f6f4ef",
+   "roof": "flat",
+   "parapet": 0,
+   "rooftop": "none"
+  },
+  "w827847279": {
+   "facade": "plain",
+   "wall": "#f3f1ec",
+   "flatRoof": "#f6f4ef",
+   "roof": "flat",
+   "parapet": 0,
+   "rooftop": "none"
+  },
+  "w827847280": {
+   "facade": "plain",
+   "wall": "#f3f1ec",
+   "flatRoof": "#f6f4ef",
+   "roof": "flat",
+   "parapet": 0,
+   "rooftop": "none"
+  },
+  "w827847281": {
+   "facade": "plain",
+   "wall": "#f3f1ec",
+   "flatRoof": "#f6f4ef",
+   "roof": "flat",
+   "parapet": 0,
+   "rooftop": "none"
+  },
+  "w827847282": {
+   "facade": "plain",
+   "wall": "#f3f1ec",
+   "flatRoof": "#f6f4ef",
+   "roof": "flat",
+   "parapet": 0,
+   "rooftop": "none"
+  },
+  "w827847283": {
+   "facade": "plain",
+   "wall": "#f3f1ec",
+   "flatRoof": "#f6f4ef",
+   "roof": "flat",
+   "parapet": 0,
+   "rooftop": "none"
+  },
+  "w827847284": {
+   "facade": "plain",
+   "wall": "#f3f1ec",
+   "flatRoof": "#f6f4ef",
+   "roof": "flat",
+   "parapet": 0,
+   "rooftop": "none"
+  },
+  "w827847285": {
+   "facade": "plain",
+   "wall": "#f3f1ec",
+   "flatRoof": "#f6f4ef",
+   "roof": "flat",
+   "parapet": 0,
+   "rooftop": "none"
+  },
+  "w827847286": {
+   "facade": "plain",
+   "wall": "#f3f1ec",
+   "flatRoof": "#f6f4ef",
+   "roof": "flat",
+   "parapet": 0,
+   "rooftop": "none"
+  },
+  "w827847287": {
+   "facade": "plain",
+   "wall": "#f3f1ec",
+   "flatRoof": "#f6f4ef",
+   "roof": "flat",
+   "parapet": 0,
+   "rooftop": "none"
+  },
+  "w827847288": {
+   "facade": "plain",
+   "wall": "#f3f1ec",
+   "flatRoof": "#f6f4ef",
+   "roof": "flat",
+   "parapet": 0,
+   "rooftop": "none"
+  },
+  "w827847289": {
+   "facade": "plain",
+   "wall": "#f3f1ec",
+   "flatRoof": "#f6f4ef",
+   "roof": "flat",
+   "parapet": 0,
+   "rooftop": "none"
+  },
+  "w827847290": {
+   "facade": "plain",
+   "wall": "#f3f1ec",
+   "flatRoof": "#f6f4ef",
+   "roof": "flat",
+   "parapet": 0,
+   "rooftop": "none"
+  },
+  "w827847291": {
+   "facade": "plain",
+   "wall": "#f3f1ec",
+   "flatRoof": "#f6f4ef",
+   "roof": "flat",
+   "parapet": 0,
+   "rooftop": "none"
+  },
+  "w827847292": {
+   "facade": "plain",
+   "wall": "#f3f1ec",
+   "flatRoof": "#f6f4ef",
+   "roof": "flat",
+   "parapet": 0,
+   "rooftop": "none"
+  },
+  "w827847293": {
+   "facade": "plain",
+   "wall": "#f3f1ec",
+   "flatRoof": "#f6f4ef",
+   "roof": "flat",
+   "parapet": 0,
+   "rooftop": "none"
+  },
+  "w827847294": {
+   "facade": "plain",
+   "wall": "#f3f1ec",
+   "flatRoof": "#f6f4ef",
+   "roof": "flat",
+   "parapet": 0,
+   "rooftop": "none"
+  },
+  "w827847295": {
+   "facade": "plain",
+   "wall": "#f3f1ec",
+   "flatRoof": "#f6f4ef",
+   "roof": "flat",
+   "parapet": 0,
+   "rooftop": "none"
+  },
+  "w827847296": {
+   "facade": "plain",
+   "wall": "#f3f1ec",
+   "flatRoof": "#f6f4ef",
+   "roof": "flat",
+   "parapet": 0,
+   "rooftop": "none"
+  },
+  "w827847297": {
+   "facade": "plain",
+   "wall": "#f3f1ec",
+   "flatRoof": "#f6f4ef",
+   "roof": "flat",
+   "parapet": 0,
+   "rooftop": "none"
+  },
+  "w827847298": {
+   "facade": "plain",
+   "wall": "#f3f1ec",
+   "flatRoof": "#f6f4ef",
+   "roof": "flat",
+   "parapet": 0,
+   "rooftop": "none"
+  },
+  "w827847299": {
+   "facade": "plain",
+   "wall": "#f3f1ec",
+   "flatRoof": "#f6f4ef",
+   "roof": "flat",
+   "parapet": 0,
+   "rooftop": "none"
+  },
+  "w827847300": {
+   "facade": "plain",
+   "wall": "#f3f1ec",
+   "flatRoof": "#f6f4ef",
+   "roof": "flat",
+   "parapet": 0,
+   "rooftop": "none"
+  },
+  "w827847301": {
+   "facade": "plain",
+   "wall": "#f3f1ec",
+   "flatRoof": "#f6f4ef",
+   "roof": "flat",
+   "parapet": 0,
+   "rooftop": "none"
+  },
+  "w827847302": {
+   "facade": "plain",
+   "wall": "#f3f1ec",
+   "flatRoof": "#f6f4ef",
+   "roof": "flat",
+   "parapet": 0,
+   "rooftop": "none"
+  },
+  "w827847303": {
+   "facade": "plain",
+   "wall": "#f3f1ec",
+   "flatRoof": "#f6f4ef",
+   "roof": "flat",
+   "parapet": 0,
+   "rooftop": "none"
+  },
+  "w827847304": {
+   "facade": "plain",
+   "wall": "#f3f1ec",
+   "flatRoof": "#f6f4ef",
+   "roof": "flat",
+   "parapet": 0,
+   "rooftop": "none"
+  },
+  "w827847305": {
+   "facade": "plain",
+   "wall": "#f3f1ec",
+   "flatRoof": "#f6f4ef",
+   "roof": "flat",
+   "parapet": 0,
+   "rooftop": "none"
+  },
+  "w827847306": {
+   "facade": "plain",
+   "wall": "#f3f1ec",
+   "flatRoof": "#f6f4ef",
+   "roof": "flat",
+   "parapet": 0,
+   "rooftop": "none"
+  },
+  "w827847307": {
+   "facade": "plain",
+   "wall": "#f3f1ec",
+   "flatRoof": "#f6f4ef",
+   "roof": "flat",
+   "parapet": 0,
+   "rooftop": "none"
+  },
+  "w1056849313": {
+   "facade": "plain",
+   "wall": "#f3f1ec",
+   "flatRoof": "#f6f4ef",
+   "roof": "flat",
+   "parapet": 0,
+   "rooftop": "none"
+  },
+  "w1056849314": {
+   "facade": "plain",
+   "wall": "#f3f1ec",
+   "flatRoof": "#f6f4ef",
+   "roof": "flat",
+   "parapet": 0,
+   "rooftop": "none"
+  },
+  "w1056849315": {
+   "facade": "plain",
+   "wall": "#f3f1ec",
+   "flatRoof": "#f6f4ef",
+   "roof": "flat",
+   "parapet": 0,
+   "rooftop": "none"
+  }
+ },
+ "palette": {
+  "ground": "#e6dfcf",
+  "road": "#b3adaa",
+  "pavement": "#e3dccd",
+  "walk": "#ddd5c4",
+  "grass": "#9fc286",
+  "water": "#7fb2b0",
+  "slab": "#d6ccb8",
+  "marking": "#f4efe4",
+  "kerb": "#d8cfbd",
+  "paving": "#c9c0ae",
+  "quay": "#d8d0bf"
+ },
+ "paving": {
+  "style": "tiles",
+  "size": 0.6,
+  "colour": "#c4bba9",
+  "stone": "#e2dbcc"
+ },
+ "lamp": {
+  "colour": "#4c5552",
+  "height": 6,
+  "head": "#f3ecd6"
+ },
+ "shops": {
+  "signs": [
+   "CAFÉ",
+   "BAR",
+   "DINER"
+  ],
+  "font": "sans-serif",
+  "fascias": [
+   "#2f4a52",
+   "#6a3b33",
+   "#33533f"
+  ]
+ },
+ "boats": {
+  "hulls": [
+   "#b8473b",
+   "#2f5f8a",
+   "#e9b949"
+  ],
+  "stripes": [
+   "#f3efe4",
+   "#2f2b26"
+  ],
+  "covers": [
+   "#c9473c",
+   "#f3efe4"
+  ],
+  "cabin": "#f3efe4",
+  "inside": "#8a6a4e"
+ },
+ "cafes": {
+  "umbrellas": [
+   "#f3efe4",
+   "#2f4a52"
+  ],
+  "stripes": false,
+  "table": "#f1ece0",
+  "chair": "#6b6f6c"
+ },
+ "trees": {
+  "default": {
+   "style": 3,
+   "colours": [
+    "#6f9a54",
+    "#82a85e"
+   ],
+   "height": 9,
+   "evergreen": true
+  },
+  "rules": [
+   {
+    "match": "Woodland|Park tree",
+    "evergreen": true,
+    "vary": 0.3,
+    "mix": [
+     {
+      "style": 3,
+      "colours": [
+       "#6f9a54",
+       "#7ba657"
+      ],
+      "height": 9,
+      "share": 3
+     },
+     {
+      "style": 2,
+      "colours": [
+       "#7aab5a"
+      ],
+      "height": 12,
+      "share": 1
+     }
+    ]
+   }
+  ]
+ },
+ "people": {
+  "clothes": [
+   "#f3efe4",
+   "#2b4a6f",
+   "#d7383f",
+   "#7aa3c5",
+   "#f1c761",
+   "#33533f",
+   "#e9b9a8",
+   "#2f2b26"
+  ]
+ },
+ "vehicles": {
+  "kinds": [
+   "sedan",
+   "hatch",
+   "mpv"
+  ],
+  "colours": [
+   "#f2f2ee",
+   "#2e3139",
+   "#99a3ae",
+   "#3a5a7a"
+  ],
+  "plate": "#2b2b2b",
+  "taxi": {
+   "share": 0.3,
+   "colours": [
+    "#2c6db3",
+    "#f2c94c"
+   ],
+   "kind": "sedan",
+   "sign": "#f6e7a6"
+  }
+ },
+ "seasonLabel": "Weather",
+ "seasons": [
+  {
+   "id": "ne",
+   "label": "Northeast monsoon",
+   "leaves": "summer",
+   "wet": true,
+   "umbrellas": true,
+   "wx": "rain",
+   "crowd": 0.8,
+   "note": {
+    "text": "Higher rainfall occurs from November to January, the wet phase of the Northeast Monsoon.",
+    "source": "Meteorological Service Singapore",
+    "url": "https://www.weather.gov.sg/climate-climate-of-singapore/"
+   }
+  },
+  {
+   "id": "inter",
+   "label": "Inter-monsoon",
+   "leaves": "summer",
+   "crowd": 1.2,
+   "note": {
+    "text": "Singapore has two monsoon seasons separated by inter-monsoonal periods.",
+    "source": "Meteorological Service Singapore",
+    "url": "https://www.weather.gov.sg/climate-climate-of-singapore/"
+   }
+  },
+  {
+   "id": "sw",
+   "label": "Southwest monsoon",
+   "leaves": "summer",
+   "crowd": 1.3,
+   "note": {
+    "text": "The Southwest Monsoon runs from June to September.",
+    "source": "Meteorological Service Singapore",
+    "url": "https://www.weather.gov.sg/climate-climate-of-singapore/"
+   }
+  }
+ ],
+ "occasionLabel": "Special scenes",
+ "occasions": [
+  {
+   "id": "haze",
+   "label": "Haze, Oct 2026",
+   "leaves": "summer",
+   "haze": 0.42,
+   "hazeColour": "214,198,168",
+   "crowd": 0.35,
+   "icon": "summer",
+   "note": {
+    "text": "On 14 Oct 2026 smoke from fires in Kalimantan drifted in on southeasterly winds; PSI hit 118–168.",
+    "source": "National Environment Agency",
+    "url": "https://www.nea.gov.sg/media/news/advisories/index/haze-situation-update-14-october-2026"
+   }
+  }
+ ],
+ "months": [
+  "ne",
+  "ne",
+  "ne",
+  "inter",
+  "inter",
+  "sw",
+  "sw",
+  "sw",
+  "sw",
+  "inter",
+  "inter",
+  "ne"
+ ],
+ "cameras": {
+  "iso": {
+   "yaw": 40,
+   "pitch": 28,
+   "zoom": 0.33,
+   "x": -10,
+   "y": 0,
+   "z": 55
+  }
+ },
+ "views": [
+  {
+   "id": "towers",
+   "label": "Hotel towers",
+   "camera": {
+    "yaw": 105,
+    "pitch": 16,
+    "zoom": 0.6,
+    "x": 60,
+    "y": -40,
+    "z": 95
+   }
+  },
+  {
+   "id": "artscience",
+   "label": "ArtScience Museum",
+   "camera": {
+    "yaw": 140,
+    "pitch": 24,
+    "zoom": 1.15,
+    "x": -52,
+    "y": 200,
+    "z": 22
+   }
+  },
+  {
+   "id": "skypark",
+   "label": "SkyPark",
+   "camera": {
+    "yaw": 110,
+    "pitch": 44,
+    "zoom": 0.75,
+    "x": 110,
+    "y": -50,
+    "z": 190
+   }
+  }
+ ],
+ "legend": [
+  {
+   "name": "Marina Bay Sands",
+   "source": "Hand-built · Wikipedia · OSM",
+   "icon": "buildings",
+   "camera": {
+    "yaw": 105,
+    "pitch": 16,
+    "zoom": 0.6,
+    "x": 60,
+    "y": -40,
+    "z": 95
+   }
+  },
+  {
+   "name": "ArtScience Museum",
+   "source": "Hand-built · Wikipedia",
+   "icon": "buildings",
+   "camera": {
+    "yaw": 140,
+    "pitch": 24,
+    "zoom": 1.15,
+    "x": -52,
+    "y": 200,
+    "z": 22
+   }
+  },
+  {
+   "name": "The Shoppes",
+   "source": "OpenStreetMap roof parts",
+   "icon": "buildings",
+   "camera": {
+    "yaw": -50,
+    "pitch": 34,
+    "zoom": 0.7,
+    "x": -80,
+    "y": -40,
+    "z": 20
+   }
+  }
+ ],
+ "notes": [
+  {
+   "title": "Marina Bay Sands",
+   "text": "Three 55-storey towers, each with two legs, the curved eastern leg leaning on the other, carry a 340 m SkyPark with a 146 m pool and a 66.5 m cantilever. Drawn as simplified massing on the OpenStreetMap footprints and heights.",
+   "links": [
+    {
+     "label": "Wikipedia: Marina Bay Sands",
+     "url": "https://en.wikipedia.org/wiki/Marina_Bay_Sands"
+    }
+   ]
+  },
+  {
+   "title": "ArtScience Museum",
+   "text": "A lotus form of a round base and ten fingers, the tallest 60 m above ground. Hand-built here; the mapped parts stop at 26 m.",
+   "links": [
+    {
+     "label": "Wikipedia: ArtScience Museum",
+     "url": "https://en.wikipedia.org/wiki/ArtScience_Museum"
+    }
+   ]
+  },
+  {
+   "title": "Haze",
+   "text": "NEA advised children and the elderly to minimise outdoor activity, and opened air-conditioned haze shelters at community clubs.",
+   "links": [
+    {
+     "label": "NEA haze update, 14 Oct 2026",
+     "url": "https://www.nea.gov.sg/media/news/advisories/index/haze-situation-update-14-october-2026"
+    }
+   ]
+  },
+  {
+   "title": "Illustrative",
+   "text": "Boats on the bay, café tables, people and traffic are illustrative; building outlines and shop names come from OpenStreetMap.",
+   "links": [
+    {
+     "label": "OpenStreetMap",
+     "url": "https://www.openstreetmap.org/copyright"
+    }
+   ]
+  }
+ ],
+ "credits": [
+  {
+   "label": "Meteorological Service Singapore",
+   "url": "https://www.weather.gov.sg/climate-climate-of-singapore/"
+  },
+  {
+   "label": "National Environment Agency",
+   "url": "https://www.nea.gov.sg/"
+  }
+ ]
+}

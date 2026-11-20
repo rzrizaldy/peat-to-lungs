@@ -163,8 +163,8 @@ const CITY_TEXT = {
       'Mulai 19 Oktober 2026 siswa PAUD, SD, dan SMP kota ini belajar dari rumah, setelah empat hari udara berbahaya.'],
   },
   sg: {
-    clear: ['Visitors crowd the promenade around the Merlion, which has spouted water over Marina Bay from this pier since 2002.',
-      'Pengunjung memadati promenade di sekitar Merlion, yang menyemburkan air ke Marina Bay dari dermaga ini sejak 2002.'],
+    clear: ['Marina Bay Sands: three 55-storey towers carry a 340 m SkyPark, and the ArtScience Museum’s ten white fingers open beside the bay.',
+      'Marina Bay Sands: tiga menara 55 lantai menyangga SkyPark sepanjang 340 m, dan sepuluh "jari" putih ArtScience Museum mekar di tepi teluk.'],
     haze: ['On 14 October 2026 smoke from fires in Kalimantan drifted in on southeasterly winds. Children and the elderly were asked to minimise outdoor activity.',
       'Pada 14 Oktober 2026 asap dari kebakaran di Kalimantan terbawa angin tenggara. Anak-anak dan lansia diminta mengurangi aktivitas di luar ruangan.'],
   },

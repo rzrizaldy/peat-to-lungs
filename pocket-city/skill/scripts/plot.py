@@ -102,7 +102,7 @@ def main():
     data = json.load(open(a.osm)); meta = data.get('pocket_city', {})
     lat0, lon0 = a.lat or meta['lat'], a.lon or meta['lon']
     size = a.size or meta.get('size', 200)
-    if not 80 <= size <= 600:
+    if not 80 <= size <= 1000:  # Peat to Lungs: Marina Bay needs ~800 m
         sys.exit('Size must be between 80 and 600 m.')
     en = local(lat0, lon0)
     els = data['elements']

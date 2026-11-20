@@ -54,7 +54,7 @@ def main():
             sys.exit('Give --place, or --lat and --lon.')
         a.lat, a.lon, name = geocode(a.place)
         print(f'Found: {name} ({a.lat:.5f}, {a.lon:.5f})')
-    if not 80 <= a.size <= 600:
+    if not 80 <= a.size <= 1000:  # Peat to Lungs: Marina Bay needs ~800 m
         sys.exit('Size must be between 80 and 600 m (150-250 m recommended).')
 
     # half the diagonal (the square may turn) plus room to slide it
