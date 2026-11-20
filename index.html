@@ -1,0 +1,257 @@
+<!doctype html>
+<html lang="en" data-mode="story">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="How peat fires in Riau and Central Kalimantan turn into smoke that people breathe, district by district, in 2019 and 2026." data-id-content="Bagaimana kebakaran gambut di Riau dan Kalimantan Tengah menjadi asap yang dihirup warga, per kecamatan, pada 2019 dan 2026.">
+  <meta name="theme-color" content="#16211b">
+  <meta property="og:title" content="From Peat to Lungs">
+  <meta property="og:description" content="Fire, smoke and people across 305 districts in Riau and Central Kalimantan, 2019 and 2026.">
+  <meta property="og:image" content="assets/peat-to-lungs.png">
+  <title data-id="Dari Gambut ke Paru-paru">From Peat to Lungs</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Public+Sans:ital,wght@0,400;0,500;0,600;0,700;0,800;1,500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<a class="skip" href="#deck" data-id="Lompat ke konten">Skip to content</a>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <symbol id="i-mark" viewBox="0 0 32 32"><path d="M2 14 16 7l14 7-14 7z" fill="var(--moss)"/><path d="M2 14v5l14 7v-5z" fill="var(--peat-2)"/><path d="M30 14v5l-14 7v-5z" fill="var(--peat)"/><path d="M2 19v4l14 7v-4z" fill="var(--mineral)"/><path d="M30 19v4l-14 7v-4z" fill="color-mix(in srgb,var(--mineral) 70%,#000)"/><path d="M17 3c1 2 3 3 3 5.5a3 3 0 0 1-6 0c0-1.3.7-2.2 1.4-2.8.1.9.5 1.4 1 1.6-.2-1.5.1-3 .6-4.3z" fill="var(--ember)"/></symbol>
+  <symbol id="i-down" viewBox="0 0 24 24"><path d="M12 17.5 4.5 10l1.8-1.8 5.7 5.7 5.7-5.7 1.8 1.8z" fill="currentColor"/></symbol>
+  <symbol id="i-moon" viewBox="0 0 24 24"><path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5z" fill="currentColor"/></symbol>
+</svg>
+
+<header class="topbar">
+  <div class="topbar-inner">
+    <a class="brand" href="#intro"><svg aria-hidden="true"><use href="#i-mark"/></svg><span data-id="Dari Gambut ke Paru-paru">From Peat to Lungs</span></a>
+    <nav class="chapters" aria-label="Chapters" data-id-aria-label="Bab">
+      <a class="chapter-seg" href="#intro" data-part="A"><b data-id="Konteks">Context</b><i></i></a>
+      <a class="chapter-seg" href="#seasons" data-part="B"><b data-id="Bukti">Evidence</b><i></i></a>
+      <a class="chapter-seg" href="#explore" data-part="C"><b data-id="Tindakan">Action</b><i></i></a>
+      <a class="chapter-seg" href="#limits" data-part="D"><b data-id="Batasan">Limits</b><i></i></a>
+    </nav>
+    <div class="header-tools">
+      <span id="counter">1 / 8</span>
+      <div class="modes" role="group" aria-label="Reading mode" data-id-aria-label="Mode baca">
+        <button type="button" data-mode="story" aria-pressed="true" data-id="Cerita">Story</button>
+        <button type="button" data-mode="advanced" aria-pressed="false" data-id="Lanjutan">Advanced</button>
+      </div>
+      <select id="language" aria-label="Language" data-id-aria-label="Bahasa">
+        <option value="en" lang="en">EN</option>
+        <option value="id" lang="id">ID</option>
+      </select>
+      <button type="button" class="icon-btn" id="theme" aria-label="Switch light or dark theme" data-id-aria-label="Ganti tema terang atau gelap"><svg aria-hidden="true"><use href="#i-moon"/></svg></button>
+    </div>
+  </div>
+</header>
+<nav class="dots" id="dots" aria-label="Slides" data-id-aria-label="Slide"></nav>
+<p id="app-status" role="status" class="app-status"></p>
+
+<main id="deck">
+
+<!-- 1 · intro -->
+<section class="slide" id="intro" data-part="A" data-label="Start" data-id-label="Mulai"><div class="inner split hero reveal">
+  <div class="copy">
+    <h1 data-id="Dari gambut ke paru-paru">From peat to lungs</h1>
+    <p class="lede" data-id="Setiap kemarau, gambut yang dikeringkan di Sumatra dan Kalimantan membara berminggu-minggu. Kami menelusuri asapnya dari tanah yang terbakar sampai ke orang yang menghirupnya, di 305 kecamatan Riau dan Kalimantan Tengah.">Every dry season, drained peat in Sumatra and Borneo smoulders for weeks. We followed the smoke from the burning ground to the people who breathe it, across 305 districts in Riau and Central Kalimantan.</p>
+    <ul class="findings" id="findings" aria-label="Main findings" data-id-aria-label="Temuan utama"></ul>
+    <div class="reader" role="group" aria-label="Reading mode" data-id-aria-label="Mode baca">
+      <button type="button" data-mode="story" aria-pressed="true"><b data-id="Cerita">Story</b><span data-id="Bahasa sederhana dan angka kunci">Plain language and the key numbers</span></button>
+      <button type="button" data-mode="advanced" aria-pressed="false"><b data-id="Lanjutan">Advanced</b><span data-id="Uji statistik, asumsi, dan langkah ArcGIS">Statistical tests, assumptions and ArcGIS steps</span></button>
+    </div>
+  </div>
+  <figure>
+    <img src="assets/peat-to-lungs.png" width="1536" height="1024" alt="Isometric cutaway of drained peat, a canal and a small fire whose smoke drifts toward a village." data-id-alt="Penampang isometrik gambut yang dikeringkan, kanal, dan api kecil yang asapnya bergerak ke arah desa.">
+    <figcaption data-id="Ilustrasi: gambut kering, api permukaan, dan asap yang bergerak ke permukiman.">Illustration: dry peat, a surface fire, and smoke drifting toward homes.</figcaption>
+  </figure>
+</div><a class="next" href="#process" aria-label="Next slide" data-id-aria-label="Slide berikutnya"><svg aria-hidden="true"><use href="#i-down"/></svg></a></section>
+
+<!-- 2 · process -->
+<section class="slide" id="process" data-part="A" data-label="How smoke reaches people" data-id-label="Dari api ke paru-paru"><div class="inner split reveal">
+  <div class="copy">
+    <p class="kicker" data-id="Cara kerjanya">How it works</p>
+    <h2 data-id="Bagaimana api gambut menjadi risiko kesehatan">How a peat fire becomes a health risk</h2>
+    <p class="muted" data-id="Tujuh langkah yang juga diikuti analisis ini.">The seven steps this analysis follows, in order.</p>
+    <div class="iso-caption" id="iso-caption" aria-live="polite"></div>
+  </div>
+  <div>
+    <div class="iso-stage"><canvas id="iso" role="img" aria-label="Animated isometric landscape showing peat, drainage, fire, smoke and a town." data-id-aria-label="Lanskap isometrik beranimasi: gambut, kanal, api, asap, dan kota."></canvas><span class="iso-note" data-id="Skema ilustratif, bukan data">Schematic, not data</span></div>
+    <div class="iso-ctl">
+      <div class="iso-steps" id="iso-steps"></div>
+      <div class="iso-play"><button type="button" id="iso-prev" aria-label="Previous step" data-id-aria-label="Langkah sebelumnya">‹</button><button type="button" id="iso-play" data-id="Putar">Play</button><button type="button" id="iso-next" aria-label="Next step" data-id-aria-label="Langkah berikutnya">›</button></div>
+    </div>
+  </div>
+</div></section>
+
+<!-- 3 · seasons -->
+<section class="slide" id="seasons" data-part="B" data-label="The fire moved" data-id-label="Api berpindah"><div class="inner split reveal">
+  <div class="copy">
+    <p class="kicker" data-id="Musim kebakaran">Fire seasons</p>
+    <h2 data-id="Api berpindah provinsi">The fire moved provinces</h2>
+    <p class="standfirst" id="season-insight"></p>
+    <figure class="chart-block">
+      <h3 data-id="Deteksi api per bulan">Fire detections per month</h3>
+      <p class="chart-sub legend-row"><span><i class="swatch" style="background:var(--y2019)"></i>2019</span><span><i class="swatch" style="background:var(--y2026)"></i>2026</span></p>
+      <div class="months" id="months"></div>
+      <p class="source" data-id="Sumber: NASA FIRMS VIIRS S-NPP, deteksi dalam batas provinsi. Agustus–Oktober 2026 data near-real-time.">Source: NASA FIRMS VIIRS S-NPP, detections inside each province. August–October 2026 is near-real-time data.</p>
+    </figure>
+    <div class="arcgis adv"><b data-id="Catatan analis">Analyst notes</b><span data-id="Hotspot adalah anomali panas, bukan luas terbakar. Di ArcGIS: Summarize Within memberi jumlah lokal; Kernel Density memakai titik dalam buffer 100 km agar api di seberang batas ikut dihitung.">A hotspot is a thermal anomaly, not burned area. In ArcGIS: Summarize Within gives local counts; Kernel Density uses points inside a 100 km buffer so fires just across a border still count.</span></div>
+  </div>
+  <figure class="chart-block">
+    <h3 data-id="Seberapa banyak api di sekitar setiap tempat">How much fire surrounds each place</h3>
+    <p class="chart-sub" data-id="Tinggi dan warna = kepadatan deteksi api dalam radius 100 km, Juli–Oktober. Skala sama untuk kedua tahun.">Height and colour = density of fire detections within 100 km, July–October. Same scale in both years.</p>
+    <div class="terrain-wrap">
+      <canvas id="terrain" role="img" aria-label="Oblique 3D map of fire density over Sumatra and Borneo." data-id-aria-label="Peta 3D miring kepadatan api di atas Sumatra dan Kalimantan."></canvas>
+      <div class="terrain-labels" id="terrain-labels"></div>
+    </div>
+    <div class="year-toggle"><div class="seg" id="terrain-year" role="group" aria-label="Season" data-id-aria-label="Musim"><button type="button" data-year="2019" aria-pressed="true">2019</button><button type="button" data-year="2026" aria-pressed="false">2026</button></div><span class="small muted" data-id="Seret untuk memutar">Drag to rotate</span></div>
+    <p class="source" data-id="Sumber: NASA FIRMS VIIRS S-NPP; batas provinsi GADM 4.1, Natural Earth. Kernel kuartik, sel 8 km untuk tampilan.">Source: NASA FIRMS VIIRS S-NPP; province outlines GADM 4.1, Natural Earth. Quartic kernel, shown in 8 km blocks.</p>
+  </figure>
+</div></section>
+
+<!-- 4 · peat -->
+<section class="slide" id="peat" data-part="B" data-label="Peat burns more" data-id-label="Gambut lebih sering terbakar"><div class="inner split reveal">
+  <div class="copy">
+    <p class="kicker" data-id="Jenis lahan">Land type</p>
+    <h2 data-id="Api terkumpul di gambut yang dibuka">Fire clusters on cleared peat</h2>
+    <p class="standfirst" id="peat-insight"></p>
+    <p class="muted small" data-id="Ini perbandingan deskriptif, bukan bukti sebab-akibat. Kategori bisa tumpang tindih: gambut juga bisa berhutan.">A descriptive comparison, not proof of cause. Categories overlap: peat can also be forest.</p>
+    <div class="arcgis adv"><b data-id="Cara menghitung di ArcGIS">How to compute it in ArcGIS</b><span data-id="Hitung titik di tiap lapisan dengan Spatial Join atau Extract Values to Points (gambut 0/1, kehilangan hutan 0/1), lalu Summary Statistics. Bagi dengan luas lapisan dari Pairwise Intersect (gambut) dan Zonal Statistics as Table (piksel 30 m).">Count points in each layer with Spatial Join or Extract Values to Points (peat 0/1, forest loss 0/1), then Summary Statistics. Divide by layer area from Pairwise Intersect (peat) and Zonal Statistics as Table (30 m pixels).</span></div>
+  </div>
+  <figure class="chart-block">
+    <h3 data-id="Deteksi api per 100 km² menurut jenis lahan">Fire detections per 100 km², by land type</h3>
+    <div class="seg" id="land-year" role="group" aria-label="Season" data-id-aria-label="Musim" style="margin:6px 0 14px"><button type="button" data-year="2019" aria-pressed="true">2019</button><button type="button" data-year="2026" aria-pressed="false">2026</button></div>
+    <div class="land" id="land"></div>
+    <p class="source" data-id="Sumber: NASA FIRMS; gambut Global Forest Watch; kehilangan hutan Hansen GFC v1.12; hutan 2000 MapBiomas Indonesia.">Source: NASA FIRMS; Global Forest Watch peat; Hansen GFC v1.12 forest loss; MapBiomas Indonesia forest 2000.</p>
+  </figure>
+</div></section>
+
+<!-- 5 · smoke -->
+<section class="slide" id="smoke" data-part="B" data-label="Fire predicts smoke" data-id-label="Api memprediksi asap"><div class="inner split even reveal">
+  <div class="copy">
+    <p class="kicker" data-id="Dari api ke udara">From fire to air</p>
+    <h2 data-id="Lebih banyak api di sekitar, udara lebih kotor">More fire nearby, dirtier air</h2>
+    <p class="standfirst" id="smoke-insight"></p>
+    <div class="numbers" id="smoke-tiles"></div>
+    <p class="story-only muted small" id="smoke-caveat"></p>
+    <div class="adv">
+      <div class="seg" id="model-pick" role="group" aria-label="Model setting" data-id-aria-label="Pengaturan model"></div>
+      <div class="table-scroll" style="margin-top:12px"><table id="stat-table"></table></div>
+    </div>
+  </div>
+  <div>
+    <figure class="chart-block chart">
+      <h3 data-id="Api di sekitar vs PM₂.₅, September 2019">Nearby fire vs PM₂.₅, September 2019</h3>
+      <p class="chart-sub legend-row"><span><i class="swatch" style="background:var(--riau)"></i>Riau</span><span><i class="swatch" style="background:var(--kalteng);border-radius:50%"></i><span data-id="Kalimantan Tengah">Central Kalimantan</span></span><span data-id="Garis: model 2019 · satu titik = satu kecamatan">Line: 2019 model · one dot per district</span></p>
+      <canvas id="scatter" role="img" aria-label="Scatterplot of fire density and September 2019 PM2.5 for 305 districts." data-id-aria-label="Diagram pencar kepadatan api dan PM2.5 September 2019 untuk 305 kecamatan."></canvas><div class="tip" id="scatter-tip" hidden></div>
+      <p class="source" data-id="Sumber: PM₂.₅ WashU ACAG V6.GL.03 berbobot penduduk WorldPop 2020; NASA FIRMS.">Source: WashU ACAG V6.GL.03 PM₂.₅, weighted by WorldPop 2020 population; NASA FIRMS.</p>
+    </figure>
+    <div class="adv" style="margin-top:14px"><h4 data-id="Cara membaca uji">How to read the tests</h4><ul class="read-list" id="read-list"></ul>
+      <div class="arcgis"><b data-id="Ulangi di ArcGIS Pro">Repeat it in ArcGIS Pro</b><span data-idh="<code>Calculate Field</code> LN_KDE = Ln(1 + KDE_MEAN) → <code>Ordinary Least Squares</code> PM25_pw ~ LN_KDE → <code>Spatial Autocorrelation (Global Moran's I)</code> pada residual, K nearest neighbors = 8. Ekspektasi: R² ≈ 0,55, Moran's I residual ≈ 0,61.">
+        <code>Calculate Field</code> LN_KDE = Ln(1 + KDE_MEAN) → <code>Ordinary Least Squares</code> PM25_pw ~ LN_KDE → <code>Spatial Autocorrelation (Global Moran's I)</code> on the residuals, K nearest neighbors = 8. Expect R² ≈ 0.55 and residual Moran's I ≈ 0.61.</span></div>
+    </div>
+  </div>
+</div></section>
+
+<!-- 6 · explore -->
+<section class="slide" id="explore" data-part="C" data-label="Explore the map" data-id-label="Jelajahi peta"><div class="inner reveal">
+  <div style="display:flex;justify-content:space-between;gap:24px;flex-wrap:wrap;align-items:end">
+    <div><p class="kicker" data-id="Peta">Map</p><h2 id="map-title" style="margin:0"></h2></div>
+    <p id="map-caption" class="muted small" style="max-width:52ch;margin:0"></p>
+  </div>
+  <form id="filters" class="filterbar">
+    <fieldset><legend data-id="Musim">Season</legend>
+      <div class="seg"><label><input type="radio" name="year" value="2019" checked><span>2019</span></label><label><input type="radio" name="year" value="2026"><span>2026</span></label></div></fieldset>
+    <label><span data-id="Lapisan">Layer</span><select id="layer">
+      <option value="heat" data-id="Kepadatan api">Fire density</option>
+      <option value="exposure" data-id="Paparan PM₂.₅">PM₂.₅ exposure</option>
+      <option value="index" data-id="Indeks prioritas">Priority index</option>
+      <option value="cluster" data-id="Kelompok kecamatan">District groups</option></select></label>
+    <label class="adv"><span data-id="Wilayah">Region</span><select id="region"><option value="all" data-id="Kedua provinsi">Both provinces</option><option value="ID14">Riau</option><option value="ID62" data-id="Kalimantan Tengah">Central Kalimantan</option></select></label>
+    <label class="adv"><span data-id="Bobot titik api">Hotspot weight</span><select id="mode"><option value="count" data-id="Jumlah deteksi">Detection count</option><option value="frp" data-id="Daya radiasi (FRP)">Fire radiative power (FRP)</option></select></label>
+    <label class="adv"><span data-id="Radius kernel">Kernel radius</span><select id="radius"><option value="25">25 km</option><option value="50">50 km</option><option value="100" selected>100 km</option></select></label>
+  </form>
+  <div class="explore">
+    <div>
+      <div class="map-frame">
+        <canvas id="study-map" role="img" aria-label="Thematic map of Riau and Central Kalimantan. Use the district list to select an area with the keyboard." data-id-aria-label="Peta tematik Riau dan Kalimantan Tengah. Gunakan daftar kecamatan untuk memilih wilayah dengan keyboard."></canvas>
+        <div class="map-tools"><button type="button" id="zoom-in" aria-label="Zoom in" data-id-aria-label="Perbesar">+</button><button type="button" id="zoom-out" aria-label="Zoom out" data-id-aria-label="Perkecil">−</button><button type="button" id="map-reset" aria-label="Reset view" data-id-aria-label="Atur ulang tampilan">↺</button></div>
+        <div id="map-scale" class="map-scale"></div>
+        <div id="map-tooltip" role="tooltip" hidden></div>
+      </div>
+      <div class="map-footer"><div id="legend"></div><span><span data-id="Peta dasar">Basemap</span>: Esri, HERE, Garmin, © OpenStreetMap contributors</span></div>
+    </div>
+    <aside class="inspect">
+      <label for="district" class="small muted" data-id="Pilih kecamatan">Choose a district</label>
+      <select id="district"></select>
+      <div id="district-detail" aria-live="polite"></div>
+    </aside>
+  </div>
+</div></section>
+
+<!-- 7 · priority -->
+<section class="slide" id="priority" data-part="C" data-label="Who to prepare first" data-id-label="Siapa disiapkan dulu"><div class="inner split even reveal">
+  <div class="copy">
+    <p class="kicker" data-id="Kesiapsiagaan">Preparedness</p>
+    <h2 data-id="Siapa yang perlu disiapkan lebih dulu">Who to prepare first</h2>
+    <p class="standfirst" id="priority-insight"></p>
+    <div class="versus" id="versus"></div>
+    <p class="muted small" data-id="Zona prioritas adalah sel 2 km tempat api, asap, dan penduduk paling bertumpuk (indeks ≥ 1,5 simpangan baku di atas rata-rata).">Priority zones are 2 km cells where fire, smoke and people overlap most (index at least 1.5 standard deviations above average).</p>
+    <div class="adv">
+      <h4 style="margin-top:14px" data-id="Uji sensitivitas indeks">Index sensitivity test</h4>
+      <div class="table-scroll"><table id="sensitivity"></table></div>
+      <p class="small muted" id="sensitivity-note" style="margin-top:8px"></p>
+      <div class="arcgis"><b data-id="Bangun di ModelBuilder">Build it in ModelBuilder</b><span data-idh="<code>Raster Calculator</code>: z(x) = (x − mean) / std memakai <code>Get Raster Properties</code>. Indeks = 0,3·z(KDE) + 0,3·z(Ln(1 + jiwa/km²)) + 0,4·z(PM₂.₅), lalu dibakukan ulang. <code>Con</code>(indeks ≥ 1,5) → <code>Raster to Polygon</code> (tanpa simplify) → <code>Zonal Statistics as Table</code> SUM penduduk.">
+        <code>Raster Calculator</code>: z(x) = (x − mean) / std using <code>Get Raster Properties</code>. Index = 0.3·z(KDE) + 0.3·z(Ln(1 + people/km²)) + 0.4·z(PM₂.₅), then re-standardise. <code>Con</code>(index ≥ 1.5) → <code>Raster to Polygon</code> (no simplify) → <code>Zonal Statistics as Table</code> SUM of population.</span></div>
+    </div>
+  </div>
+  <div class="stack">
+    <figure class="chart-block">
+      <div style="display:flex;justify-content:space-between;gap:10px;align-items:center;flex-wrap:wrap">
+        <h3 style="margin:0" data-id="Penduduk di zona prioritas">Residents in priority zones</h3>
+        <select id="ranking-grain" aria-label="Group by" data-id-aria-label="Kelompokkan menurut"><option value="regency" data-id="Kabupaten/kota">Regency / city</option><option value="district" data-id="Kecamatan">District</option></select>
+      </div>
+      <p class="chart-sub" id="priority-caption" style="margin:4px 0 8px"></p>
+      <div class="table-scroll"><table id="ranking"><thead><tr><th scope="col" id="ranking-area" data-id="Kabupaten/kota">Regency / city</th><th scope="col" data-id="Penduduk">Residents</th><th scope="col" data-id="Bagian">Share</th></tr></thead><tbody></tbody></table></div>
+      <div class="actions"><button type="button" class="button" id="priority-map" data-id="Lihat zona di peta">View zones on the map</button><button type="button" class="button ghost" id="export-csv" data-id="Unduh CSV">Download CSV</button><button type="button" class="button ghost" id="export-geojson" data-id="Unduh GeoJSON">Download GeoJSON</button></div>
+      <p class="source" data-id="Sumber: WorldPop 2020 (dipakai untuk kedua musim); analisis penulis.">Source: WorldPop 2020 (used for both seasons); author's analysis.</p>
+    </figure>
+    <figure class="chart-block">
+      <h3 data-id="Kelompok kecamatan serupa">Groups of similar districts</h3>
+      <p class="chart-sub" id="cluster-caption"></p>
+      <div class="cluster-list" id="clusters"></div>
+      <p class="small muted adv" id="cluster-scores" style="margin-top:10px"></p>
+    </figure>
+  </div>
+</div></section>
+
+<!-- 8 · limits + credits -->
+<section class="slide" id="limits" data-part="D" data-label="Limits and method" data-id-label="Batasan dan metode"><div class="inner split reveal">
+  <div class="copy">
+    <p class="kicker" data-id="Batasan">Limits</p>
+    <h2 data-id="Apa yang belum bisa dijawab">What this cannot tell you</h2>
+    <div class="limits">
+      <div><h4 data-id="Angin tidak dimodelkan">Wind is not modelled</h4><p data-id="Kernel menyebar api ke segala arah. Galat model mengelompok di ruang (Moran's I 0,61), tanda bahwa arah asap penting.">The kernel spreads fire evenly in every direction. Model errors cluster in space (Moran's I 0.61), a sign that smoke direction matters.</p></div>
+      <div><h4 data-id="2026 adalah perkiraan">2026 is an estimate</h4><p id="limit-2026"></p></div>
+      <div><h4 data-id="Penduduk 2020 untuk kedua musim">2020 population for both seasons</h4><p data-id="WorldPop 2020 dipakai untuk 2019 dan 2026. Perpindahan penduduk tidak tercermin.">WorldPop 2020 stands in for both seasons, so migration is not reflected.</p></div>
+      <div><h4 data-id="Prioritas bersifat relatif">Priority is relative</h4><p data-id="Indeks dibakukan per musim. Bandingkan lokasi di dalam satu musim, bukan besarnya risiko antar-tahun.">The index is standardised within each season. Compare places within a season, not the size of risk across years.</p></div>
+    </div>
+    <p class="story-only muted small" style="margin-top:18px" data-id="Mode Lanjutan menampilkan cara mengulang analisis ini di ArcGIS Pro, langkah demi langkah.">Advanced mode shows how to reproduce this analysis in ArcGIS Pro, step by step.</p>
+  </div>
+  <div class="adv">
+    <h3 data-id="Cara mengulang analisis ini di ArcGIS Pro">How to reproduce this in ArcGIS Pro</h3>
+    <p class="small muted" data-id="Setiap langkah menyebut alat dan parameternya. Angka cek adalah hasil yang semestinya kurang lebih sama.">Each step names the tool and its parameters. Check numbers are the results your run should roughly match.</p>
+    <ol class="recipe" id="recipe"></ol>
+  </div>
+  <div class="credits">
+    <p><strong>Rizaldy Utomo</strong> · <span data-id="Proyek GIS, Carnegie Mellon University, 2026">GIS project, Carnegie Mellon University, 2026</span></p>
+    <p data-id="Data: NASA FIRMS VIIRS S-NPP, batas BPS/OCHA HDX, gambut Global Forest Watch, kehilangan hutan Hansen v1.12, MapBiomas Indonesia 2000, WorldPop 2020, PM₂.₅ WashU ACAG V6.GL.03 (Sept 2019), GADM 4.1, Natural Earth; peta dasar Esri Light Gray Canvas.">Data: NASA FIRMS VIIRS S-NPP, BPS/OCHA HDX boundaries, Global Forest Watch peat, Hansen v1.12 forest loss, MapBiomas Indonesia 2000, WorldPop 2020, WashU ACAG V6.GL.03 PM₂.₅ (Sept 2019), GADM 4.1, Natural Earth; Esri Light Gray Canvas basemap.</p>
+    <p data-id="Ilustrasi pembuka dibuat dengan ImageGen. Semua model berjalan di browser dari data statis; tidak ada pelacakan.">Opening illustration made with ImageGen. All models run from static data in your browser; no tracking.</p>
+  </div>
+</div></section>
+
+</main>
+<script type="module" src="app.mjs"></script>
+</body>
+</html>

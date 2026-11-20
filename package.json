@@ -1,0 +1,11 @@
+{
+  "name": "dari-gambut-ke-paru-paru",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "start": "node serve.mjs",
+    "build:data": "node tools/build-data.mjs && node tools/stats.mjs",
+    "test": "node --test tools/verify.test.mjs"
+  },
+  "engines": { "node": ">=20" }
+}

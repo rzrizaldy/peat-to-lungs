@@ -1,0 +1,18 @@
+# Agent notes
+
+Read [current-context-what-next.md](current-context-what-next.md) first. Use native harness tools for editing, browser interaction, and review. This is the local web companion to the coursework, with an independent Git repository.
+
+- Treat the upstream `RawData/`, `PreparedData/`, submitted proposal, Word logs, and ArcGIS project as source inputs. Keep dashboard code, generated assets, and browser data snapshots in this folder. Follow the parent project’s process log and handoff rules.
+- Keep browser runtime dependency-free (Google Fonts only). `index.html`, `styles.css`, `app.mjs`, `map.mjs` and `iso.mjs` render `data/`. `tools/export-inputs.py` uses GDAL only for offline geodatabase export and gridding (`PEAT_PROJECT_DIR` overrides the project path). `tools/model.mjs` and `tools/build-data.mjs` implement the models; `tools/stats.mjs` writes the significance and sensitivity checks to `data/stats.json`.
+- The page is a scroll-snap deck (interaction copied from rzrizaldy.github.io/hw02-rag-companion): `.slide` sections, side dots, chapter progress, keyboard paging. `html[data-mode]` switches Story/Advanced; `.adv` and `.story-only` elements toggle by mode. Story mode always shows the count / 100 km setting.
+- Keep the English default markup and Indonesian translations in sync: `data-id` (text), `data-idh` (HTML), `data-id-<attr>` (aria-label, alt, content, label). Translate dynamic labels in `app.mjs` and preserve filter values and export field names across languages.
+- The index and K-means use Ln(1 + people/km²) (`popScale` in `tools/model.mjs`). Do not revert to raw density; see the sensitivity table.
+- Preserve the 305 unique kecamatan codes, validated season totals, native-grid population sums and provenance. Keep historical PM₂.₅ and model values separate. The model uses a fixed radius per scenario and preserves the two-province reference set when the viewer filters the map.
+- Regenerate all scenario JSON files together when a method changes. Run `node --test tools/verify.test.mjs` and verify the local page, controls, and downloads in the native browser. Test geometry validity and projected area when changing the mask polygonization.
+- Keep local preview on loopback. Use Git in this folder. A push or deployment requires a separate user request.
+
+## Illustration
+
+`assets/peat-to-lungs.png` is an illustrative scene generated using the built-in ImageGen tool. The final prompt follows.
+
+> Wide landscape editorial isometric illustration for a rigorous public-interest GIS data story on Indonesian peat fires. One continuous miniature land cutaway on a quiet muted mist-blue background (#dce9e9): left section drained tropical peatland, deep layered dark brown organic soil and a narrow drainage canal, a small glowing low ground fire releasing a thin pale grey smoke plume. Right section a modest cluster of Indonesian roofed homes and green trees at ground level in the direction of the drifting plume. Show the dark peat layer clearly as a geological cross section; communicate the mechanism of smoke reaching settlements. Subtle warm burnt orange for the embers, blue-green for the vegetation, soft daylight, matte tactile textures, confident and mature scientific-editorial art direction. All narrative elements contained within a single floating isometric landscape tile with clear negative space at the edges. No people required. No lettering, no arrows, no labels, no text, no UI, no lettering-like marks, no brand, no fireball. Similar proportions to a 3:2 magazine vignette, central composition.
