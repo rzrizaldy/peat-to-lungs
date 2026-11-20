@@ -23,7 +23,7 @@ const cssVar = name => getComputedStyle(root).getPropertyValue(name).trim();
 /* ================================================================ language */
 const staticText = $$('[data-id]').map(n => [n, n.textContent, n.dataset.id]);
 const staticHTML = $$('[data-idh]').map(n => [n, n.innerHTML, n.dataset.idh]);
-const attrMap = { 'aria-label': 'aria-label', alt: 'alt', content: 'content', label: 'data-label' };
+const attrMap = { 'aria-label': 'aria-label', alt: 'alt', content: 'content', label: 'data-label', title: 'title' };
 const staticAttr = Object.entries(attrMap).flatMap(([key, attr]) =>
   $$(`[data-id-${key}]`).map(n => [n, attr, n.getAttribute(attr), n.getAttribute(`data-id-${key}`)]));
 
@@ -76,6 +76,7 @@ function setCurrent(i) {
   }
   if (slides[i].id && location.hash !== `#${slides[i].id}`) history.replaceState(null, '', `#${slides[i].id}`);
   if (slides[i].id === 'process' && process && !process.playing && !autoplayed) { autoplayed = true; process.play(); }
+  if (slides[i].id === 'cities' && typeof cityIntro === 'function') cityIntro();
 }
 let autoplayed = false;
 const io = new IntersectionObserver(entries => {
@@ -147,6 +148,55 @@ function clusterLabel(profile) {
   if (profile.type === 'dense') return [t('Dense towns', 'Kota padat'), t('Check health service and alert coverage.', 'Periksa layanan kesehatan dan jangkauan peringatan.')];
   void loss; void pm; void pop;
   return [t('Lower pressure', 'Tekanan rendah'), t('Routine monitoring.', 'Pemantauan rutin.')];
+}
+
+/* ================================================================ two cities (Pocket City dioramas) */
+// The dioramas are Pocket City pages (April Zhu, MIT) served from the same site, so this page can hide their
+// panels and drive their "Special scenes" control: one switch moves both cities between a clear day and the haze.
+const EMBED_CSS = 'html,body{background:transparent!important}.top,.rail,.foot,.control-area,.tools,.loading{display:none!important}'
+  + '.workspace{height:100%!important;background:none!important}.stage{left:0!important;right:0!important;top:0!important;bottom:0!important}';
+const CITY_TEXT = {
+  pky: {
+    clear: ['Late afternoon on the Kahayan. From about 4 pm the food stalls at Dermaga Rambang open, and they stay busy into the night.',
+      'Sore di tepi Kahayan. Sekitar pukul 4 sore warung-warung di Dermaga Rambang buka, dan ramai sampai malam.'],
+    haze: ['From 19 October 2026 the city\'s kindergarten, primary and junior-high pupils learned from home, after four days of dangerous air.',
+      'Mulai 19 Oktober 2026 siswa PAUD, SD, dan SMP kota ini belajar dari rumah, setelah empat hari udara berbahaya.'],
+  },
+  sg: {
+    clear: ['Visitors crowd the promenade around the Merlion, which has spouted water over Marina Bay from this pier since 2002.',
+      'Pengunjung memadati promenade di sekitar Merlion, yang menyemburkan air ke Marina Bay dari dermaga ini sejak 2002.'],
+    haze: ['On 14 October 2026 smoke from fires in Kalimantan drifted in on southeasterly winds. Children and the elderly were asked to minimise outdoor activity.',
+      'Pada 14 Oktober 2026 asap dari kebakaran di Kalimantan terbawa angin tenggara. Anak-anak dan lansia diminta mengurangi aktivitas di luar ruangan.'],
+  },
+};
+let cityDay = 'clear', cityTouched = false, cityAuto = false;
+function applyDay(frame) {
+  let d;
+  try { d = frame.contentDocument; } catch { return; }
+  const sel = d && d.getElementById('event');
+  if (!sel) return;
+  if (!d.getElementById('embed-css')) {
+    const st = d.createElement('style'); st.id = 'embed-css'; st.textContent = EMBED_CSS; d.head.appendChild(st);
+  }
+  if (cityDay === 'haze') { sel.value = 'haze'; sel.dispatchEvent(new Event('change')); }
+  else { sel.value = ''; d.querySelector(`[data-s="${frame.dataset.clear}"]`)?.click(); }
+}
+function renderCities() {
+  el('city-pky').textContent = t(...CITY_TEXT.pky[cityDay]);
+  el('city-sg').textContent = t(...CITY_TEXT.sg[cityDay]);
+  $$('#day-switch button').forEach(b => b.setAttribute('aria-pressed', b.dataset.day === cityDay));
+  $$('#cities iframe').forEach(applyDay);
+}
+$$('#cities iframe').forEach(f => f.addEventListener('load', () => applyDay(f)));
+el('day-switch').addEventListener('click', e => {
+  const b = e.target.closest('button[data-day]');
+  if (b) { cityTouched = true; cityDay = b.dataset.day; renderCities(); }
+});
+// the one orchestrated moment: on first view, the haze rolls in over both cities
+function cityIntro() {
+  if (cityAuto || REDUCE) return;
+  cityAuto = true;
+  setTimeout(() => { if (!cityTouched) { cityDay = 'haze'; renderCities(); } }, 5500);
 }
 
 /* ================================================================ intro */
@@ -820,6 +870,7 @@ function geojson() {
 /* ================================================================ boot */
 function renderAll() {
   renderStatus();
+  renderCities();
   renderFindings();
   renderStepper(process.step);
   renderSeasons();

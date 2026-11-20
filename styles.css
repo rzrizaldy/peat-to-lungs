@@ -283,6 +283,24 @@ tr.best td { font-weight: 700; }
 .actions-list li::before { counter-increment: a; content: counter(a); font-weight: 800; font-size: 14px; color: var(--ember-ink); font-variant-numeric: tabular-nums; }
 .actions-list h3 { font-size: 21px; font-weight: 800; letter-spacing: -.01em; margin: 4px 0 6px; }
 .actions-list p { color: var(--muted); font-size: 15.5px; margin: 0; max-width: 60ch; }
+/* ---------- opening: two cities ---------- */
+.cities-head { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 40px; align-items: end; margin-bottom: 14px; }
+.cities-title { font-size: clamp(42px, 5.4vw, 78px); font-weight: 800; letter-spacing: -.035em; line-height: .96; margin: 0; }
+.cities-head .lede { margin: 0; }
+.day-switch { margin: 0 0 14px; }
+.day-switch button { font-size: 14.5px; padding: 6px 14px; }
+.cities { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 22px; }
+.city { margin: 0; min-width: 0; }
+.city-frame { position: relative; height: min(50vh, 470px); border-top: 2px solid var(--rule); background: #f4f2e8; overflow: hidden; }
+.city-frame iframe { width: 100%; height: 100%; border: 0; display: block; }
+.city figcaption h3 { margin: 10px 0 4px; font-size: 18px; }
+.city figcaption h3 .muted { font-weight: 500; }
+.city figcaption p { color: var(--muted); font-size: 15.5px; line-height: 1.45; margin: 0; min-height: 3em; transition: opacity .4s var(--ease); }
+@media (max-width: 900px) {
+  .cities-head, .cities { grid-template-columns: minmax(0, 1fr); gap: 16px; }
+  .city-frame { height: 46vh; }
+}
+
 #quad { width: 100%; aspect-ratio: 4 / 3.2; display: block; }
 .quad-key { display: grid; grid-template-columns: 1fr 1fr; gap: 0; border-top: 1px solid var(--line); }
 .quad-key > div { padding: 9px 12px 9px 0; border-bottom: 1px solid var(--line); }

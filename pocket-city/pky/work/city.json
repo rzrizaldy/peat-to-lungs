@@ -1,0 +1,399 @@
+{
+ "name": "Palangka Raya",
+ "title": "Dermaga Rambang, Palangka Raya",
+ "region": "Central Kalimantan",
+ "place": "Kahayan riverbank, Pahandut",
+ "flag": "<svg aria-hidden='true' viewBox='0 0 30 20'><rect width='30' height='10' fill='#d7383f'/><rect y='10' width='30' height='10' fill='#fbf7ee'/></svg>",
+ "timezone": "Asia/Jakarta",
+ "level": 3,
+ "styles": {
+  "default": {
+   "facade": "timber",
+   "wall": [
+    "#b8916a",
+    "#a77f58",
+    "#c9a77e",
+    "#d9c9a0",
+    "#9fb7a0",
+    "#8fb0c4",
+    "#e3c27a"
+   ],
+   "wood": "#9a7351",
+   "roof": "gabled",
+   "pitch": 18,
+   "ridge": "long",
+   "roofColour": [
+    "#9aa1a4",
+    "#8c9396",
+    "#a65a42",
+    "#b06b4c",
+    "#7f8a8f",
+    "#a9adae"
+   ],
+   "eaves": 0.6,
+   "levels": 1,
+   "floor": 3,
+   "shop": "none",
+   "maxSpan": 14,
+   "rectFill": 0.55,
+   "flatRoof": "#a6a29a"
+  },
+  "rules": [
+   {
+    "if": {
+     "maxArea": 20
+    },
+    "set": {
+     "levels": 1,
+     "floor": 2.6,
+     "pitch": 14
+    }
+   },
+   {
+    "if": {
+     "nearStreet": true,
+     "minArea": 60
+    },
+    "set": {
+     "facade": "shophouse",
+     "levels": 2,
+     "floor": 3.4,
+     "wall": [
+      "#e6dcc6",
+      "#d9cdb2",
+      "#cfd9cf",
+      "#e8d6a8"
+     ],
+     "shop": "street",
+     "awning": "some",
+     "awnings": [
+      "#2f6a8a",
+      "#c14132",
+      "#3f8a5a"
+     ],
+     "roof": "gabled",
+     "ridge": "street"
+    }
+   },
+   {
+    "if": {
+     "minArea": 300
+    },
+    "set": {
+     "facade": "warehouse",
+     "levels": 2,
+     "floor": 4,
+     "wall": [
+      "#d6cdb8"
+     ],
+     "roof": "gabled",
+     "pitch": 12
+    }
+   }
+  ]
+ },
+ "buildings": {},
+ "palette": {
+  "ground": "#e2d5b8",
+  "road": "#b9ada0",
+  "pavement": "#ddd0b4",
+  "walk": "#d8c9ab",
+  "grass": "#a9c483",
+  "water": "#a99a72",
+  "slab": "#d3c19c",
+  "marking": "#f2ead8",
+  "kerb": "#d9cbad",
+  "paving": "#c7b896",
+  "quay": "#cdbd9b",
+  "sand": "#dccb9c"
+ },
+ "paving": {
+  "style": "tiles",
+  "size": 0.5,
+  "colour": "#bfae8c"
+ },
+ "lamp": {
+  "colour": "#56605c",
+  "height": 6.5,
+  "head": "#f3e7c4"
+ },
+ "shops": {
+  "signs": [
+   "WARUNG",
+   "SATE",
+   "IKAN BAKAR",
+   "TOKO",
+   "KOPI"
+  ],
+  "font": "sans-serif",
+  "fascias": [
+   "#2f6a8a",
+   "#c14132",
+   "#3f8a5a",
+   "#e3b23c"
+  ],
+  "awnings": [
+   "#2f6a8a",
+   "#c14132"
+  ]
+ },
+ "boats": {
+  "hulls": [
+   "#8a6040",
+   "#3e7fa6",
+   "#3f8a5a",
+   "#c9b37a",
+   "#7a5236"
+  ],
+  "stripes": [
+   "#d24a3a",
+   "#f2d36b",
+   "#f3efe4"
+  ],
+  "covers": [
+   "#3f6e9a",
+   "#9aa1a4",
+   "#c14132"
+  ],
+  "cabin": "#e9dfc8",
+  "inside": "#7a5a3c"
+ },
+ "trees": {
+  "default": {
+   "style": 3,
+   "colours": [
+    "#6f9a54",
+    "#82a85e"
+   ],
+   "height": 9,
+   "evergreen": true
+  }
+ },
+ "people": {
+  "clothes": [
+   "#f3efe4",
+   "#2f6a8a",
+   "#c14132",
+   "#e3b23c",
+   "#3f8a5a",
+   "#9b5f8f",
+   "#2f2b26",
+   "#e9b9a8"
+  ]
+ },
+ "vehicles": {
+  "kinds": [
+   "small",
+   "mpv",
+   "mpv"
+  ],
+  "colours": [
+   "#f2f2ee",
+   "#2e3139",
+   "#99a3ae",
+   "#b8473b"
+  ],
+  "plate": "#2b2b2b"
+ },
+ "seasonLabel": "Weather",
+ "seasons": [
+  {
+   "id": "dry",
+   "label": "Dry season",
+   "leaves": "summer",
+   "crowd": 1.1,
+   "note": {
+    "text": "August is the driest month at Tjilik Riwut Airport, with 86.8 mm of rain (1991–2020).",
+    "source": "World Meteorological Organization, via Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Palangka_Raya"
+   }
+  },
+  {
+   "id": "wet",
+   "label": "Wet season",
+   "leaves": "summer",
+   "wet": true,
+   "umbrellas": true,
+   "wx": "rain",
+   "crowd": 0.8,
+   "note": {
+    "text": "March is the wettest month at Tjilik Riwut Airport, with 332.0 mm of rain (1991–2020).",
+    "source": "World Meteorological Organization, via Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Palangka_Raya"
+   }
+  }
+ ],
+ "occasionLabel": "Special scenes",
+ "occasions": [
+  {
+   "id": "haze",
+   "label": "Haze, Oct 2026",
+   "leaves": "summer",
+   "haze": 0.66,
+   "hazeColour": "205,184,146",
+   "crowd": 0.25,
+   "icon": "summer",
+   "note": {
+    "text": "From 19 Oct 2026 the city's pupils learned from home after four days of dangerous air.",
+    "source": "Prokalteng (Jawa Pos)",
+    "url": "https://prokalteng.jawapos.com/pemerintahan/pemko-palangka-raya/19/10/2026/kabut-asap-masih-berbahaya-disdik-palangka-raya-perpanjang-pjj/"
+   }
+  },
+  {
+   "id": "evening",
+   "label": "Evening stalls",
+   "leaves": "summer",
+   "crowd": 1.6,
+   "night": 0.8,
+   "litShare": 0.6,
+   "icon": "summer",
+   "decor": {
+    "fairy": [
+     "#fff3c4",
+     "#ffe7a8",
+     "#ffd98a"
+    ]
+   },
+   "note": {
+    "text": "From about 4 pm food stalls open at Dermaga Rambang and stay busy into the night.",
+    "source": "DJKN, Ministry of Finance",
+    "url": "https://www.djkn.kemenkeu.go.id/kpknl-palangkaraya/baca-artikel/16385/Wisata-Kuliner-Murah-Dermaga-Rambang-Palangka-Raya.html"
+   }
+  }
+ ],
+ "months": [
+  "wet",
+  "wet",
+  "wet",
+  "wet",
+  "wet",
+  "dry",
+  "dry",
+  "dry",
+  "dry",
+  "wet",
+  "wet",
+  "wet"
+ ],
+ "cameras": {
+  "iso": {
+   "yaw": 145,
+   "pitch": 32,
+   "zoom": 1,
+   "x": 0,
+   "y": -10,
+   "z": 2
+  }
+ },
+ "views": [
+  {
+   "id": "bank",
+   "label": "Riverbank",
+   "camera": {
+    "yaw": 160,
+    "pitch": 22,
+    "zoom": 2.6,
+    "x": -40,
+    "y": -14,
+    "z": 2
+   }
+  },
+  {
+   "id": "lanes",
+   "label": "Houses",
+   "camera": {
+    "yaw": 120,
+    "pitch": 34,
+    "zoom": 2.4,
+    "x": 10,
+    "y": -60,
+    "z": 2
+   }
+  }
+ ],
+ "legend": [
+  {
+   "name": "Houses",
+   "source": "OpenStreetMap",
+   "count": "152",
+   "icon": "buildings",
+   "camera": {
+    "yaw": 120,
+    "pitch": 34,
+    "zoom": 2.4,
+    "x": 10,
+    "y": -60,
+    "z": 2
+   }
+  },
+  {
+   "name": "Kahayan River",
+   "source": "OpenStreetMap",
+   "icon": "water",
+   "camera": {
+    "yaw": 160,
+    "pitch": 22,
+    "zoom": 2.6,
+    "x": -40,
+    "y": -14,
+    "z": 2
+   }
+  }
+ ],
+ "notes": [
+  {
+   "title": "Dermaga Rambang",
+   "text": "A river port run by the city's transport office; traffic fell after the Kahayan bridge opened, and a food-stall area opened here in December 2022.",
+   "links": [
+    {
+     "label": "DJKN Palangkaraya",
+     "url": "https://www.djkn.kemenkeu.go.id/kpknl-palangkaraya/baca-artikel/16385/Wisata-Kuliner-Murah-Dermaga-Rambang-Palangka-Raya.html"
+    }
+   ]
+  },
+  {
+   "title": "Riverside houses",
+   "text": "Simple stilt houses of wood and bamboo line the Kahayan; Kampung Pahandut on this bank is described as the city's origin.",
+   "links": [
+    {
+     "label": "detikFinance",
+     "url": "https://finance.detik.com/foto-bisnis/d-3565891/sungai-kahayan-sumber-kehidupan-masyarakat-pesisir-palangka-raya"
+    }
+   ]
+  },
+  {
+   "title": "Haze",
+   "text": "Pre-school, primary and junior-high pupils moved to distance learning from 19 to 21 October 2026, after ISPU readings were in the dangerous range on 15–18 October.",
+   "links": [
+    {
+     "label": "Prokalteng",
+     "url": "https://prokalteng.jawapos.com/pemerintahan/pemko-palangka-raya/19/10/2026/kabut-asap-masih-berbahaya-disdik-palangka-raya-perpanjang-pjj/"
+    }
+   ]
+  },
+  {
+   "title": "Illustrative",
+   "text": "No building heights are mapped here; houses are drawn at one storey and street-front shophouses at two. Boats, colours, people and traffic are illustrative.",
+   "links": [
+    {
+     "label": "OpenStreetMap",
+     "url": "https://www.openstreetmap.org/copyright"
+    }
+   ]
+  }
+ ],
+ "credits": [
+  {
+   "label": "DJKN Palangkaraya",
+   "url": "https://www.djkn.kemenkeu.go.id/kpknl-palangkaraya/"
+  },
+  {
+   "label": "Prokalteng",
+   "url": "https://prokalteng.jawapos.com/"
+  },
+  {
+   "label": "detikFinance",
+   "url": "https://finance.detik.com/"
+  }
+ ]
+}

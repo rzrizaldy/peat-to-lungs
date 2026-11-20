@@ -5,6 +5,7 @@
 A scroll-snap data story about peat fires, smoke and people in Riau and Central Kalimantan (305 districts, 2019 and 2026). It is the web companion to a CMU 94-802A GIS project, whose official deliverables are being built in ArcGIS Pro.
 
 - One story, in plain language, with the key numbers and how sure we are about each.
+- Opens on two hand-drawn isometric dioramas (Pocket City): Dermaga Rambang in Palangka Raya and Merlion Park on Marina Bay, switched together between a clear day and the October 2026 haze.
 - English by default, Indonesian (`ID`) in the header. Light and dark themes.
 
 ## Run locally
@@ -56,6 +57,19 @@ python tools/regional-aq.py          # WashU 2019, CAMS 2026 (Open-Meteo), Singa
 python tools/district-exposure.py    # daily CAMS PM2.5 per district, Jul–Oct 2026 → data/exposure2026.json
 node --test tools/verify.test.mjs
 ```
+
+## Opening dioramas
+
+Built with the Pocket City skill by April Zhu (MIT, copy in `pocket-city/skill/`, credited on the slide). Sources per city live in `pocket-city/<city>/work/city.json`; built pages are `pocket/*.html`.
+
+```sh
+python pocket-city/skill/scripts/fetch_osm.py --lat -2.2038 --lon 113.9399 --size 220 --out pocket-city/pky/work/osm.json
+python pocket-city/skill/scripts/plot.py --osm pocket-city/pky/work/osm.json --out pocket-city/pky/work/plot.json
+python pocket-city/skill/scripts/prep.py --osm ... --plot ... --drive left --out pocket-city/pky/work/scene.json
+python pocket-city/skill/scripts/build.py --scene ... --city pocket-city/pky/work/city.json --out pocket/palangka-raya.html
+```
+
+Marina Bay uses `--lat 1.28681 --lon 103.85453 --size 210`, a hand-built Merlion (`sg/work/landmarks.js`) and `sg/work/fix_water.py`, because the bay is mapped as the Marina Reservoir relation and the coastline fill put the water on the wrong side. Illustrative boats were thinned to what the places show. The kit's haze tint takes a strength per scene (`haze: 0.66` Palangka Raya, `0.42` Singapore).
 
 ## Sources
 

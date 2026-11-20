@@ -1,0 +1,58 @@
+{
+  "name": "Singapore",
+  "title": "Marina Bay, Singapore",
+  "region": "Marina Bay",
+  "place": "Merlion Park × One Fullerton",
+  "flag": "<svg aria-hidden='true' viewBox='0 0 30 20'><rect width='30' height='10' fill='#d7383f'/><rect y='10' width='30' height='10' fill='#fbf7ee'/><circle cx='7' cy='5' r='3' fill='#fbf7ee'/><circle cx='8.2' cy='5' r='2.7' fill='#d7383f'/></svg>",
+  "timezone": "Asia/Singapore",
+  "level": 3.6,
+  "styles": {
+    "default": { "facade": "glass", "wall": ["#e9e4d8", "#f1ece1"], "roof": "flat", "flatRoof": "#cfc8b9", "levels": 3, "floor": 4.0,
+      "glass": ["#a9c3c8", "#9db8bf"], "frame": "#d9d2c3", "shop": "poi", "awning": false, "parapet": 0.8 },
+    "rules": [
+      { "if": { "maxArea": 40 }, "set": { "facade": "plain", "levels": 1, "floor": 3.2, "wall": ["#ece6d8"], "shop": "none" } }
+    ]
+  },
+  "buildings": {},
+  "palette": { "ground": "#e6dfcf", "road": "#b3adaa", "pavement": "#e3dccd", "walk": "#ddd5c4", "grass": "#a9c98c",
+    "water": "#86b9b8", "slab": "#d6ccb8", "marking": "#f4efe4", "kerb": "#d8cfbd", "paving": "#c9c0ae", "quay": "#d8d0bf" },
+  "paving": { "style": "tiles", "size": 0.6, "colour": "#c4bba9", "stone": "#e2dbcc" },
+  "lamp": { "colour": "#4c5552", "height": 6, "head": "#f3ecd6" },
+  "shops": { "signs": ["CAFÉ", "BAR", "DINER"], "font": "sans-serif", "fascias": ["#2f4a52", "#6a3b33", "#33533f"] },
+  "boats": { "hulls": ["#b8473b", "#2f5f8a", "#e9b949"], "stripes": ["#f3efe4", "#2f2b26"], "covers": ["#c9473c", "#f3efe4"], "cabin": "#f3efe4", "inside": "#8a6a4e" },
+  "cafes": { "umbrellas": ["#f3efe4", "#2f4a52"], "stripes": false, "table": "#f1ece0", "chair": "#6b6f6c" },
+  "trees": { "default": { "style": 2, "colours": ["#7fa765", "#8fb46e"], "height": 10, "evergreen": true } },
+  "people": { "clothes": ["#f3efe4", "#2b4a6f", "#d7383f", "#7aa3c5", "#f1c761", "#33533f", "#e9b9a8", "#2f2b26"] },
+  "vehicles": { "kinds": ["sedan", "hatch", "mpv"], "colours": ["#f2f2ee", "#2e3139", "#99a3ae", "#3a5a7a"], "plate": "#2b2b2b",
+    "taxi": { "share": 0.3, "colours": ["#2c6db3", "#f2c94c"], "kind": "sedan", "sign": "#f6e7a6" } },
+  "seasonLabel": "Weather",
+  "seasons": [
+    { "id": "ne", "label": "Northeast monsoon", "leaves": "summer", "wet": true, "umbrellas": true, "wx": "rain", "crowd": 0.8,
+      "note": { "text": "Higher rainfall occurs from November to January, the wet phase of the Northeast Monsoon.", "source": "Meteorological Service Singapore", "url": "https://www.weather.gov.sg/climate-climate-of-singapore/" } },
+    { "id": "inter", "label": "Inter-monsoon", "leaves": "summer", "crowd": 1.2,
+      "note": { "text": "Singapore has two monsoon seasons separated by inter-monsoonal periods.", "source": "Meteorological Service Singapore", "url": "https://www.weather.gov.sg/climate-climate-of-singapore/" } },
+    { "id": "sw", "label": "Southwest monsoon", "leaves": "summer", "crowd": 1.3,
+      "note": { "text": "The Southwest Monsoon runs from June to September.", "source": "Meteorological Service Singapore", "url": "https://www.weather.gov.sg/climate-climate-of-singapore/" } }
+  ],
+  "occasionLabel": "Special scenes",
+  "occasions": [
+    { "id": "haze", "label": "Haze, Oct 2026", "leaves": "summer", "haze": 0.42, "hazeColour": "214,198,168", "crowd": 0.35, "icon": "summer",
+      "note": { "text": "On 14 Oct 2026 smoke from fires in Kalimantan drifted in on southeasterly winds; PSI hit 118–168.", "source": "National Environment Agency", "url": "https://www.nea.gov.sg/media/news/advisories/index/haze-situation-update-14-october-2026" } }
+  ],
+  "months": ["ne", "ne", "ne", "inter", "inter", "sw", "sw", "sw", "sw", "inter", "inter", "ne"],
+  "cameras": { "iso": { "yaw": -125, "pitch": 32, "zoom": 1, "x": 0, "y": 0, "z": 3 } },
+  "views": [
+    { "id": "merlion", "label": "Merlion", "camera": { "yaw": -100, "pitch": 18, "zoom": 5.5, "x": -12.9, "y": -3.5, "z": 4 } },
+    { "id": "promenade", "label": "One Fullerton", "camera": { "yaw": -160, "pitch": 26, "zoom": 3, "x": -40, "y": -60, "z": 4 } }
+  ],
+  "legend": [
+    { "name": "Merlion", "source": "Hand-built · Wikipedia", "icon": "buildings", "camera": { "yaw": -100, "pitch": 18, "zoom": 5.5, "x": -12.9, "y": -3.5, "z": 4 } },
+    { "name": "One Fullerton", "source": "OpenStreetMap", "count": "9 shops", "icon": "buildings", "camera": { "yaw": -160, "pitch": 26, "zoom": 3, "x": -40, "y": -60, "z": 4 } }
+  ],
+  "notes": [
+    { "title": "The Merlion", "text": "The 8.6 m Merlion moved to this pier beside The Fullerton Hotel in April 2002. Drawn as simplified massing: lion head, fish body, water jet.", "links": [ { "label": "Wikipedia: Merlion Park", "url": "https://en.wikipedia.org/wiki/Merlion_Park" } ] },
+    { "title": "Haze", "text": "NEA advised children and the elderly to minimise outdoor activity, and opened air-conditioned haze shelters at community clubs.", "links": [ { "label": "NEA haze update, 14 Oct 2026", "url": "https://www.nea.gov.sg/media/news/advisories/index/haze-situation-update-14-october-2026" } ] },
+    { "title": "Illustrative", "text": "Boats on the bay, café tables, people and traffic are illustrative; building outlines and shop names come from OpenStreetMap.", "links": [ { "label": "OpenStreetMap", "url": "https://www.openstreetmap.org/copyright" } ] }
+  ],
+  "credits": [ { "label": "Meteorological Service Singapore", "url": "https://www.weather.gov.sg/climate-climate-of-singapore/" }, { "label": "National Environment Agency", "url": "https://www.nea.gov.sg/" } ]
+}

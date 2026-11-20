@@ -12,7 +12,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Public+Sans:ital,wght@0,400;0,500;0,600;0,700;0,800;1,500&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="styles.css?v=4">
+  <link rel="stylesheet" href="styles.css?v=5">
 </head>
 <body>
 <a class="skip" href="#deck" data-id="Lompat ke konten">Skip to content</a>
@@ -24,15 +24,15 @@
 
 <header class="topbar">
   <div class="topbar-inner">
-    <a class="brand" href="#intro"><svg aria-hidden="true"><use href="#i-mark"/></svg><span data-id="Dari Gambut ke Paru-paru">From Peat to Lungs</span></a>
+    <a class="brand" href="#cities"><svg aria-hidden="true"><use href="#i-mark"/></svg><span data-id="Dari Gambut ke Paru-paru">From Peat to Lungs</span></a>
     <nav class="chapters" aria-label="Chapters" data-id-aria-label="Bab">
-      <a class="chapter-seg" href="#intro" data-part="A"><b data-id="Konteks">Context</b><i></i></a>
+      <a class="chapter-seg" href="#cities" data-part="A"><b data-id="Konteks">Context</b><i></i></a>
       <a class="chapter-seg" href="#seasons" data-part="B"><b data-id="Bukti">Evidence</b><i></i></a>
       <a class="chapter-seg" href="#matrix" data-part="C"><b data-id="Tindakan">Action</b><i></i></a>
       <a class="chapter-seg" href="#limits" data-part="D"><b data-id="Batasan">Limits</b><i></i></a>
     </nav>
     <div class="header-tools">
-      <span id="counter">1 / 11</span>
+      <span id="counter">1 / 12</span>
       <select id="language" aria-label="Language" data-id-aria-label="Bahasa">
         <option value="en" lang="en">EN</option>
         <option value="id" lang="id">ID</option>
@@ -46,10 +46,36 @@
 
 <main id="deck">
 
+<!-- 0 · two cities -->
+<section class="slide" id="cities" data-part="A" data-label="Two cities, one smoke" data-id-label="Dua kota, satu asap"><div class="inner reveal">
+  <div class="cities-head">
+    <div>
+      <p class="kicker" data-id="Oktober 2026">October 2026</p>
+      <h1 class="cities-title" data-id="Satu asap, dua kota">One smoke, two cities</h1>
+    </div>
+    <p class="lede" data-id="Palangka Raya hidup di samping kebakaran gambut. Singapura berjarak sekitar 1.000 km. Pada Oktober 2026 keduanya menghirup asap yang sama.">Palangka Raya lives beside the peat fires. Singapore lies about 1,000 km away. In October 2026 both breathed the same smoke.</p>
+  </div>
+  <div class="seg day-switch" id="day-switch" role="group" aria-label="Day" data-id-aria-label="Hari">
+    <button type="button" data-day="clear" aria-pressed="true" data-id="Hari cerah">A clear day</button>
+    <button type="button" data-day="haze" aria-pressed="false" data-id="Kabut asap, Oktober 2026">Haze, October 2026</button>
+  </div>
+  <div class="cities">
+    <figure class="city">
+      <div class="city-frame"><iframe src="pocket/palangka-raya.html" data-clear="dry" title="Pocket City diorama of Dermaga Rambang, Palangka Raya" data-id-title="Diorama Pocket City Dermaga Rambang, Palangka Raya"></iframe></div>
+      <figcaption><h3>Palangka Raya <span class="muted" data-id="· tepi Sungai Kahayan">· Kahayan riverbank</span></h3><p id="city-pky"></p></figcaption>
+    </figure>
+    <figure class="city">
+      <div class="city-frame"><iframe src="pocket/marina-bay.html" data-clear="inter" title="Pocket City diorama of Marina Bay, Singapore" data-id-title="Diorama Pocket City Marina Bay, Singapura"></iframe></div>
+      <figcaption><h3>Singapore <span class="muted" data-id="· Marina Bay">· Marina Bay</span></h3><p id="city-sg"></p></figcaption>
+    </figure>
+  </div>
+  <p class="source" data-id="Diorama: Pocket City oleh April Zhu (MIT), data peta © kontributor OpenStreetMap. Orang, perahu, dan lalu lintas bersifat ilustrasi. Sumber teks: DJKN, Prokalteng, NEA, Wikipedia.">Dioramas: Pocket City by April Zhu (MIT), map data © OpenStreetMap contributors. People, boats and traffic are illustrative. Text sources: DJKN, Prokalteng, NEA, Wikipedia.</p>
+</div><a class="next" href="#intro" aria-label="Next slide" data-id-aria-label="Slide berikutnya"><svg aria-hidden="true"><use href="#i-down"/></svg></a></section>
+
 <!-- 1 · intro -->
 <section class="slide" id="intro" data-part="A" data-label="Start" data-id-label="Mulai"><div class="inner split hero reveal">
   <div class="copy">
-    <h1 data-id="Dari gambut ke paru-paru">From peat to lungs</h1>
+    <h1 class="intro-title" data-id="Dari gambut ke paru-paru">From peat to lungs</h1>
     <p class="lede" data-id="Setiap kemarau, gambut yang dikeringkan di Sumatra dan Kalimantan membara berminggu-minggu. Kami menelusuri asapnya dari tanah yang terbakar sampai ke orang yang menghirupnya, di 305 kecamatan Riau dan Kalimantan Tengah.">Every dry season, drained peat in Sumatra and Borneo smoulders for weeks. We followed the smoke from the burning ground to the people who breathe it, across 305 districts in Riau and Central Kalimantan.</p>
     <ul class="findings" id="findings" aria-label="Main findings" data-id-aria-label="Temuan utama"></ul>
   </div>
@@ -271,6 +297,6 @@
 </div></section>
 
 </main>
-<script type="module" src="app.mjs?v=4"></script>
+<script type="module" src="app.mjs?v=5"></script>
 </body>
 </html>
