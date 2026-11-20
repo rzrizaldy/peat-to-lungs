@@ -18,4 +18,5 @@ Last updated 2026-11-20 (America/New_York).
 ## Next actions
 
 1. When the ArcGIS StoryMap and Dashboard exist, add their links to the credits block on the last slide.
-2. If the ArcGIS Phase 4 results differ from the web model, update the recipe "Check" numbers in `app.mjs`.
+2. If the ArcGIS Phase 4 results differ from the web model, update the "Check" numbers in the coursework guide `agent_context/08_arcgis_replication_recipe.md` (the recipe is no longer on the site).
+3. Regenerate `data/regional.json` (`tools/regional-aq.py`) if NEA or CAMS revise late-2026 values; raw API responses are cached in `.work/aq-cache/`.
