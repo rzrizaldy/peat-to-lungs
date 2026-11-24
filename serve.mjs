@@ -5,7 +5,7 @@ const args = process.argv.slice(2);
 const port = Number(args[0] ?? process.env.PORT ?? 4173);
 if (!Number.isInteger(port) || port < 1 || port > 65535) throw new Error('Port harus 1–65535.');
 const root = new URL('./', import.meta.url);
-const allowed = /^(?:index\.html|styles\.css|app\.mjs|map\.mjs|iso\.mjs|tools\/model\.mjs|assets\/(?:pocket\/)?[a-z0-9-]+\.(?:png|webp)|pocket\/[a-z0-9-]+\.html|data\/[a-z0-9-]+\.json)$/i;
+const allowed = /^(?:index\.html|styles\.css|atlas\.css|app\.mjs|atlas\.mjs|map\.mjs|iso\.mjs|tools\/model\.mjs|assets\/(?:pocket\/)?[a-z0-9-]+\.(?:png|webp)|pocket\/[a-z0-9-]+\.html|data\/[a-z0-9-]+\.json)$/i;
 const types = { html: 'text/html; charset=utf-8', css: 'text/css; charset=utf-8', mjs: 'text/javascript; charset=utf-8',
   json: 'application/json; charset=utf-8', png: 'image/png', webp: 'image/webp' };
 

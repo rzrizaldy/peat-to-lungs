@@ -122,3 +122,24 @@ test('all published scenarios preserve GIS totals and have complete valid layers
     }
   }
 });
+
+test('opening map grid keeps national population, land area and the study-province fire totals', async () => {
+  const [atlas, bounds] = await Promise.all([json('atlas'), json('atlas-bounds')]);
+  const decode = (b64, Type) => new Type(new Uint8Array(Buffer.from(b64, 'base64')).buffer);
+  const region = decode(atlas.region, Uint16Array), pop = decode(atlas.pop, Uint32Array), area = decode(atlas.area, Uint16Array);
+  const idx = decode(atlas.idx, Uint32Array), f26 = decode(atlas.fire2026, Uint16Array), cover = decode(atlas.cover, Uint8Array);
+  assert.equal(idx.length, atlas.n);
+  assert.equal(new Set(idx).size, atlas.n, 'cells are unique');
+  assert.equal(bounds.regencies.length, 522);
+  assert.equal(bounds.provinces.length, 34);
+  const total = Array.from(pop).reduce((a, b) => a + b, 0);
+  assert(Math.abs(total - 273748190) / 273748190 < 1e-4, `WorldPop total ${total}`);
+  const land = Array.from(area).reduce((a, b) => a + b, 0) / 100;
+  assert(land > 1.88e6 && land < 1.93e6, `land ${land}`);
+  const fires = code => [0, 1].map(y => bounds.regencies.filter(r => r.province === code).reduce((s, r) => s + r.fires[y], 0));
+  assert.deepEqual(fires('ID14'), [22874, 3158]);
+  assert.deepEqual(fires('ID62'), [80126, 164333]);
+  const riauPop = Array.from(pop).reduce((s, p, i) => s + (bounds.regencies[region[i]].province === 'ID14' ? p : 0), 0);
+  assert(Math.abs(riauPop - 6474029) / 6474029 < 0.01, `Riau population ${riauPop}`);
+  for (let i = 0; i < atlas.n; i += 1) if (!cover[i]) assert.equal(f26[i], 0, '2026 fires only inside the download extent');
+});
