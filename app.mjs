@@ -163,7 +163,6 @@ const currentIds = () => overview.zones.flatMap((z, i) => (provinceIds(state.reg
 const seasonTotal = (id, y) => (ISLANDS.includes(id) ? islandSeason(id, y).total : id === 'all' ? total(allProvinces().map(p => seasonTotal(p, y))) : overview.provinces[id].seasons[y].total);
 const change = id => 100 * (seasonTotal(id, 2026) / seasonTotal(id, 2019) - 1);
 const priorityPeople = (scenario, ids = allProvinces()) => total(ids.map(id => scenario.provinces[id].priorityPeople));
-const pLabel = p => (p < 0.001 ? 'p < 0.001' : `p = ${fmt(p, 3)}`);
 
 function clusterLabel(profile) {
   const [fire, loss, pm, pop] = profile.center;
@@ -318,14 +317,13 @@ function renderStepper(step) {
 /* ================================================================ seasons */
 function renderSeasons() {
   const k19 = profile.Kalimantan[2019], k26 = profile.Kalimantan[2026];
-  const s19 = profile.Sumatra[2019], s26 = profile.Sumatra[2026];
   const busy = (isl, y) => profile[isl][y].daily.filter(v => v >= 1000).length;
   el('season-insight').innerHTML = t(
     `Both islands together had <strong>${fmt(change('all'))}% more</strong> fire in 2026. Kalimantan ${change('Kalimantan') >= 0 ? 'rose' : 'fell'} ${fmt(Math.abs(change('Kalimantan')))}% while Sumatra ${change('Sumatra') >= 0 ? 'rose' : 'fell'} ${fmt(Math.abs(change('Sumatra')))}%. In Kalimantan, September 2026 was close to 2019 (${fmt(k26.months[2])} detections against ${fmt(k19.months[2])}), but October kept burning: <strong>${fmt(k26.months[3])}</strong> against ${fmt(k19.months[3])}. Kalimantan had <strong>${busy('Kalimantan', 2026)} days</strong> with 1,000+ detections, against ${busy('Kalimantan', 2019)} in 2019.`,
     `Kedua pulau bersama-sama punya <strong>${fmt(change('all'))}% lebih banyak</strong> api pada 2026. Kalimantan ${change('Kalimantan') >= 0 ? 'naik' : 'turun'} ${fmt(Math.abs(change('Kalimantan')))}% sementara Sumatera ${change('Sumatra') >= 0 ? 'naik' : 'turun'} ${fmt(Math.abs(change('Sumatra')))}%. Di Kalimantan, September 2026 mendekati 2019 (${fmt(k26.months[2])} deteksi dibanding ${fmt(k19.months[2])}), tetapi Oktober terus terbakar: <strong>${fmt(k26.months[3])}</strong> dibanding ${fmt(k19.months[3])}. Kalimantan mengalami <strong>${busy('Kalimantan', 2026)} hari</strong> dengan 1.000+ deteksi, dibanding ${busy('Kalimantan', 2019)} pada 2019.`);
   el('season-why').textContent = t(
-    `Why: a strong El Niño and a positive Indian Ocean Dipole kept 2026 dry into October. In Kalimantan, night-time detections rose to ${fmt(k26.nightShare * 100)}% from ${fmt(k19.nightShare * 100)}%, and ${fmt(k26.cellsBurning5PlusDays)} two-kilometre squares burned on five or more days, ${fmt(k26.cellsBurning5PlusDays / k19.cellsBurning5PlusDays, 1)}× as many as 2019: signs of peat smouldering for days. Sumatra had ${fmt(s26.cellsBurning5PlusDays)} such squares, against ${fmt(s19.cellsBurning5PlusDays)}.`,
-    `Penyebabnya: El Niño kuat dan Indian Ocean Dipole positif membuat 2026 tetap kering hingga Oktober. Di Kalimantan, deteksi malam naik menjadi ${fmt(k26.nightShare * 100)}% dari ${fmt(k19.nightShare * 100)}%, dan ${fmt(k26.cellsBurning5PlusDays)} kotak dua kilometer terbakar lima hari atau lebih, ${fmt(k26.cellsBurning5PlusDays / k19.cellsBurning5PlusDays, 1)}× lipat 2019: tanda gambut membara berhari-hari. Sumatera punya ${fmt(s26.cellsBurning5PlusDays)} kotak seperti itu, dibanding ${fmt(s19.cellsBurning5PlusDays)}.`);
+    `Why: a strong El Niño kept 2026 dry into October. In Kalimantan more fire burned at night, and ${fmt(k26.cellsBurning5PlusDays)} two-kilometre squares burned on five or more days, ${fmt(k26.cellsBurning5PlusDays / k19.cellsBurning5PlusDays, 1)}× as many as in 2019. That is peat smouldering for days.`,
+    `Mengapa: El Niño yang kuat membuat 2026 kering hingga Oktober. Di Kalimantan lebih banyak api menyala di malam hari, dan ${fmt(k26.cellsBurning5PlusDays)} kotak dua kilometer terbakar lima hari atau lebih, ${fmt(k26.cellsBurning5PlusDays / k19.cellsBurning5PlusDays, 1)}× lipat dibanding 2019. Itulah gambut yang membara berhari-hari.`);
   drawDaily();
   $$('#terrain-year button').forEach(b => b.setAttribute('aria-pressed', Number(b.dataset.year) === terrainYear));
   showTerrain();
@@ -380,24 +378,20 @@ async function renderSmoke() {
     `Across both islands, areas with more fire within ${r} km had dirtier air in September 2019. A high-fire area (top quarter) averaged about <strong>${fmt(effect)} µg/m³</strong> more PM₂.₅ than a low-fire one (bottom quarter). The WHO 24-hour guideline is 15.`,
     `Di kedua pulau, wilayah dengan lebih banyak api dalam ${r} km punya udara lebih kotor pada September 2019. Wilayah api tinggi (kuartil atas) rata-rata sekitar <strong>${fmt(effect)} µg/m³</strong> PM₂.₅ lebih tinggi daripada wilayah api rendah (kuartil bawah). Pedoman WHO 24 jam adalah 15.`);
   // marginal effect of 0.1 more detections/km² at light, medium and heavy fire (best-fitting curve)
-  const [mLow, , mHigh] = shape.marginal;
   const forms = Object.entries(shape.shape['100']).sort((p, q) => q[1].cvR2 - p[1].cvR2);
   const bent = forms[0][0] !== 'linear';
   el('smoke-insight').innerHTML += ' ' + (bent ? t(
-    `The curve flattens as fire grows: 0.1 more detections per km² within 100 km adds about <strong>${fmt(mLow.perTenth)} µg/m³</strong> where fire is light, but about ${fmt(mHigh.perTenth)} where it is already heavy. Even a little fire nearby matters.`,
-    `Kurvanya melandai saat api bertambah: tambahan 0,1 deteksi per km² dalam 100 km menambah sekitar <strong>${fmt(mLow.perTenth)} µg/m³</strong> di tempat apinya sedikit, tetapi sekitar ${fmt(mHigh.perTenth)} di tempat apinya sudah banyak. Sedikit api di sekitar pun berpengaruh.`) : t(
-    `The relationship is close to a straight line: each extra 0.1 detections per km² within 100 km adds about <strong>${fmt(shape.shape['100'].linear.coef[1] / 10)} µg/m³</strong>, from the cleanest area to the smokiest.`,
-    `Hubungannya mendekati garis lurus: setiap tambahan 0,1 deteksi per km² dalam 100 km menambah sekitar <strong>${fmt(shape.shape['100'].linear.coef[1] / 10)} µg/m³</strong>, dari wilayah terbersih sampai yang paling berasap.`));
-  const w = cal.withinProvince;
-  const pAll = Math.max(w.Sumatra.p, w.Kalimantan.p);
+    `Even a little fire nearby matters: the first fires add the most smoke, and the curve flattens where fire is already heavy.`,
+    `Sedikit api di sekitar pun berpengaruh: api pertama menambah asap paling banyak, lalu kurvanya melandai di tempat yang apinya sudah banyak.`) : t(
+    `The more fire nearby, the dirtier the air, almost in a straight line from the cleanest area to the smokiest.`,
+    `Makin banyak api di sekitar, makin kotor udaranya, hampir lurus dari wilayah terbersih sampai yang paling berasap.`));
   el('smoke-tiles').innerHTML = [
     [`${fmt(cal.r2 * 100)}%`, t(`of the differences between ${overview.zones.length} regencies explained by nearby fire`, `perbedaan antar ${overview.zones.length} kabupaten/kota dijelaskan oleh api di sekitar`)],
-    [`${fmt(cal.spatialCV.r2 * 100)}%`, t('still explained when whole regencies are hidden from the model', 'tetap terjelaskan saat seluruh kabupaten disembunyikan dari model')],
-    [`ρ ${fmt(w.Sumatra.rho, 2)} / ${fmt(w.Kalimantan.rho, 2)}`, t(`rank link inside Sumatra / Kalimantan, ${pLabel(pAll)}`, `hubungan peringkat di dalam Sumatera / Kalimantan, ${pLabel(pAll)}`)],
+    [`${fmt(cal.spatialCV.r2 * 100)}%`, t('still explained for regencies the model never saw', 'tetap terjelaskan untuk kabupaten/kota yang belum pernah dilihat model')],
   ].map(([a, b]) => `<div><strong>${a}</strong><small>${b}</small></div>`).join('');
   el('smoke-caveat').textContent = t(
-    `The link holds when whole regencies are left out of the model and inside each island. It is an association: wind and weather also move smoke, and the model leaves them out.`,
-    `Hubungan ini bertahan saat seluruh kabupaten dikeluarkan dari model dan di dalam tiap pulau. Ini asosiasi: angin dan cuaca juga menggerakkan asap, dan model belum memasukkannya.`);
+    `This shows a link, not proof. The wind matters too, as the next slides show.`,
+    `Ini menunjukkan hubungan, bukan bukti. Angin juga berperan, seperti terlihat di slide berikutnya.`);
   scatterData = { x: dens.map(Math.log1p), y: overview.zones.map(z => z.pm25), cal, mode: modelKey.split('-')[0] };
   drawScatter();
 }
@@ -522,7 +516,7 @@ function renderMapPanel() {
     const breaks = year === 2019 ? ['<50', '50', '80', '110', '150', '≥200'] : ['P0', 'P17', 'P33', 'P50', 'P67', 'P83+'];
     legend = `<div class="range">${breaks.map((b, i) => `<span><i class="swatch" style="background:${EXPOSURE_COLORS[i]}"></i>${b}</span>`).join(' ')}</div><span>${year === 2019 ? 'µg/m³' : t('model percentile', 'persentil model')}</span>`;
   } else if (layer === 'index') {
-    caption = t('Red outlines mark priority zones (index ≥ +1.5 SD). Both seasons use the 2019 yardstick, so they compare directly.', 'Garis merah menandai zona prioritas (indeks ≥ +1,5 SD). Kedua musim memakai tolok ukur 2019, jadi bisa dibandingkan langsung.');
+    caption = t('Red outlines: priority zones, where fire, smoke and people overlap most. Both years use the same scale.', 'Garis merah: zona prioritas, tempat api, asap, dan penduduk paling bertumpuk. Kedua tahun memakai skala yang sama.');
     legend = legendRamp(INDEX_COLORS, '−1.5 SD', '+1.5 SD', t('0.5 SD per class', '0,5 SD per kelas'));
   } else {
     caption = t(`K-means groups all ${overview.zones.length} regencies into ${scenario.clusters.k} profiles for ${year}.`, `K-means mengelompokkan ${overview.zones.length} kabupaten/kota menjadi ${scenario.clusters.k} profil untuk ${year}.`);
@@ -596,8 +590,8 @@ function renderPriority() {
   }).join('') : `<tr><td colspan="3" class="muted">${t('No priority zones for this selection.', 'Tidak ada zona prioritas untuk pilihan ini.')}</td></tr>`;
   // clusters
   const ids = currentIds();
-  el('cluster-caption').textContent = t(`${scenario.clusters.k} groups from fire density, forest loss on peat, smoke and Ln population density (${year}).`,
-    `${scenario.clusters.k} kelompok dari kepadatan api, kehilangan hutan di gambut, asap, dan Ln kepadatan penduduk (${year}).`);
+  el('cluster-caption').textContent = t(`${scenario.clusters.k} groups of regencies with similar fire, smoke, peat loss and population (${year}).`,
+    `${scenario.clusters.k} kelompok kabupaten/kota dengan api, asap, kehilangan gambut, dan penduduk yang mirip (${year}).`);
   el('clusters').innerHTML = scenario.clusters.profiles.flatMap(p => {
     const members = ids.filter(i => scenario.indicators[i].cluster === p.id);
     if (!members.length) return [];
@@ -610,8 +604,8 @@ function renderPriority() {
 /* ================================================================ limits */
 function renderLimits() {
   el('limit-2026').textContent = t(
-    `No 2026 satellite PM₂.₅ map exists yet. 2026 values come from the 2019 model, and ${stats.extrapolation['count-100']} of ${overview.zones.length} regencies fall outside its training range. The 2×2 uses CAMS daily model values instead.`,
-    `Belum ada peta PM₂.₅ satelit 2026. Nilai 2026 berasal dari model 2019, dan ${stats.extrapolation['count-100']} dari ${overview.zones.length} kabupaten/kota berada di luar rentang data latihnya. Matriks 2×2 memakai nilai harian model CAMS.`);
+    `There is no satellite smoke map for 2026 yet, so 2026 smoke values are model estimates. ${stats.extrapolation['count-100']} of ${overview.zones.length} regencies had more fire than the 2019 model ever saw.`,
+    `Belum ada peta asap satelit untuk 2026, jadi nilai asap 2026 adalah perkiraan model. ${stats.extrapolation['count-100']} dari ${overview.zones.length} kabupaten/kota punya api lebih banyak dari yang pernah dilihat model 2019.`);
 }
 
 /* ================================================================ daily fire chart */
@@ -843,15 +837,15 @@ function renderMatrix() {
   }).join('');
   const rFirePm = spearman(fire, ex.map(r => r.mean)), rPopFire = spearman(pop, fire);
   el('matrix-corr').textContent = t(
-    `Across all ${overview.zones.length} regencies, fire nearby and mean PM₂.₅ rise together (rank correlation ${fmt(rFirePm, 2)}). More populous regencies had ${rPopFire < 0 ? 'slightly less' : 'slightly more'} fire nearby (${fmt(rPopFire, 2)}).`,
-    `Di ${overview.zones.length} kabupaten/kota, api di sekitar dan rerata PM₂.₅ naik bersama (korelasi peringkat ${fmt(rFirePm, 2)}). Kabupaten/kota yang lebih padat penduduk ${rPopFire < 0 ? 'sedikit lebih jauh dari' : 'sedikit lebih dekat ke'} api (${fmt(rPopFire, 2)}).`);
+    `Across all ${overview.zones.length} regencies, more fire nearby went with dirtier air.`,
+    `Di ${overview.zones.length} kabupaten/kota, makin banyak api di sekitar, makin kotor udaranya.`);
   const sg = regional.singapore.daily[2026], cams = regional.cities.Singapore.camsDaily2026;
   const pairs = sg.map((v, i) => [v, cams[i]]).filter(([a, b]) => a != null && b != null);
   const pr = (() => { const ma = total(pairs.map(p => p[0])) / pairs.length, mb = total(pairs.map(p => p[1])) / pairs.length; let s = 0, sa = 0, sb = 0; for (const [a, b] of pairs) { s += (a - ma) * (b - mb); sa += (a - ma) ** 2; sb += (b - mb) ** 2; } return s / Math.sqrt(sa * sb); })();
   const obs = pairs.filter(p => p[0] >= 55.5).length, mod = pairs.filter(p => p[1] >= 55.5).length;
   el('matrix-note').textContent = t(
-    `The CAMS model tracked Singapore's official monitors closely (r = ${fmt(pr, 2)}) but read lower (${mod} unhealthy days vs ${obs}), so day counts here are conservative. No clinic records were available; person-days (people × days) stand in for the health burden.`,
-    `Model CAMS mengikuti alat pemantau resmi Singapura dengan erat (r = ${fmt(pr, 2)}) tetapi lebih rendah (${mod} hari tidak sehat vs ${obs}), jadi jumlah hari di sini konservatif. Tidak ada data puskesmas; orang-hari (penduduk × hari) dipakai untuk menggambarkan beban kesehatan.`);
+    `Checked against Singapore's monitors, the smoke model followed the ups and downs well but ran low (${mod} unhealthy days vs ${obs} measured), so these counts are if anything too low.`,
+    `Dibandingkan alat pemantau Singapura, model asap mengikuti naik-turunnya dengan baik tetapi cenderung rendah (${mod} hari tidak sehat vs ${obs} terukur), jadi angka ini kalaupun salah, terlalu rendah.`);
   drawQuad();
 }
 function drawQuad() {
@@ -862,7 +856,7 @@ function drawQuad() {
   ctx.clearRect(0, 0, width, height);
   $$('#quad-view button').forEach(b => b.setAttribute('aria-pressed', b.dataset.v === quadView));
   el('quad-sub').textContent = quadView === 'matrix'
-    ? t('One mark per regency. Colour = quadrant; shape = island; size = population. Lines split at the median fire level and 30 unhealthy days.', 'Satu tanda = satu kabupaten/kota. Warna = kuadran; bentuk = pulau; ukuran = penduduk. Garis membagi di median api dan 30 hari tidak sehat.')
+    ? t('Each mark is a regency; bigger means more people. Lines split at the middle fire level and 30 unhealthy days.', 'Setiap tanda adalah kabupaten/kota; makin besar, makin banyak penduduk. Garis membagi di tingkat api tengah dan 30 hari tidak sehat.')
     : t('Each regency in its quadrant colour. ★ ArcGIS Pro deep-dive provinces.', 'Setiap kabupaten/kota diwarnai menurut kuadrannya. ★ Provinsi analisis mendalam ArcGIS Pro.');
   el('quad-legend').innerHTML = QUADS.map(k => `<span class="small"><i class="legend-dot" style="background:${quadColour(k)}"></i>${t(...QUAD_NAME[k])}</span>`).join('')
     + (quadView === 'matrix' ? `<span class="legend-gap"></span>${SHAPE_KEY()}<span class="small muted">${t('Size = population', 'Ukuran = penduduk')}</span>` : '');
@@ -991,7 +985,6 @@ el('quad').addEventListener('pointerleave', () => { el('quad-tip').hidden = true
 function renderActions() {
   const k19 = profile.Kalimantan[2019], k26 = profile.Kalimantan[2026];
   const sg = regional.singapore.daily;
-  const lin = shape.marginal[1].perTenth * 10;   // per detection/km² at a middle fire level
   const low = shape.bins[0].pm;
   // top regencies in 2026 priority zones
   const groups = new Map();
@@ -1008,8 +1001,8 @@ function renderActions() {
       t(`${fmt(k26.cellsBurning5PlusDays)} two-kilometre squares in Kalimantan burned on five or more days in 2026, ${fmt(k26.cellsBurning5PlusDays / k19.cellsBurning5PlusDays, 1)}× as many as in 2019. Smouldering peat is what makes smoke last. Canal blocking and rewetting there cut the longest exposure.`,
         `${fmt(k26.cellsBurning5PlusDays)} kotak dua kilometer di Kalimantan terbakar lima hari atau lebih pada 2026, ${fmt(k26.cellsBurning5PlusDays / k19.cellsBurning5PlusDays, 1)}× lipat dibanding 2019. Gambut yang membara inilah yang membuat asap bertahan. Penyekatan kanal dan pembasahan di sana memangkas paparan terpanjang.`)],
     [t('Protect people within 100 km of fire clusters', 'Lindungi warga dalam radius 100 km dari klaster api'),
-      t(`Fire up to about 100 km away explains local air best, and each extra 0.1 detections per km² adds roughly ${fmt(lin / 10)} µg/m³ at a middle fire level. In 2026 the priority zones held ${millions(priorityPeople(story[2026]))} people, led by ${top}. Clean-air rooms, masks and school schedules belong there first.`,
-        `Api hingga sekitar 100 km paling menjelaskan kualitas udara setempat, dan setiap tambahan 0,1 deteksi per km² menambah sekitar ${fmt(lin / 10)} µg/m³ pada tingkat api menengah. Pada 2026 zona prioritas dihuni ${millions(priorityPeople(story[2026]))} orang, terbanyak di ${top}. Ruang udara bersih, masker, dan jadwal sekolah perlu disiapkan di sana lebih dulu.`)],
+      t(`Fire within about 100 km shapes the air people breathe. In 2026 the priority zones held ${millions(priorityPeople(story[2026]))} people, most of them in ${top}. Clean-air rooms, masks and school schedules belong there first.`,
+        `Api dalam sekitar 100 km paling menentukan udara yang dihirup warga. Pada 2026 zona prioritas dihuni ${millions(priorityPeople(story[2026]))} orang, terbanyak di ${top}. Ruang udara bersih, masker, dan jadwal sekolah perlu disiapkan di sana lebih dulu.`)],
     [t('Treat haze as a regional problem', 'Perlakukan kabut asap sebagai masalah kawasan'),
       t(`Even the areas with the least fire nearby averaged ${fmt(low)} µg/m³ in September 2019, ${fmt(low / 15, 1)}× the WHO daily guideline, and Singapore logged ${runs(sg[2026], 37.5).days} haze days in 2026. Shared early warning under the ASEAN haze agreement belongs alongside local firefighting.`,
         `Bahkan wilayah dengan api paling sedikit di sekitarnya rata-rata ${fmt(low)} µg/m³ pada September 2019, ${fmt(low / 15, 1)}× pedoman harian WHO, dan Singapura mencatat ${runs(sg[2026], 37.5).days} hari berasap pada 2026. Peringatan dini bersama dalam kerangka perjanjian kabut asap ASEAN perlu berjalan bersama pemadaman lokal.`)],

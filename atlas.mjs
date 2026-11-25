@@ -43,16 +43,8 @@ const T = {
   partial: ['2026 covers only the part of this region inside Sumatra and Kalimantan ({c} of its land).', '2026 hanya mencakup bagian wilayah ini di Sumatra dan Kalimantan ({c} daratannya).'],
   compare: ['Change 2019 → 2026', 'Perubahan 2019 → 2026'],
   layers: ['Show', 'Tampilkan'],
-  layerPlan: ['Prevention plan', 'Rencana pencegahan'],
-  planHead: ['Prevention plan, 20% budget (wind-aware MILP)', 'Rencana pencegahan, anggaran 20% (MILP dengan angin)'],
-  planHealth: ['Health first', 'Kesehatan dulu'],
-  planBalanced: ['Balanced', 'Seimbang'],
-  planBody: ['{n} regencies. Avoids {a} µg/m³ of population-weighted PM₂.₅ and {e}% of fire emissions. Funding the regencies with the most fire would avoid only {f} µg/m³.',
-    '{n} kabupaten/kota. Menghindari {a} µg/m³ PM₂.₅ berbobot penduduk dan {e}% emisi api. Mendanai daerah dengan api terbanyak hanya menghindari {f} µg/m³.'],
-  planNote: ['ERA5 wind decides whose air each fire reaches. Sumatra and Kalimantan only, where the model was calibrated.', 'Angin ERA5 menentukan udara siapa yang terkena tiap api. Hanya Sumatra dan Kalimantan, tempat model dikalibrasi.'],
-  planTip: ['In the prevention plan: rank {r} of {n}, {s} of the benefit', 'Dalam rencana pencegahan: peringkat {r} dari {n}, {s} manfaat'],
-  peatTests: ['Peat test: in a difference-in-differences, a fully peat cell changed by {did} detections per 100 km² more than non-peat land from 2019 to 2026. At the peat edge, fire density jumps from {o} to {i} per 100 km² (2026).',
-    'Uji gambut: dalam difference-in-differences, sel yang seluruhnya gambut berubah {did} titik api per 100 km² lebih banyak daripada lahan non-gambut dari 2019 ke 2026. Di tepi gambut, kepadatan api melonjak dari {o} ke {i} per 100 km² (2026).'],
+  peatTests: ['Peat check: from 2019 to 2026, fire on peat changed by {did} per 100 km² more than on other land. Right at the peat edge in 2026, fire goes from {o} to {i} per 100 km².',
+    'Cek gambut: dari 2019 ke 2026, api di gambut berubah {did} per 100 km² lebih banyak daripada di lahan lain. Tepat di tepi gambut pada 2026, api berubah dari {o} ke {i} per 100 km².'],
   compareShort: ['Change', 'Perubahan'],
   details: ['Details ▾', 'Detail ▾'],
   detailsHide: ['Less ▴', 'Ringkas ▴'],
@@ -155,8 +147,8 @@ const fromWorld = (x, y) => [x / TILE * 360 - 180, Math.atan(Math.sinh(Math.PI *
 
 /* ================================================================ state */
 // Layers: fire spikes per year (both may be on), smoke for one year at a time (0 = off), change fill.
-const state = { region: ROOT, year: 2026, fire19: false, fire26: true, smoke: 0, compare: true, plan: false, planMode: 'health', people: false, smokeMonth: 'oct' };
-let plan = null;                                               // MILP prevention plan + peat tests (data/plan.json)   // 2026 smoke is always the October peak
+const state = { region: ROOT, year: 2026, fire19: false, fire26: true, smoke: 0, compare: true, people: false, smokeMonth: 'oct' };
+let plan = null;                                               // peat tests for the study cards (data/plan.json); 2026 smoke is always the October peak
 let cell, regions, boundsData, smoke = null, cams = null, allPath = null, view = { cx: 0, cy: 0, z: 5 }, dirty = true, anim = null, visible = true;
 const canvas = $('at-map'), ctx = canvas.getContext('2d');
 const size = () => { const r = canvas.getBoundingClientRect(); return { W: r.width, H: r.height, r }; };
@@ -470,12 +462,6 @@ function draw() {
     }
     ctx.globalAlpha = 1;
   }
-  if (state.plan && plan) {
-    ctx.globalAlpha = 0.7; ctx.fillStyle = '#0f766e';
-    for (const p of planList()) if (regions.has(p.id)) ctx.fill(pathOf(p.id));
-    ctx.globalAlpha = 1; ctx.strokeStyle = '#063f3a'; ctx.lineWidth = 0.9 / s;
-    for (const p of planList()) if (regions.has(p.id)) ctx.stroke(pathOf(p.id));
-  }
   drawCellLayers(W, H, s);
   if (priority?.path) {
     ctx.fillStyle = 'rgba(138,74,16,.12)';
@@ -603,12 +589,6 @@ function drawLegend() {
     html += `<div style="margin-top:4px">${t('legendSmoke', { m: monthName(state.smoke), src: t(state.smoke === 2019 ? 'src19' : 'src26') })}</div><div>${smoke.rgba.slice(1).map((c, i) => `<span class="key" title="${labels[i]}" style="width:22px;margin:0;background:rgba(${c[0]},${c[1]},${c[2]},${(c[3] / 255).toFixed(2)})"></span>`).join('')}</div><div style="font-size:11px">15 · 35 · 55 · 150 · 250</div>`;
   }
   if (state.fire19 && state.fire26) html = html.replace('</h6>', `</h6><div><span class="key" style="background:#6d6dc1"></span>2019 <span class="key" style="background:#cc6c22;margin-left:8px"></span>2026</div>`);
-  if (state.plan && plan) {
-    const pt = planPoint(), mf = plan.simple?.['Most fire']?.health_ugm3 ?? plan.avoided_ugm3['Most fire'];
-    html += `<div class="at-plan" style="margin-top:6px;max-width:240px;text-align:left"><span class="key" style="background:#0f766e"></span><b style="color:var(--ink)">${t('planHead')}</b>
-      <div class="seg at-planmode">${['health', 'balanced'].map(m => `<button type="button" data-mode="${m}" aria-pressed="${state.planMode === m}">${t(m === 'health' ? 'planHealth' : 'planBalanced')}</button>`).join('')}</div>
-      ${t('planBody', { n: planList().length, a: nf(pt.health_ugm3, 1), e: nf(pt.emissions_cut_pct, 1), f: nf(mf, 1) })}<br><span style="font-size:11px">${t('planNote')}</span></div>`;
-  }
   if (state.people) html += `<div><span class="key" style="background:#2b5caa"></span>${t('legendPeople')}</div>`;
   if (priority?.path) html += `<div><span class="key" style="border:1.5px solid #6b3410"></span>${t('legendPriority')}</div>`;
   el.innerHTML = html;
@@ -906,29 +886,7 @@ $('at-details').addEventListener('click', () => {
 });
 
 // Layer bar: fire spikes, smoke and the 2019 → 2026 change fill switch on and off independently.
-// Prevention plan: two points on the Pareto frontier (health first, or the balanced knee).
-let planCustom = null;                                          // a frontier point sent from the #budget slide
-const planList = () => (planCustom ? planCustom.ids.map((id, i) => ({ id, share: planCustom.share[i] }))
-  : state.planMode === 'balanced' && plan?.balanced ? plan.balanced : plan?.health_first ?? plan?.selected ?? []);
-function planPoint() {
-  if (planCustom) return { health_ugm3: planCustom.health, emissions_cut_pct: planCustom.emissions };
-  const f = plan?.frontier ?? [];
-  if (!f.length) return { health_ugm3: plan?.avoided_ugm3?.MILP ?? 0, emissions_cut_pct: 0 };
-  if (state.planMode === 'health') return f[0];
-  return f.reduce((best, z) => (z.health_ugm3 / f[0].health_ugm3 + z.emissions_cut_pct / f.at(-1).emissions_cut_pct > best.health_ugm3 / f[0].health_ugm3 + best.emissions_cut_pct / f.at(-1).emissions_cut_pct ? z : best), f[0]);
-}
-$('at-legend').addEventListener('click', e => {
-  const b = e.target.closest('.at-planmode button');
-  if (!b) return;
-  state.planMode = b.dataset.mode; planCustom = null; drawLegend(); dirty = true;
-});
-document.addEventListener('plan:show', e => {
-  planCustom = e.detail; state.plan = true; state.compare = false; state.year = 2026; state.fire26 = true; state.fire19 = false;
-  state.planMode = e.detail.label?.startsWith('Health') || e.detail.label?.startsWith('Kesehatan') ? 'health' : 'balanced';
-  select('belt');
-  paintLayers(); drawLegend(); dirty = true;
-});
-const layerOn = key => ({ fire19: state.fire19, fire26: state.fire26, smoke19: state.smoke === 2019, smoke26: state.smoke === 2026, change: state.compare, plan: state.plan })[key];
+const layerOn = key => ({ fire19: state.fire19, fire26: state.fire26, smoke19: state.smoke === 2019, smoke26: state.smoke === 2026, change: state.compare })[key];
 function paintLayers() {
   for (const b of section.querySelectorAll('.at-layers button')) b.setAttribute('aria-pressed', String(layerOn(b.dataset.layer)));
 }
@@ -938,7 +896,6 @@ for (const b of section.querySelectorAll('.at-layers button')) b.addEventListene
   else if (key === 'fire26') state.fire26 = !state.fire26;
   else if (key === 'smoke19') state.smoke = state.smoke === 2019 ? 0 : 2019;   // one smoke year at a time
   else if (key === 'smoke26') state.smoke = state.smoke === 2026 ? 0 : 2026;
-  else if (key === 'plan') state.plan = !state.plan;
   else state.compare = !state.compare;
   paintLayers(); drawLegend(); dirty = true;
 });
@@ -1025,7 +982,7 @@ function showTip(mx, my) {
   }
   const reg = boundsData.regencies[cell.reg[i]], f = cell.f[state.year][i], covered = state.year === 2019 || cell.cover[i];
   const pmYear = state.smoke || state.year, pmv = pmYear === 2019 ? cell.pm[i] / 10 : camsAt(i);
-  tip.innerHTML = `<b>${reg.name}</b><span>${regions.get(reg.province).name()}</span><br>${t('tipCell')} · ${covered ? t('tipFire', { n: nf(f) }) : t('noData')}<br>${t('tipPeople', { n: nf(cell.pop[i]) })}${pmv > 0 ? `<br>${t('tipSmoke', { m: monthName(pmYear), r: nf(pmv) })}` : ''}${state.plan && plan && planList().some(p => p.id === reg.id) ? `<br><b style="display:inline;color:#0f766e">${t('planTip', { r: planList().findIndex(p => p.id === reg.id) + 1, n: planList().length, s: pct(planList().find(p => p.id === reg.id).share) })}</b>` : ''}${state.compare ? `<br><b style="display:inline">${changeClass(reg.fires) < 0 ? t('changeFew') : t('changeTip', { a: nf(reg.fires[0]), b: nf(reg.fires[1]) })}</b>` : ''}`;
+  tip.innerHTML = `<b>${reg.name}</b><span>${regions.get(reg.province).name()}</span><br>${t('tipCell')} · ${covered ? t('tipFire', { n: nf(f) }) : t('noData')}<br>${t('tipPeople', { n: nf(cell.pop[i]) })}${pmv > 0 ? `<br>${t('tipSmoke', { m: monthName(pmYear), r: nf(pmv) })}` : ''}${state.compare ? `<br><b style="display:inline">${changeClass(reg.fires) < 0 ? t('changeFew') : t('changeTip', { a: nf(reg.fires[0]), b: nf(reg.fires[1]) })}</b>` : ''}`;
   tip.hidden = false;
   tip.style.left = `${Math.min(innerWidth - tip.offsetWidth - 8, mx + 14)}px`;
   tip.style.top = `${Math.min(innerHeight - tip.offsetHeight - 8, my + 14)}px`;

@@ -1,6 +1,6 @@
 # Handoff
 
-Last updated 2026-11-24 (America/New_York), after the opening map rounds (coursework log W20–W27). Live at `4f13e16` (recommendation slide #budget with the interactive Pareto chart; prevention-plan layer on the opening map).
+Last updated 2026-11-25 (America/New_York), after coursework log W36. W34–W36 pushed to `main` (see `git log`): plan off the main map, animated DiD and wind explainers, national DiD for every peat region, plain-language copy.
 
 ## Where things live
 
@@ -9,6 +9,8 @@ Last updated 2026-11-24 (America/New_York), after the opening map rounds (course
 - Extra raw downloads (two Hansen tiles, national GFW peat) live in git-ignored `raw/`; `npm run fetch:islands` recreates them. Sources and checksums: `tools/islands/SOURCES.md`.
 
 ## Current state
+
+- **W34–W36:** the prevention plan is off the opening map; it lives only on `#budget`, where the context sits with it (the "See on the main map" button is gone too). `plan.json` still feeds the peat checks in the Riau/Kalteng cards. Two animated explainers from `methods.mjs`: `#did` after `#peat` (4 steps; region picker for 8 peat regions incl. Ogan Komering Ilir and Papua; an always-visible answer "it depends on the island"; an all-regions chart with 95% ranges; data from coursework `analysis.py` part N with the national peat map in git-ignored `raw/peat/`) and `#wind` after `#borders` (canvas: fires from the top 32 regencies, ERA5 Aug–Oct 2026 mean wind streaks, smoke puffs; 3 steps). Data: `data/methods.json` from `tools/export-methods.py "<Paper folder>"`. Copy in `app.mjs`, `plan.mjs`, `atlas.mjs` and the Limits slide rewritten in plain language. 16 slides. Cache-bust: atlas.mjs v7, atlas.css v9, app v13, plan v2, methods v3. The DiD slide shows a highlighted answer box (`#did-answer`).
 
 - **Opening map leads with fire (live, `f436204`):** it opens on Jul–Oct 2026 with the change layer on. The big number is +68% detections vs 2019, followed by "where fire changed" bars (Papua ×9.0, Maluku ×4.7, Sulawesi +99%, Kalimantan +98%, Java −14%, Sumatra −29%, Bali–NT −30%). A layer bar toggles Fire 2019/2026 (side-by-side spikes), Smoke 2019/2026 (one at a time) and Change on their own. Smoke is supporting context (one sentence, off by default). The panel note is now one line, with the full note in a tooltip.
 

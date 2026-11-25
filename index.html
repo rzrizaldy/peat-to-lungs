@@ -14,7 +14,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Public+Sans:ital,wght@0,400;0,500;0,600;0,700;0,800;1,500&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="styles.css?v=10">
-  <link rel="stylesheet" href="atlas.css?v=6">
+  <link rel="stylesheet" href="atlas.css?v=9">
 </head>
 <body>
 <a class="skip" href="#deck" data-id="Lompat ke konten">Skip to content</a>
@@ -34,7 +34,7 @@
       <a class="chapter-seg" href="#limits" data-part="D"><b data-id="Batasan">Limits</b><i></i></a>
     </nav>
     <div class="header-tools">
-      <span id="counter">1 / 14</span>
+      <span id="counter">1 / 16</span>
       <button type="button" id="motion" class="motion-btn" aria-pressed="true"></button>
       <select id="language" aria-label="Language" data-id-aria-label="Bahasa">
         <option value="en" lang="en">EN</option>
@@ -87,7 +87,6 @@
     <span class="grp"><i class="sw smoke"></i><b data-at="layerSmoke">Smoke</b>
       <button type="button" data-layer="smoke19" aria-pressed="false">2019</button><button type="button" data-layer="smoke26" aria-pressed="false">2026</button></span>
     <button type="button" data-layer="change" aria-pressed="true"><i class="sw change"></i><span class="long" data-at="compare">Change 2019 → 2026</span><span class="short" data-at="compareShort">Change</span></button>
-    <button type="button" data-layer="plan" aria-pressed="false"><i class="sw plan"></i><span class="long" data-at="layerPlan">Prevention plan</span><span class="short">Plan</span></button>
   </div>
   <div class="at-furniture" aria-hidden="true">
     <div class="at-north"><b>N</b><svg viewBox="0 0 12 20"><path d="M6 0 11 18 6 13 1 18z" fill="none" stroke="currentColor" stroke-width="1.2"/><path d="M6 0 6 13 1 18z" fill="currentColor"/></svg></div>
@@ -210,6 +209,26 @@
   </figure>
 </div></section>
 
+<!-- 4b · difference-in-differences explainer (methods.mjs) -->
+<section class="slide" id="did" data-part="B" data-label="Was it the peat?" data-id-label="Benarkah gambutnya?"><div class="inner split even reveal">
+  <div class="copy">
+    <p class="kicker" data-id="Cara menguji">How we checked</p>
+    <h2 data-id="Benarkah gambutnya, atau hanya tahun yang buruk?">Was it the peat, or just a bad year?</h2>
+    <p class="lede" data-id="Api naik hampir di mana-mana pada 2026. Jadi di setiap wilayah bergambut luas, kami membandingkan perubahan di gambut dengan perubahan di lahan lain di sekitarnya pada tahun yang sama. Selisihnya adalah bagian yang khas gambut.">Fire rose almost everywhere in 2026. So in every region with a lot of peat, we compared how peat changed with how other land nearby changed over the same years. The difference is the part that belongs to peat.</p>
+    <p class="mx-answer" id="did-answer" aria-live="polite"></p>
+    <div class="mx-steps" id="did-steps"></div>
+    <p class="mx-text" id="did-text" aria-live="polite"></p>
+  </div>
+  <figure class="chart-block">
+    <div class="mx-ctl"><label class="mx-pick"><span id="did-pick-label">Region</span><select id="did-prov"></select></label><button type="button" class="mx-play" id="did-play">Play</button></div>
+    <svg id="did-chart" class="mx-chart" viewBox="0 0 460 250" role="img" aria-label="Fire detections per 100 km² on peat and other land, 2019 and 2026" data-id-aria-label="Titik api per 100 km² di gambut dan lahan lain, 2019 dan 2026"></svg>
+    <p class="source" id="did-note"></p>
+    <h3 class="mx-ftitle" id="did-forest-title"></h3>
+    <svg id="did-forest" class="mx-chart mx-forest" role="img" aria-label="Estimated extra change on peat for every peat region, with 95% ranges" data-id-aria-label="Perkiraan perubahan tambahan di gambut untuk setiap wilayah gambut, dengan rentang 95%"></svg>
+    <p class="source" id="did-forest-note"></p>
+  </figure>
+</div></section>
+
 <!-- 5 · smoke -->
 <section class="slide" id="smoke" data-part="B" data-label="Fire predicts smoke" data-id-label="Api memprediksi asap"><div class="inner split even reveal">
   <div class="copy">
@@ -249,6 +268,23 @@
     <div class="chart"><canvas id="region-map" role="img" aria-label="Map of monthly PM2.5 over Sumatra, Borneo, Malaysia and Singapore." data-id-aria-label="Peta PM2.5 bulanan di Sumatra, Kalimantan, Malaysia, dan Singapura."></canvas></div>
     <div class="range" id="region-legend" style="margin-top:8px"></div>
     <p class="source" id="region-source"></p>
+  </figure>
+</div></section>
+
+<!-- 5c · wind explainer (methods.mjs) -->
+<section class="slide" id="wind" data-part="B" data-label="The wind decides" data-id-label="Angin menentukan"><div class="inner split even reveal">
+  <div class="copy">
+    <p class="kicker" data-id="Angin">The wind</p>
+    <h2 data-id="Angin menentukan siapa yang menghirup asap">The wind decides who breathes the smoke</h2>
+    <p class="lede" data-id="Api yang sama bisa tidak berbahaya atau menyesakkan sebuah kota, tergantung arah angin. Jadi model asap kami memakai angin harian ERA5.">The same fire can be harmless or choke a city, depending on where the wind blows. So our smoke model uses daily ERA5 wind.</p>
+    <div class="mx-steps" id="wind-steps"></div>
+    <p class="mx-text" id="wind-text" aria-live="polite"></p>
+    <p class="small muted" id="wind-note"></p>
+  </div>
+  <figure class="chart-block">
+    <div class="mx-ctl"><span class="small muted legend-row"><span><i class="swatch" style="background:var(--ember)"></i><span data-id="Api 2026">2026 fire</span></span><span><i class="swatch" style="background:#5c5046"></i><span data-id="Asap">Smoke</span></span><span><i class="swatch" style="background:#2f6f73"></i><span data-id="Angin">Wind</span></span></span><button type="button" class="mx-play" id="wind-play">Play</button></div>
+    <div class="mx-map"><canvas id="wind-base"></canvas><canvas id="wind-over" role="img" aria-label="Animated map of smoke from 2026 fires drifting with the ERA5 wind over Sumatra and Kalimantan" data-id-aria-label="Peta animasi asap dari api 2026 yang terbawa angin ERA5 di atas Sumatra dan Kalimantan"></canvas></div>
+    <p class="source" data-id="Sumber: angin ERA5 100 m (Hersbach dkk., 2020) lewat Open-Meteo, rata-rata Agustus–Oktober 2026; api NASA FIRMS 2026, 32 kabupaten/kota dengan api terbanyak. Animasi skematis: gerak asap dipercepat.">Source: ERA5 100 m wind (Hersbach et al., 2020) via Open-Meteo, mean Aug–Oct 2026; NASA FIRMS 2026 fire, the 32 regencies with the most fire. Schematic animation: smoke motion is sped up.</p>
   </figure>
 </div></section>
 
@@ -314,7 +350,7 @@
     <h2 data-id="Siapa yang perlu disiapkan lebih dulu">Who to prepare first</h2>
     <p class="standfirst" id="priority-insight"></p>
     <div class="versus" id="versus"></div>
-    <p class="muted small" data-id="Zona prioritas adalah sel 2 km tempat api, asap, dan penduduk paling bertumpuk (indeks ≥ 1,5 simpangan baku di atas rata-rata).">Priority zones are 2 km cells where fire, smoke and people overlap most (index at least 1.5 standard deviations above average).</p>
+    <p class="muted small" data-id="Zona prioritas adalah kotak 2 km tempat api, asap, dan penduduk paling bertumpuk.">Priority zones are 2 km squares where fire, smoke and people overlap most.</p>
   </div>
   <div class="stack">
     <figure class="chart-block">
@@ -352,7 +388,6 @@
       <canvas id="pb-map" class="pb-map" role="img" aria-label="Regencies funded by the chosen plan" data-id-aria-label="Kabupaten/kota yang didanai rencana terpilih"></canvas>
       <h4 id="pb-list-title">Fund first</h4>
       <ol class="pb-list" id="pb-list"></ol>
-      <button type="button" class="pb-open" id="pb-open">See this plan on the main map ↑</button>
     </div>
   </div>
   <p class="source" id="pb-source"></p>
@@ -372,10 +407,10 @@
     <p class="kicker" data-id="Batasan">Limits</p>
     <h2 data-id="Apa yang belum bisa dijawab">What this cannot tell you</h2>
     <div class="limits">
-      <div><h4 data-id="Angin tidak dimodelkan">Wind is not modelled</h4><p data-id="Kernel menyebar api ke segala arah. Galat model mengelompok di ruang (Moran's I 0,62), tanda bahwa arah asap penting.">The kernel spreads fire evenly in every direction. Model errors cluster in space (Moran's I 0.62), a sign that smoke direction matters.</p></div>
+      <div><h4 data-id="Angin hanya membantu sedikit">Wind helps only a little</h4><p data-id="Menambah angin ERA5 hanya sedikit memperbaiki model asap. Hujan dan ketinggian asap belum dimasukkan, jadi peta asap di sini tetap perkiraan.">Adding ERA5 wind improved the smoke model only slightly. Rain and how high the smoke rises are not included, so the smoke maps here are still estimates.</p></div>
       <div><h4 data-id="2026 adalah perkiraan">2026 is an estimate</h4><p id="limit-2026"></p></div>
       <div><h4 data-id="Penduduk 2020 untuk kedua musim">2020 population for both seasons</h4><p data-id="WorldPop 2020 dipakai untuk 2019 dan 2026. Perpindahan penduduk tidak tercermin.">WorldPop 2020 stands in for both seasons, so migration is not reflected.</p></div>
-      <div><h4 data-id="Prioritas memakai tolok ukur 2019">Priority uses a 2019 yardstick</h4><p data-id="Kedua musim dibakukan terhadap sebaran 2019, jadi zona prioritas 2026 dapat dibandingkan langsung dengan 2019. Nilai 2026 tetap hasil model.">Both seasons are standardised against the 2019 distribution, so 2026 priority zones compare directly with 2019. The 2026 values are still model estimates.</p></div>
+      <div><h4 data-id="Gambut: pola, bukan penyebab kebijakan">Peat: a pattern, not a policy verdict</h4><p data-id="Uji gambut menunjukkan bagaimana gambut berperilaku di 2019 dan 2026. Dua musim belum cukup untuk memisahkan El Niño dari kebijakan.">The peat checks show how peat behaved in 2019 and 2026. Two seasons are not enough to separate El Niño from policy.</p></div>
       <div><h4 data-id="Satu tingkat wilayah: kabupaten/kota">One level of area: kabupaten</h4><p data-id="Ke-13 provinsi dipetakan per kabupaten/kota agar semua wilayah setara. Riau dan Kalimantan Tengah (★) dianalisis lebih rinci per kecamatan di ArcGIS Pro.">All 13 provinces are mapped by kabupaten/kota (regency or city) so every area compares evenly. Riau and Central Kalimantan (★) are analysed in more detail, by kecamatan, in ArcGIS Pro.</p></div>
     </div>
   </div>
@@ -388,8 +423,9 @@
 </div></section>
 
 </main>
-<script type="module" src="atlas.mjs?v=6"></script>
-<script type="module" src="app.mjs?v=12"></script>
-<script type="module" src="plan.mjs?v=1"></script>
+<script type="module" src="atlas.mjs?v=7"></script>
+<script type="module" src="app.mjs?v=13"></script>
+<script type="module" src="plan.mjs?v=2"></script>
+<script type="module" src="methods.mjs?v=3"></script>
 </body>
 </html>

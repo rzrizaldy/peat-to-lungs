@@ -1,12 +1,12 @@
 // Recommendation slide (#budget): where next season's prevention budget should go.
 // Reads data/plan.json (wind-aware MILP + Pareto frontier from the coursework analysis) and data/atlas-bounds.json.
-// Pick a point on the frontier; the map, ranked list and numbers follow; "See on the main map" sends the plan to atlas.mjs.
+// Pick a point on the frontier; the map, ranked list and numbers follow.
 const $ = id => document.getElementById(id);
 const root = document.documentElement;
 const readJSON = async name => { const r = await fetch(new URL(`data/${name}`, import.meta.url)); if (!r.ok) throw new Error(name); return r.json(); };
 const T = {
-  lede: ['With a budget to treat 20% of the heavy-fire land, an optimiser (mixed-integer programming) chose the regencies whose fires send the most smoke into people’s lungs, using 2026 fire and ERA5 wind. The health-first plan avoids {h} µg/m³ of population-weighted PM₂.₅, {x}× what funding the regencies with the most fire achieves. <b>I recommend the balanced plan</b>: it keeps {k}% of that health benefit and cuts {e}% of fire emissions, half again as much.',
-    'Dengan anggaran untuk menangani 20% lahan api berat, optimasi (mixed-integer programming) memilih kabupaten/kota yang apinya paling banyak mengirim asap ke paru-paru warga, memakai api dan angin ERA5 2026. Rencana kesehatan-dulu menghindari {h} µg/m³ PM₂.₅ berbobot penduduk, {x}× hasil mendanai daerah dengan api terbanyak. <b>Saya merekomendasikan rencana seimbang</b>: mempertahankan {k}% manfaat kesehatan itu dan memangkas {e}% emisi api, 1,5 kali lipat.'],
+  lede: ['Say there is money to protect 20% of the land that burns most. An optimiser searched every combination for the regencies whose fires, carried by the 2026 wind, send the most smoke into people’s lungs. The health-first plan cuts the smoke people breathe by {h} µg/m³, {x}× more than simply funding the places with the most fire. <b>I recommend the balanced plan</b>: it keeps {k}% of that health benefit and also cuts {e}% of fire emissions.',
+    'Misalkan ada dana untuk melindungi 20% lahan yang paling sering terbakar. Optimasi mencari semua kombinasi untuk kabupaten/kota yang apinya, terbawa angin 2026, paling banyak mengirim asap ke paru-paru warga. Rencana kesehatan-dulu mengurangi asap yang dihirup warga {h} µg/m³, {x}× lebih banyak daripada sekadar mendanai daerah dengan api terbanyak. <b>Saya merekomendasikan rencana seimbang</b>: mempertahankan {k}% manfaat kesehatan itu sekaligus memangkas {e}% emisi api.'],
   pick: ['Choose a plan', 'Pilih rencana'],
   pickNote: ['Each dot on the line is the best possible plan for a given emissions target. Dots off the line are simple rules.', 'Setiap titik di garis adalah rencana terbaik untuk target emisi tertentu. Titik di luar garis adalah aturan sederhana.'],
   x: ['Fire emissions avoided (% of FRP)', 'Emisi api dihindari (% FRP)'],
@@ -20,7 +20,6 @@ const T = {
   top: ['Fund first', 'Danai lebih dulu'],
   protects: ['protects {c}', 'melindungi {c}'],
   benefit: ['{p} of the benefit', '{p} manfaat'],
-  open: ['See this plan on the main map ↑', 'Lihat rencana ini di peta utama ↑'],
   compare: ['Smoke avoided by each way of spending the same budget', 'Asap dihindari untuk tiap cara membelanjakan anggaran yang sama'],
   plan: ['This plan', 'Rencana ini'],
   source: ['Method: wind-aware smoke model (local 100 km kernel + ERA5 plume, calibrated on Sept 2019 PM₂.₅); prevention assumed to halve a regency’s fire; budget = 20% of heavy-fire land; no province above 35%. Solved with HiGHS; Pareto frontier by the ε-constraint method. Sumatra and Kalimantan only, where the model was calibrated.',
@@ -125,18 +124,12 @@ function renderMap() {
   }
 }
 
-function render() { renderLede(); renderPareto(); renderBars(); renderHead(); renderList(); renderMap(); $('pb-open').textContent = t('open'); $('pb-source').textContent = t('source'); $('pb-pick').textContent = t('pick'); $('pb-pick-note').textContent = t('pickNote'); }
+function render() { renderLede(); renderPareto(); renderBars(); renderHead(); renderList(); renderMap(); $('pb-source').textContent = t('source'); $('pb-pick').textContent = t('pick'); $('pb-pick-note').textContent = t('pickNote'); }
 
 function choose(i) { sel = i; renderPareto(); renderBars(); renderHead(); renderList(); renderMap(); }
 
 $('pb-pareto').addEventListener('click', e => { const p = e.target.closest('.pb-pt'); if (p) choose(Number(p.dataset.i)); });
 $('pb-pareto').addEventListener('keydown', e => { const p = e.target.closest('.pb-pt'); if (p && (e.key === 'Enter' || e.key === ' ')) { e.preventDefault(); choose(Number(p.dataset.i)); } });
-$('pb-open').addEventListener('click', () => {
-  const z = plan.frontier_plans[sel];
-  document.dispatchEvent(new CustomEvent('plan:show', { detail: { ids: z.ids, share: z.share, health: z.health_ugm3, emissions: z.emissions_cut_pct, label: label(sel) || `Plan ${sel + 1}` } }));
-  // scroll the deck itself; a smooth scrollIntoView is cancelled by the deck's scroll snapping
-  requestAnimationFrame(() => $('deck').scrollTo({ top: $('atlas').offsetTop, behavior: 'smooth' }));
-});
 new MutationObserver(() => { lang = root.lang === 'id' ? 'id' : 'en'; if (plan) render(); }).observe(root, { attributes: true, attributeFilter: ['lang'] });
 new ResizeObserver(() => { if (plan) renderMap(); }).observe($('pb-map'));
 

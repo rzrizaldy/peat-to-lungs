@@ -19,7 +19,7 @@ Large raw files are never committed. Coursework inputs are read in place (read-o
 | Hansen GFC v1.12 loss year, 100E and 110E tiles | `RawData/Hansen_GFC_v1_12/` | |
 | Hansen GFC v1.12 loss year, 00N_090E and 10N_090E | `raw/hansen/` | sha256 `4ea4073d…`, `e2bdd77a…` |
 | MapBiomas Indonesia 2000 | `starting_files/indonesia_coverage_2000.tif` | forest = classes 3–6 |
-| GFW Indonesia peat lands (MoA 2011), national | `raw/peat/GFW_Indonesia_peat_lands_national.geojson` | ArcGIS Hub cache of GFW layer `country_data/asia/MapServer/10`; sha256 `3580abed…`. Reproduces the ArcGIS peat areas exactly (Riau 38,637.6 km², Kalteng 28,109.8 km²) |
+| GFW Indonesia peat lands (MoA 2011), national | `raw/peat/GFW_Indonesia_peat_lands_national.geojson` | GFW layer `country_data/asia/MapServer/10`, 1,524 polygons. First fetched as the ArcGIS Hub cache (sha256 `3580abed…`); since 2026-11-25 the Hub export fails, so `fetch.sh` pages an Esri Deutschland copy of the same layer. Both reproduce the ArcGIS peat areas exactly (Riau 38,637.6 km², Kalteng 28,109.8 km²). Also used by the coursework `Paper/analysis.py` part N (national difference-in-differences) |
 | Natural Earth 110 m countries | `starting_files/ne_110m_admin_0_countries.zip` | basemap |
 | CAMS daily PM2.5 2026 (Open-Meteo) | fetched by `tools/district-exposure.py`, cached in `.work/aq-cache/` | 2019 is not available from this source (values are empty before 2022) |
 
