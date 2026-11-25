@@ -14,7 +14,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Public+Sans:ital,wght@0,400;0,500;0,600;0,700;0,800;1,500&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="styles.css?v=10">
-  <link rel="stylesheet" href="atlas.css?v=5">
+  <link rel="stylesheet" href="atlas.css?v=6">
 </head>
 <body>
 <a class="skip" href="#deck" data-id="Lompat ke konten">Skip to content</a>
@@ -34,7 +34,7 @@
       <a class="chapter-seg" href="#limits" data-part="D"><b data-id="Batasan">Limits</b><i></i></a>
     </nav>
     <div class="header-tools">
-      <span id="counter">1 / 13</span>
+      <span id="counter">1 / 14</span>
       <button type="button" id="motion" class="motion-btn" aria-pressed="true"></button>
       <select id="language" aria-label="Language" data-id-aria-label="Bahasa">
         <option value="en" lang="en">EN</option>
@@ -335,6 +335,29 @@
   </div>
 </div></section>
 
+<!-- recommendation: MILP + Pareto (plan.mjs) -->
+<section class="slide" id="budget" data-part="C" data-label="Where to spend the budget" data-id-label="Ke mana anggaran"><div class="inner reveal">
+  <p class="kicker" data-id="Rekomendasi">Recommendation</p>
+  <h2 data-id="Cegah api di arah angin dari kota">Prevent the fires upwind of cities</h2>
+  <p class="lede pb-lede" id="pb-lede"></p>
+  <div class="pb-grid">
+    <div class="pb-left">
+      <h3 id="pb-pick">Choose a plan</h3>
+      <p class="small muted" id="pb-pick-note"></p>
+      <svg id="pb-pareto" class="pb-pareto" role="group" aria-label="Pareto frontier of prevention plans" data-id-aria-label="Frontier Pareto rencana pencegahan"></svg>
+      <div class="pb-bars" id="pb-bars"></div>
+    </div>
+    <div class="pb-right">
+      <div class="numbers pb-head" id="pb-head"></div>
+      <canvas id="pb-map" class="pb-map" role="img" aria-label="Regencies funded by the chosen plan" data-id-aria-label="Kabupaten/kota yang didanai rencana terpilih"></canvas>
+      <h4 id="pb-list-title">Fund first</h4>
+      <ol class="pb-list" id="pb-list"></ol>
+      <button type="button" class="pb-open" id="pb-open">See this plan on the main map ↑</button>
+    </div>
+  </div>
+  <p class="source" id="pb-source"></p>
+</div></section>
+
 <!-- 7b · actions -->
 <section class="slide" id="actions" data-part="C" data-label="What this means" data-id-label="Artinya apa"><div class="inner reveal">
   <p class="kicker" data-id="Untuk kebijakan">For policy</p>
@@ -365,7 +388,8 @@
 </div></section>
 
 </main>
-<script type="module" src="atlas.mjs?v=5"></script>
+<script type="module" src="atlas.mjs?v=6"></script>
 <script type="module" src="app.mjs?v=12"></script>
+<script type="module" src="plan.mjs?v=1"></script>
 </body>
 </html>

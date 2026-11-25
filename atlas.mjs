@@ -907,8 +907,11 @@ $('at-details').addEventListener('click', () => {
 
 // Layer bar: fire spikes, smoke and the 2019 → 2026 change fill switch on and off independently.
 // Prevention plan: two points on the Pareto frontier (health first, or the balanced knee).
-const planList = () => (state.planMode === 'balanced' && plan?.balanced ? plan.balanced : plan?.health_first ?? plan?.selected ?? []);
+let planCustom = null;                                          // a frontier point sent from the #budget slide
+const planList = () => (planCustom ? planCustom.ids.map((id, i) => ({ id, share: planCustom.share[i] }))
+  : state.planMode === 'balanced' && plan?.balanced ? plan.balanced : plan?.health_first ?? plan?.selected ?? []);
 function planPoint() {
+  if (planCustom) return { health_ugm3: planCustom.health, emissions_cut_pct: planCustom.emissions };
   const f = plan?.frontier ?? [];
   if (!f.length) return { health_ugm3: plan?.avoided_ugm3?.MILP ?? 0, emissions_cut_pct: 0 };
   if (state.planMode === 'health') return f[0];
@@ -917,7 +920,13 @@ function planPoint() {
 $('at-legend').addEventListener('click', e => {
   const b = e.target.closest('.at-planmode button');
   if (!b) return;
-  state.planMode = b.dataset.mode; drawLegend(); dirty = true;
+  state.planMode = b.dataset.mode; planCustom = null; drawLegend(); dirty = true;
+});
+document.addEventListener('plan:show', e => {
+  planCustom = e.detail; state.plan = true; state.compare = false; state.year = 2026; state.fire26 = true; state.fire19 = false;
+  state.planMode = e.detail.label?.startsWith('Health') || e.detail.label?.startsWith('Kesehatan') ? 'health' : 'balanced';
+  select('belt');
+  paintLayers(); drawLegend(); dirty = true;
 });
 const layerOn = key => ({ fire19: state.fire19, fire26: state.fire26, smoke19: state.smoke === 2019, smoke26: state.smoke === 2026, change: state.compare, plan: state.plan })[key];
 function paintLayers() {
