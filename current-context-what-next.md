@@ -1,6 +1,6 @@
 # Handoff
 
-Last updated 2026-11-24 (America/New_York), after making the full Indonesia fire map the opening slide (coursework log W21).
+Last updated 2026-11-24 (America/New_York), after the opening map rounds (coursework log W20–W27). Live at `f436204`.
 
 ## Where things live
 
@@ -10,9 +10,9 @@ Last updated 2026-11-24 (America/New_York), after making the full Indonesia fire
 
 ## Current state
 
-- **Opening map leads with fire (Nov 24, not pushed):** it opens on Jul–Oct 2026 with the change layer on. The big number is +68% detections vs 2019, followed by "where fire changed" bars (Papua ×9.0, Maluku ×4.7, Sulawesi +99%, Kalimantan +98%, Java −14%, Sumatra −29%, Bali–NT −30%). A layer bar toggles Fire 2019/2026 (side-by-side spikes), Smoke 2019/2026 (one at a time) and Change on their own. Smoke is supporting context (one sentence, off by default). The panel note is now one line, with the full note in a tooltip.
+- **Opening map leads with fire (live, `f436204`):** it opens on Jul–Oct 2026 with the change layer on. The big number is +68% detections vs 2019, followed by "where fire changed" bars (Papua ×9.0, Maluku ×4.7, Sulawesi +99%, Kalimantan +98%, Java −14%, Sumatra −29%, Bali–NT −30%). A layer bar toggles Fire 2019/2026 (side-by-side spikes), Smoke 2019/2026 (one at a time) and Change on their own. Smoke is supporting context (one sentence, off by default). The panel note is now one line, with the full note in a tooltip.
 
-- **Opening slide `#atlas` (live since Nov 24, `72cc5ea`; smoke layer and Indonesia-wide 2026 not pushed yet):** a full-screen spike map of VIIRS fire detections across Indonesia in both seasons, plus a PM₂.₅ smoke layer that reaches Malaysia, Singapore and Brunei: WashU for Sept 2019, and CAMS from `data/regional.json` for Sept/Oct 2026 at 0.5°. The October 2026 peak is the default. The bottom strip is a chain of 100 people (Sept 2019 vs the 2026 month) coloured by smoke class. Spikes are drawn only for cells with 10+ detections. In Sumatra + Kalimantan, 41% of people (31.4M) were above 55 µg/m³ in Sept 2019, 23% in Sept 2026 and 28% (21.0M) in Oct 2026; Indonesia-wide 2026 shares show "—" because CAMS stops at 7° S and 120° E. For 2026, Sumatra + Kalimantan use the story's file (Riau 3,158, Kalteng 164,333) and the other provinces use FIRMS archive request 855893 (SP Jul–Aug, NRT Sep–Oct), stored in `RawData/FIRMS_VIIRS_2026/Indonesia_DL_855893/`. Indonesia: 328,676 → 553,581 detections (+68%). Heavy fire covered 9.6% → 15% of land. The new file alone would give Riau 3,068 and Kalteng 163,743 (August SP replaces NRT), so it is not used for those islands, which keeps them in line with ArcGIS. `npm test` 6/6.
+- **Opening slide `#atlas` (live; first version `72cc5ea`, current `f436204`):** a full-screen spike map of VIIRS fire detections across Indonesia in both seasons, plus a PM₂.₅ smoke layer that reaches Malaysia, Singapore and Brunei: WashU for Sept 2019, and CAMS from `data/regional.json` for Sept/Oct 2026 at 0.5°. The October 2026 peak is the default. The bottom strip is a chain of 100 people (Sept 2019 vs the 2026 month) coloured by smoke class. Spikes are drawn only for cells with 10+ detections. In Sumatra + Kalimantan, 41% of people (31.4M) were above 55 µg/m³ in Sept 2019, 23% in Sept 2026 and 28% (21.0M) in Oct 2026; Indonesia-wide 2026 shares show "—" because CAMS stops at 7° S and 120° E. For 2026, Sumatra + Kalimantan use the story's file (Riau 3,158, Kalteng 164,333) and the other provinces use FIRMS archive request 855893 (SP Jul–Aug, NRT Sep–Oct), stored in `RawData/FIRMS_VIIRS_2026/Indonesia_DL_855893/`. Indonesia: 328,676 → 553,581 detections (+68%). Heavy fire covered 9.6% → 15% of land. The new file alone would give Riau 3,068 and Kalteng 163,743 (August SP replaces NRT), so it is not used for those islands, which keeps them in line with ArcGIS. `npm test` 6/6.
 
 - Slides 4–12 cover **all 13 provinces of Sumatra (8) and Kalimantan (5)** at **kabupaten/kota level: 200 areas** (Sumatra 144, Kalimantan 56), so every area compares evenly. Riau and Central Kalimantan (★) are analysed by kecamatan in ArcGIS Pro only. `prepare.py --level hybrid` rebuilds the W17 kecamatan/kabupaten mix. Riau Islands and Bangka-Belitung are excluded (not on either island).
 - The open-source pipeline reproduces the ArcGIS focus-province results: hotspots exact, forest/loss/peat within 0.03% (after switching to ellipsoidal cell areas), population within 0.06%, PM₂.₅ within 0.04 µg/m³.
@@ -26,7 +26,7 @@ Last updated 2026-11-24 (America/New_York), after making the full Indonesia fire
 
 ## Next actions
 
-1. Commit and push the smoke layer and Indonesia-wide 2026 after Rizaldy approves, then check the live page on a phone.
+1. Check the live opening map on a phone.
 2. Review the live page on a phone.
 2. ArcGIS Phase 4 stays focused on Riau and Central Kalimantan; the web numbers for those two provinces are the check values.
 3. When the ArcGIS StoryMap and Dashboard exist, add their links to the credits on the last slide.
