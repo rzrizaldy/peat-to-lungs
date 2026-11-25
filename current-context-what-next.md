@@ -1,6 +1,6 @@
 # Handoff
 
-Last updated 2026-11-24 (America/New_York), after the opening map rounds (coursework log W20–W27). Live at `615e71e` (prevention-plan layer: wind-aware MILP with Health-first / Balanced).
+Last updated 2026-11-24 (America/New_York), after the opening map rounds (coursework log W20–W27). Live at `4f13e16` (recommendation slide #budget with the interactive Pareto chart; prevention-plan layer on the opening map).
 
 ## Where things live
 
