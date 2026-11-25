@@ -34,15 +34,18 @@ const T = {
   peopleFire: ['People in a heavy-fire cell', 'Warga di sel api berat'],
   pm35: ['PM₂.₅ above 35 µg/m³', 'PM₂.₅ di atas 35 µg/m³'],
   pm55: ['PM₂.₅ above 55 (unhealthy)', 'PM₂.₅ di atas 55 (tidak sehat)'],
-  pm150: ['PM₂.₅ above 150 (very)', 'PM₂.₅ di atas 150 (sangat)'],
+  pm150: ['PM₂.₅ above 150', 'PM₂.₅ di atas 150'],
   noteShort: ['Heavy fire: 10+ detections per 5 km cell. | = Indonesia. ⓘ', 'Api berat: 10+ titik api per sel 5 km. | = Indonesia. ⓘ'],
-  note: ['Heavy fire = 10+ VIIRS detections in a 5 km cell over the season. People rows are shares of people. PM₂.₅ is the Sept 2019 monthly mean (WashU); 35/55/150 are US EPA 24-hour breakpoints, used as a guide. Tick = Indonesia.',
-    'Api berat = 10+ titik api VIIRS di sel 5 km selama musim. Baris warga adalah bagian warga. PM₂.₅ adalah rata-rata bulanan Sept 2019 (WashU); 35/55/150 ambang 24 jam US EPA, sebagai panduan. Garis = Indonesia.'],
+  note: ['Heavy fire = 10+ VIIRS detections in a 5 km cell over the season. People rows are shares of people. PM₂.₅ is the Sept 2019 monthly mean (WashU); 55.5 is the US EPA (2024) “unhealthy” 24-hour lower bound, used as a guide. Tick = Indonesia.',
+    'Api berat = 10+ titik api VIIRS di sel 5 km selama musim. Baris warga adalah bagian warga. PM₂.₅ adalah rata-rata bulanan Sept 2019 (WashU); 55,5 adalah batas bawah “tidak sehat” 24 jam US EPA (2024), sebagai panduan. Garis = Indonesia.'],
   note26: ['Heavy fire = 10+ VIIRS detections in a 5 km cell over the season. 2026 detections: Sumatra and Kalimantan from the file the story uses (near-real-time from August), other provinces from a later FIRMS archive request (standard data for July–August). 2026 PM₂.₅ is the CAMS model mean for the October peak on a 0.5° grid (≈ 55 km; no satellite map exists yet), so it is coarser than 2019. Tick = Indonesia.',
     'Api berat = 10+ titik api VIIRS di sel 5 km selama musim. Titik api 2026: Sumatra dan Kalimantan dari berkas yang dipakai cerita (near-real-time sejak Agustus), provinsi lain dari permintaan arsip FIRMS berikutnya (data standar Juli–Agustus). PM₂.₅ 2026 adalah rerata model CAMS untuk puncak Oktober pada grid 0,5° (≈ 55 km; belum ada peta satelit), jadi lebih kasar dari 2019. Garis = Indonesia.'],
   partial: ['2026 covers only the part of this region inside Sumatra and Kalimantan ({c} of its land).', '2026 hanya mencakup bagian wilayah ini di Sumatra dan Kalimantan ({c} daratannya).'],
   compare: ['Change 2019 → 2026', 'Perubahan 2019 → 2026'],
   layers: ['Show', 'Tampilkan'],
+  compareShort: ['Change', 'Perubahan'],
+  details: ['Details ▾', 'Detail ▾'],
+  detailsHide: ['Less ▴', 'Ringkas ▴'],
   changeEnds: ['worse ×2 ← same → better', 'memburuk ×2 ← sama → membaik'],
   layerFire: ['Fire', 'Api'],
   layerSmoke: ['Smoke', 'Asap'],
@@ -64,7 +67,7 @@ const T = {
   withinWho: ['within WHO guideline', 'di bawah pedoman WHO'],
   aboveWho: ['above WHO guideline', 'di atas pedoman WHO'],
   unhealthy: ['unhealthy', 'tidak sehat'],
-  veryUnhealthy: ['very unhealthy or worse', 'sangat tidak sehat atau lebih'],
+  veryUnhealthy: ['150 µg/m³ or more', '150 µg/m³ atau lebih'],
   srcShort19: ['WashU satellite', 'satelit WashU'],
   srcShort26: ['CAMS model', 'model CAMS'],
   gCountry: ['Country', 'Negara'],
@@ -136,6 +139,7 @@ const CITY_ZOOM = [0, 4.2, 5.4, 6.6, 7.4];
 
 /* ================================================================ projection */
 const TILE = 256;
+const MIN_Z = 3;                                               // low enough for all of Indonesia on a phone
 const toWorld = (lon, lat) => [(lon + 180) / 360 * TILE, (1 - Math.log(Math.tan(Math.PI / 4 + lat * Math.PI / 360)) / Math.PI) / 2 * TILE];
 const fromWorld = (x, y) => [x / TILE * 360 - 180, Math.atan(Math.sinh(Math.PI * (1 - 2 * y / TILE))) * 180 / Math.PI];
 
@@ -386,7 +390,7 @@ function fit(key, animate = true) {
   if (!W || !H) return;
   const b = regions.get(key).bbox, [x0, y1] = toWorld(b[0], b[1]), [x1, y0] = toWorld(b[2], b[3]), L = layout(W, H);
   const aw = Math.max(120, W - L.left - L.right), ah = Math.max(100, H - L.top - L.bottom);
-  const z = Math.max(4, Math.min(11, Math.log2(Math.min(aw / (x1 - x0), ah / (y1 - y0)) * 0.92)));
+  const z = Math.max(MIN_Z, Math.min(11, Math.log2(Math.min(aw / (x1 - x0), ah / (y1 - y0)) * 0.92)));
   const s = 2 ** z;
   const target = { z, cx: (x0 + x1) / 2 - (L.left + aw / 2 - W / 2) / s, cy: (y0 + y1) / 2 - (L.top + ah / 2 - H / 2) / s };
   if (!animate) { view = target; dirty = true; return; }
@@ -472,7 +476,8 @@ function draw() {
   // screen-space spikes, north to south so nearer ones overlap
   ctx.setTransform(ratio, 0, 0, ratio, 0, 0);
   const cellPx = cell.g.cell / 360 * TILE * s;
-  let k = 1; while (k < 16 && cellPx * k < 4.2) k *= 2;
+  const minPx = W < 760 ? 6 : 4.2;                              // phones: coarser bins, fewer triangles
+  let k = 1; while (k < 16 && cellPx * k < minPx) k *= 2;
   const hw = Math.max(1.1, Math.min(4.6, cellPx * k * 0.42));
   const HMAX = Math.min(170, H * 0.26) * (0.82 + 0.18 * Math.min(1, (view.z - 4) / 4));
   const toS = (x, y) => [(x - view.cx) * s + W / 2, (y - view.cy) * s + H / 2];
@@ -863,6 +868,14 @@ for (const b of section.querySelectorAll('.at-years button')) b.addEventListener
   renderPanel(); renderStrip(); drawLegend(); writeURL(); dirty = true;
 });
 $('at-reset').addEventListener('click', () => select(ROOT));
+// Phones: the panel starts collapsed to the region and the headline number.
+const panel = section.querySelector('.at-panel');
+if (innerWidth < 760) panel.classList.add('collapsed');
+$('at-details').addEventListener('click', () => {
+  const open = panel.classList.toggle('collapsed') === false;
+  $('at-details').setAttribute('aria-expanded', String(open));
+  $('at-details').textContent = t(open ? 'detailsHide' : 'details');
+});
 
 // Layer bar: fire spikes, smoke and the 2019 → 2026 change fill switch on and off independently.
 const layerOn = key => ({ fire19: state.fire19, fire26: state.fire26, smoke19: state.smoke === 2019, smoke26: state.smoke === 2026, change: state.compare })[key];
@@ -880,7 +893,7 @@ for (const b of section.querySelectorAll('.at-layers button')) b.addEventListene
 });
 
 function zoomAt(mx, my, dz) {
-  const { W, H } = size(), s0 = 2 ** view.z, z = Math.max(4, Math.min(12, view.z + dz)), s1 = 2 ** z;
+  const { W, H } = size(), s0 = 2 ** view.z, z = Math.max(MIN_Z, Math.min(12, view.z + dz)), s1 = 2 ** z;
   const wx = view.cx + (mx - W / 2) / s0, wy = view.cy + (my - H / 2) / s0;
   view = { z, cx: wx - (mx - W / 2) / s1, cy: wy - (my - H / 2) / s1 };
   anim = null; dirty = true;
@@ -913,7 +926,7 @@ canvas.addEventListener('pointerdown', e => {
 canvas.addEventListener('pointermove', e => {
   if (pointers.has(e.pointerId)) pointers.set(e.pointerId, [e.clientX, e.clientY]);
   if (press && pointers.size === 2 && press.pinch) {
-    view = { ...view, z: Math.max(4, Math.min(12, press.z + Math.log2(pinchDist() / press.pinch))) };
+    view = { ...view, z: Math.max(MIN_Z, Math.min(12, press.z + Math.log2(pinchDist() / press.pinch))) };
     press.moved = true; dirty = true; return;
   }
   if (press) {

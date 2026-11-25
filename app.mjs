@@ -12,7 +12,7 @@ const REDUCE = matchMedia('(prefers-reduced-motion: reduce)').matches;
 const LOW_END = REDUCE || navigator.connection?.saveData === true
   || (navigator.deviceMemory !== undefined && navigator.deviceMemory <= 2)
   || (navigator.hardwareConcurrency !== undefined && navigator.hardwareConcurrency <= 2);
-let still = LOW_END;
+let still = LOW_END || matchMedia('(max-width: 760px)').matches;   // phones start light; the switch turns 3D on
 const store = {
   get(k, d) { try { return localStorage.getItem(k) ?? d; } catch { return d; } },
   set(k, v) { try { localStorage.setItem(k, v); } catch { /* storage disabled */ } },
@@ -1063,7 +1063,7 @@ function applyStill() {
     const iframe = frame.querySelector('iframe'), img = frame.querySelector('.city-still');
     img.hidden = !still; iframe.hidden = still;
     if (still) { if (iframe.getAttribute('src') !== 'about:blank') iframe.src = 'about:blank'; }   // unload the live scene
-    else if (!iframe.src || iframe.getAttribute('src') === 'about:blank') iframe.src = iframe.dataset.src;
+    else if (citiesNear && (!iframe.src || iframe.getAttribute('src') === 'about:blank')) iframe.src = iframe.dataset.src;
   }
   $$('#cities .city-still').forEach(img => { img.src = `assets/pocket/${img.dataset.still}-${cityDay}.webp`; });
   renderMotion();
@@ -1072,6 +1072,12 @@ function applyStill() {
     process.redraw(); showTerrain();
   }
 }
+// Live 3D scenes load once the two-cities slide scrolls into view, so the opening map loads first.
+let citiesNear = false;
+new IntersectionObserver((entries, io) => {
+  if (!entries.some(e => e.isIntersecting)) return;
+  citiesNear = true; io.disconnect(); applyStill();
+}, { root: el('deck'), rootMargin: '0px 0px -10% 0px' }).observe(el('cities'));
 el('motion').addEventListener('click', () => { still = !still; store.set('peat-still', still ? '1' : '0'); applyStill(); });
 { const saved = store.get('peat-still', ''); if (saved === '1' || saved === '0') still = saved === '1'; }
 applyStill();

@@ -25,6 +25,8 @@
 .at-big.na { color: var(--faint); border-color: var(--line); font-size: 34px; }
 .at-years { margin: 14px 0 0; }
 .at-years button { font-size: 13px; padding: 3px 10px; }
+.at-details { display: none; }
+.at-layers .short { display: none; }
 .at-reset { display: block; margin: 8px 0 0 auto; border: 0; background: none; color: var(--muted); font-size: 13px; cursor: pointer; padding: 0; }
 .at-reset:hover { color: var(--ink); }
 .at-statement { margin: 12px 0 10px; font-size: 15.5px; line-height: 1.42; }
@@ -135,6 +137,16 @@
   .at-zoom { right: 12px; top: auto; bottom: 186px; }
 }
 @media (max-width: 760px) {
+  .at-details { display: block; margin: 6px 0 0; border: 0; background: none; padding: 0; font-weight: 700; font-size: 13px; color: var(--ember-ink); cursor: pointer; }
+  .at-panel.collapsed > :not(.at-head):not(.at-details) { display: none; }
+  .at-panel.collapsed { overflow: hidden; }
+  .at-layers .long, .at-layers .grp b { display: none; }
+  .at-layers .short { display: inline; }
+  .at-layers { gap: 6px; justify-content: center; font-size: 12.5px; }
+  .at-layers button { padding: 3px 7px; }
+  .at-layers .grp { gap: 4px; }
+  .at-layers .grp button + button { margin-left: -5px; }
+  .at-zoom { display: none; }
   .at-layers { top: auto; bottom: 168px; left: 10px; right: 10px; transform: none; overflow-x: auto; padding: 4px; }
   .at-layers > b { display: none; }
   .at-panel { left: 10px; right: 10px; width: auto; top: calc(var(--hdr) + 8px); max-height: 40%; padding: 10px 12px; }

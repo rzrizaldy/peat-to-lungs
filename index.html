@@ -14,7 +14,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Public+Sans:ital,wght@0,400;0,500;0,600;0,700;0,800;1,500&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="styles.css?v=10">
-  <link rel="stylesheet" href="atlas.css?v=2">
+  <link rel="stylesheet" href="atlas.css?v=3">
 </head>
 <body>
 <a class="skip" href="#deck" data-id="Lompat ke konten">Skip to content</a>
@@ -64,6 +64,7 @@
       </div>
       <p class="at-big" id="at-big">—</p>
     </div>
+    <button type="button" class="at-details" id="at-details" aria-expanded="false" data-at="details">Details ▾</button>
     <div class="seg at-years" role="group" aria-label="Fire season" data-id-aria-label="Musim kebakaran">
       <button type="button" data-year="2019" aria-pressed="false" data-id="Jul–Okt 2019">Jul–Oct 2019</button>
       <button type="button" data-year="2026" aria-pressed="true" data-id="Jul–Okt 2026">Jul–Oct 2026</button>
@@ -85,7 +86,7 @@
       <button type="button" data-layer="fire19" aria-pressed="false" class="y19">2019</button><button type="button" data-layer="fire26" aria-pressed="true">2026</button></span>
     <span class="grp"><i class="sw smoke"></i><b data-at="layerSmoke">Smoke</b>
       <button type="button" data-layer="smoke19" aria-pressed="false">2019</button><button type="button" data-layer="smoke26" aria-pressed="false">2026</button></span>
-    <button type="button" data-layer="change" aria-pressed="true"><i class="sw change"></i><span data-at="compare">Change 2019 → 2026</span></button>
+    <button type="button" data-layer="change" aria-pressed="true"><i class="sw change"></i><span class="long" data-at="compare">Change 2019 → 2026</span><span class="short" data-at="compareShort">Change</span></button>
   </div>
   <div class="at-furniture" aria-hidden="true">
     <div class="at-north"><b>N</b><svg viewBox="0 0 12 20"><path d="M6 0 11 18 6 13 1 18z" fill="none" stroke="currentColor" stroke-width="1.2"/><path d="M6 0 6 13 1 18z" fill="currentColor"/></svg></div>
@@ -125,11 +126,11 @@
   </div>
   <div class="cities">
     <figure class="city">
-      <div class="city-frame"><img class="city-still" data-still="palangka-raya" alt="Still image of the Dermaga Rambang diorama" data-id-alt="Gambar diam diorama Dermaga Rambang" hidden><iframe data-src="pocket/palangka-raya.html?v=2" data-clear="dry" title="Pocket City diorama of Dermaga Rambang, Palangka Raya" data-id-title="Diorama Pocket City Dermaga Rambang, Palangka Raya"></iframe></div>
+      <div class="city-frame"><img class="city-still" loading="lazy" decoding="async" data-still="palangka-raya" alt="Still image of the Dermaga Rambang diorama" data-id-alt="Gambar diam diorama Dermaga Rambang" hidden><iframe data-src="pocket/palangka-raya.html?v=2" data-clear="dry" title="Pocket City diorama of Dermaga Rambang, Palangka Raya" data-id-title="Diorama Pocket City Dermaga Rambang, Palangka Raya"></iframe></div>
       <figcaption><h3>Palangka Raya <span class="muted" data-id="· tepi Sungai Kahayan">· Kahayan riverbank</span></h3><p class="where"><span data-id="Dermaga Rambang, Jl. Riau, Pahandut, tepi Sungai Kahayan">Dermaga Rambang, Jl. Riau, Pahandut, on the Kahayan River</span> · <a href="https://www.google.com/maps?q=-2.2038,113.9399" target="_blank" rel="noopener" data-id="Lihat di Google Maps ↗">Google Maps ↗</a></p><p id="city-pky"></p><div class="peak" id="peak-pky"></div></figcaption>
     </figure>
     <figure class="city">
-      <div class="city-frame"><img class="city-still" data-still="marina-bay" alt="Still image of the Marina Bay Sands diorama" data-id-alt="Gambar diam diorama Marina Bay Sands" hidden><iframe data-src="pocket/marina-bay.html?v=2" data-clear="inter" title="Pocket City diorama of Marina Bay Sands, Singapore" data-id-title="Diorama Pocket City Marina Bay Sands, Singapura"></iframe></div>
+      <div class="city-frame"><img class="city-still" loading="lazy" decoding="async" data-still="marina-bay" alt="Still image of the Marina Bay Sands diorama" data-id-alt="Gambar diam diorama Marina Bay Sands" hidden><iframe data-src="pocket/marina-bay.html?v=2" data-clear="inter" title="Pocket City diorama of Marina Bay Sands, Singapore" data-id-title="Diorama Pocket City Marina Bay Sands, Singapura"></iframe></div>
       <figcaption><h3>Singapore <span class="muted" data-id="· Marina Bay Sands">· Marina Bay Sands</span></h3><p class="where"><span data-id="Hotel, SkyPark, The Shoppes, dan ArtScience Museum">Hotel, SkyPark, The Shoppes and ArtScience Museum</span> · <a href="https://www.google.com/maps?q=1.2842,103.8597" target="_blank" rel="noopener" data-id="Lihat di Google Maps ↗">Google Maps ↗</a></p><p id="city-sg"></p><div class="peak" id="peak-sg"></div></figcaption>
     </figure>
   </div>
@@ -144,7 +145,7 @@
     <ul class="findings" id="findings" aria-label="Main findings" data-id-aria-label="Temuan utama"></ul>
   </div>
   <figure>
-    <img src="assets/peat-to-lungs.png" width="1536" height="1024" alt="Isometric cutaway of drained peat, a canal and a small fire whose smoke drifts toward a village." data-id-alt="Penampang isometrik gambut yang dikeringkan, kanal, dan api kecil yang asapnya bergerak ke arah desa.">
+    <img src="assets/peat-to-lungs.webp" srcset="assets/peat-to-lungs-960.webp 960w, assets/peat-to-lungs.webp 1536w" sizes="(max-width: 760px) 100vw, 50vw" loading="lazy" decoding="async" width="1536" height="1024" alt="Isometric cutaway of drained peat, a canal and a small fire whose smoke drifts toward a village." data-id-alt="Penampang isometrik gambut yang dikeringkan, kanal, dan api kecil yang asapnya bergerak ke arah desa.">
     <figcaption data-id="Ilustrasi: gambut kering, api permukaan, dan asap yang bergerak ke permukiman.">Illustration: dry peat, a surface fire, and smoke drifting toward homes.</figcaption>
   </figure>
 </div><a class="next" href="#process" aria-label="Next slide" data-id-aria-label="Slide berikutnya"><svg aria-hidden="true"><use href="#i-down"/></svg></a></section>
@@ -363,7 +364,7 @@
 </div></section>
 
 </main>
-<script type="module" src="app.mjs?v=11"></script>
-<script type="module" src="atlas.mjs?v=2"></script>
+<script type="module" src="atlas.mjs?v=3"></script>
+<script type="module" src="app.mjs?v=12"></script>
 </body>
 </html>
