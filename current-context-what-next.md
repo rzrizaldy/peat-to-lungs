@@ -1,6 +1,6 @@
 # Handoff
 
-Last updated 2026-11-24 (America/New_York), after the opening map rounds (coursework log W20–W27). Live at `348a385` (phone view lighter and compact).
+Last updated 2026-11-24 (America/New_York), after the opening map rounds (coursework log W20–W27). Live at `615e71e` (prevention-plan layer: wind-aware MILP with Health-first / Balanced).
 
 ## Where things live
 
