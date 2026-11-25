@@ -123,7 +123,7 @@ test('all published scenarios preserve GIS totals and have complete valid layers
   }
 });
 
-test('opening map grid keeps national population, land area and the study-province fire totals', async () => {
+test('opening map grid keeps national population, land area, both fire seasons and the study-province totals', async () => {
   const [atlas, bounds] = await Promise.all([json('atlas'), json('atlas-bounds')]);
   const decode = (b64, Type) => new Type(new Uint8Array(Buffer.from(b64, 'base64')).buffer);
   const region = decode(atlas.region, Uint16Array), pop = decode(atlas.pop, Uint32Array), area = decode(atlas.area, Uint16Array);
@@ -141,5 +141,11 @@ test('opening map grid keeps national population, land area and the study-provin
   assert.deepEqual(fires('ID62'), [80126, 164333]);
   const riauPop = Array.from(pop).reduce((s, p, i) => s + (bounds.regencies[region[i]].province === 'ID14' ? p : 0), 0);
   assert(Math.abs(riauPop - 6474029) / 6474029 < 0.01, `Riau population ${riauPop}`);
-  for (let i = 0; i < atlas.n; i += 1) if (!cover[i]) assert.equal(f26[i], 0, '2026 fires only inside the download extent');
+  assert(cover.every(Boolean), 'both seasons cover every province');
+  const f19 = decode(atlas.fire2019, Uint16Array);
+  const cellSum = arr => Array.from(arr).reduce((a, b) => a + b, 0);
+  assert.equal(cellSum(f19), bounds.regencies.reduce((s, r) => s + r.fires[0], 0), '2019 cells add up to the regency counts');
+  assert(Math.abs(cellSum(f26) - bounds.regencies.reduce((s, r) => s + r.fires[1], 0)) < 10, '2026 cells add up to the regency counts');
+  assert(bounds.regencies.filter(r => r.province.startsWith('ID9')).reduce((s, r) => s + r.fires[1], 0) > 0, 'Papua has 2026 detections');
+  assert.equal(atlas.smoke.cities.find(c => c.name === 'Singapore').pm25 > 0, true);
 });

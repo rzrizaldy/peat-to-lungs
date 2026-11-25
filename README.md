@@ -5,7 +5,7 @@
 A scroll-snap data story about peat fires, smoke and people in Riau and Central Kalimantan (305 districts, 2019 and 2026). It is the web companion to a CMU 94-802A GIS project, whose official deliverables are being built in ArcGIS Pro.
 
 - One story, in plain language, with the key numbers and how sure we are about each.
-- Opens on a full-screen fire and smoke map of Indonesia: VIIRS detections as spikes on a 5 km grid, a picker for Indonesia, islands, the Sumatra + Kalimantan peat fire belt, 34 provinces and 522 regencies, share-of-land and share-of-people bars, and a strip that places every province or regency. Scrolling down continues into the story.
+- Opens on a full-screen fire map of Indonesia that leads with the 2019 → 2026 change (Papua ×9, Maluku ×4.7, Kalimantan and Sulawesi ×2, Sumatra −29%), with Fire, Smoke and Change layers you switch on and off: VIIRS detections as spikes on a 5 km grid, a picker for Indonesia, islands, the Sumatra + Kalimantan peat fire belt, 34 provinces and 522 regencies, share-of-land and share-of-people bars, a PM₂.₅ smoke layer that reaches Malaysia, Singapore and Brunei (WashU satellite for Sept 2019, CAMS model for the October 2026 peak), and a chain of people holding hands that shows how many in every 100 breathed unhealthy air in 2019 and 2026. Scrolling down continues into the story.
 - The story then opens on two hand-drawn isometric dioramas (Pocket City): Dermaga Rambang in Palangka Raya and Marina Bay Sands in Singapore, switched together between a clear day and the October 2026 haze.
 - English by default, Indonesian (`ID`) in the header. Light theme.
 
@@ -17,7 +17,7 @@ node serve.mjs          # http://127.0.0.1:4173
 
 The site is static: `index.html`, `styles.css`, `atlas.css`, `app.mjs`, `atlas.mjs`, `map.mjs`, `iso.mjs`, `tools/model.mjs`, `assets/` and `data/`. Any static host (GitHub Pages included) can serve it with no build step. The explorer map loads Esri Light/Dark Gray Canvas tiles from services.arcgisonline.com (attribution: Esri, HERE, Garmin, © OpenStreetMap contributors).
 
-The opening map is rebuilt with `python tools/export-atlas.py` (numpy, geopandas, rasterio; reads the coursework `RawData/` through `PEAT_PROJECT_DIR`), which writes `data/atlas.json` and `data/atlas-bounds.json`.
+The opening map is rebuilt with `python tools/export-atlas.py` (numpy, geopandas, rasterio; reads the coursework `RawData/` through `PEAT_PROJECT_DIR`), which writes `data/atlas.json`, `data/atlas-bounds.json` and `data/atlas-smoke.png`; `python tools/cams-indonesia.py` writes the October 2026 smoke grid `data/cams-indonesia.json`.
 
 ## What the analysis says
 

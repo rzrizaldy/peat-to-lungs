@@ -14,7 +14,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Public+Sans:ital,wght@0,400;0,500;0,600;0,700;0,800;1,500&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="styles.css?v=10">
-  <link rel="stylesheet" href="atlas.css?v=1">
+  <link rel="stylesheet" href="atlas.css?v=2">
 </head>
 <body>
 <a class="skip" href="#deck" data-id="Lompat ke konten">Skip to content</a>
@@ -50,7 +50,7 @@
 
 <!-- 0 · full map (atlas.mjs) -->
 <section class="slide atlas" id="atlas" data-part="A" data-label="Fire and smoke map" data-id-label="Peta api dan asap">
-  <canvas id="at-map" aria-label="Map of fire detections across Indonesia" role="img"></canvas>
+  <canvas id="at-map" aria-label="Map of fire detections across Indonesia and smoke across the region" role="img"></canvas>
   <div id="at-tip" class="at-tip" hidden></div>
   <aside class="at-panel">
     <p class="kicker" data-at="kicker">Where the fires burn, and who breathes the smoke</p>
@@ -65,19 +65,27 @@
       <p class="at-big" id="at-big">—</p>
     </div>
     <div class="seg at-years" role="group" aria-label="Fire season" data-id-aria-label="Musim kebakaran">
-      <button type="button" data-year="2019" aria-pressed="true" data-id="Jul–Okt 2019">Jul–Oct 2019</button>
-      <button type="button" data-year="2026" aria-pressed="false" data-id="Jul–Okt 2026">Jul–Oct 2026</button>
+      <button type="button" data-year="2019" aria-pressed="false" data-id="Jul–Okt 2019">Jul–Oct 2019</button>
+      <button type="button" data-year="2026" aria-pressed="true" data-id="Jul–Okt 2026">Jul–Oct 2026</button>
     </div>
     <button type="button" id="at-reset" class="at-reset" hidden><span data-at="reset">Back to Indonesia</span> ×</button>
     <p class="at-statement" id="at-statement"></p>
+    <div class="at-change" id="at-change"></div>
     <ul class="at-bars" id="at-bars"></ul>
     <p class="source" id="at-note"></p>
-    <label class="at-compare"><input type="checkbox" id="at-compare"><span class="at-switch" aria-hidden="true"></span><b id="at-compare-label">Compare with 2026</b></label>
     <div class="at-study" id="at-study" hidden></div>
   </aside>
   <div class="at-picklist" id="at-picklist" hidden>
     <input type="search" id="at-search" autocomplete="off" spellcheck="false" aria-label="Search province or regency" data-id-aria-label="Cari provinsi atau kabupaten">
     <div id="at-items" role="listbox"></div>
+  </div>
+  <div class="at-layers" role="group" aria-label="Map layers" data-id-aria-label="Lapisan peta">
+    <b data-at="layers">Show</b>
+    <span class="grp"><i class="sw fire"></i><b data-at="layerFire">Fire</b>
+      <button type="button" data-layer="fire19" aria-pressed="false" class="y19">2019</button><button type="button" data-layer="fire26" aria-pressed="true">2026</button></span>
+    <span class="grp"><i class="sw smoke"></i><b data-at="layerSmoke">Smoke</b>
+      <button type="button" data-layer="smoke19" aria-pressed="false">2019</button><button type="button" data-layer="smoke26" aria-pressed="false">2026</button></span>
+    <button type="button" data-layer="change" aria-pressed="true"><i class="sw change"></i><span data-at="compare">Change 2019 → 2026</span></button>
   </div>
   <div class="at-furniture" aria-hidden="true">
     <div class="at-north"><b>N</b><svg viewBox="0 0 12 20"><path d="M6 0 11 18 6 13 1 18z" fill="none" stroke="currentColor" stroke-width="1.2"/><path d="M6 0 6 13 1 18z" fill="currentColor"/></svg></div>
@@ -91,18 +99,12 @@
   <div class="at-legend" id="at-legend"></div>
   <div class="at-strip">
     <div class="at-strip-head">
-      <b data-at="share">Share of</b>
-      <select id="at-metric" aria-label="Metric" data-id-aria-label="Ukuran"></select>
-      <span class="muted">›</span>
-      <select id="at-level" aria-label="Level" data-id-aria-label="Tingkat"></select>
+      <b id="at-chain-title">Each figure = 1% of the people in Indonesia</b>
+      <span class="at-key" id="at-chain-key"></span>
       <span class="at-spacer"></span>
-      <div class="at-sizes" role="group" aria-label="Marker size" data-id-aria-label="Ukuran penanda">
-        <button type="button" data-size="area" aria-pressed="true" data-at="area">Land area</button>
-        <button type="button" data-size="equal" aria-pressed="false" data-at="equal">Equal</button>
-      </div>
       <a class="at-more" href="#cities" data-at="more">The story ↓</a>
     </div>
-    <canvas id="at-strip" aria-label="Every region placed by the chosen share" data-id-aria-label="Setiap wilayah menurut bagian yang dipilih" role="img"></canvas>
+    <canvas id="at-strip" aria-label="People in the selected region, one figure per 1%, coloured by the smoke they breathed in 2019 and 2026" data-id-aria-label="Warga wilayah terpilih, satu orang per 1%, diwarnai menurut asap yang dihirup pada 2019 dan 2026" role="img"></canvas>
     <p class="source at-credit" data-id="Data: NASA FIRMS VIIRS S-NPP (Jul–Okt), PM₂.₅ WashU ACAG V6.GL.03 (Sept 2019), WorldPop 2020, batas HDX/BPS. Peta dasar: Esri, HERE, Garmin, © kontributor OpenStreetMap.">Data: NASA FIRMS VIIRS S-NPP (Jul–Oct), WashU ACAG V6.GL.03 PM₂.₅ (Sept 2019), WorldPop 2020, HDX/BPS boundaries. Basemap: Esri, HERE, Garmin, © OpenStreetMap contributors.</p>
   </div>
   <p class="at-status" id="at-status" role="status"></p>
@@ -362,6 +364,6 @@
 
 </main>
 <script type="module" src="app.mjs?v=11"></script>
-<script type="module" src="atlas.mjs?v=1"></script>
+<script type="module" src="atlas.mjs?v=2"></script>
 </body>
 </html>

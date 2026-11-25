@@ -1,5 +1,5 @@
-// Opening slide: full-bleed spike map of VIIRS fire detections on a 0.05° grid over Indonesia
-// (data/atlas.json, data/atlas-bounds.json from tools/export-atlas.py), with a region picker,
+// Opening slide: full-bleed spike map of VIIRS fire detections on a 0.05° grid over Indonesia,
+// with Sept 2019 PM2.5 smoke over Indonesia and its neighbours (data/atlas*.json, data/atlas-smoke.png from tools/export-atlas.py), a region picker,
 // share-of-land / share-of-people bars and a strip that places every province or regency.
 // Web Mercator over Esri Light Gray Canvas, the same basemap as the story's explorer.
 // Plain scrolling passes through to the story deck; zoom needs pinch, Ctrl/⌘ + wheel or the buttons.
@@ -16,12 +16,17 @@ let lang = root.lang === 'id' ? 'id' : 'en';
 const T = {
   kicker: ['Where the fires burn, and who breathes the smoke', 'Di mana api menyala, dan siapa yang menghirup asapnya'],
   reset: ['Back to Indonesia', 'Kembali ke Indonesia'],
-  share: ['Share of', 'Bagian'],
-  area: ['Land area', 'Luas daratan'],
-  equal: ['Equal', 'Sama besar'],
   more: ['The story ↓', 'Ceritanya ↓'],
   search: ['Search province or regency', 'Cari provinsi atau kabupaten/kota'],
   sub: ['of the land had heavy fire: 10+ detections in its 5 km cell, Jul–Oct {y}', 'daratan mengalami api berat: 10+ titik api di sel 5 km-nya, Jul–Okt {y}'],
+  subChange: ['fire detections, Jul–Oct 2026 vs 2019 (same satellite)', 'titik api, Jul–Okt 2026 vs 2019 (satelit sama)'],
+  subFew: ['too few fires to compare', 'api terlalu sedikit untuk dibandingkan'],
+  lead: ['{b} fire detections in Jul–Oct 2026, against {a} in 2019.', '{b} titik api pada Jul–Okt 2026, dibanding {a} pada 2019.'],
+  rise: ['Biggest rise: {list}.', 'Kenaikan terbesar: {list}.'],
+  fall: ['Fell: {list}.', 'Turun: {list}.'],
+  smoke19: ['In Sept 2019, {p} of people breathed unhealthy air.', 'Pada Sept 2019, {p} warga menghirup udara tidak sehat.'],
+  smoke26: ['At the October 2026 peak, {p} of people breathed unhealthy air (model).', 'Pada puncak Oktober 2026, {p} warga menghirup udara tidak sehat (model).'],
+  changeHead: ['Where fire changed, 2019 → 2026', 'Di mana api berubah, 2019 → 2026'],
   noData: ['No 2026 fire data here', 'Belum ada data api 2026 di sini'],
   noDataSub: ['The 2026 FIRMS download covers Sumatra and Kalimantan only.', 'Unduhan FIRMS 2026 hanya mencakup Sumatra dan Kalimantan.'],
   landFire: ['Land with heavy fire', 'Daratan dengan api berat'],
@@ -30,12 +35,20 @@ const T = {
   pm35: ['PM₂.₅ above 35 µg/m³', 'PM₂.₅ di atas 35 µg/m³'],
   pm55: ['PM₂.₅ above 55 (unhealthy)', 'PM₂.₅ di atas 55 (tidak sehat)'],
   pm150: ['PM₂.₅ above 150 (very)', 'PM₂.₅ di atas 150 (sangat)'],
+  noteShort: ['Heavy fire: 10+ detections per 5 km cell. | = Indonesia. ⓘ', 'Api berat: 10+ titik api per sel 5 km. | = Indonesia. ⓘ'],
   note: ['Heavy fire = 10+ VIIRS detections in a 5 km cell over the season. People rows are shares of people. PM₂.₅ is the Sept 2019 monthly mean (WashU); 35/55/150 are US EPA 24-hour breakpoints, used as a guide. Tick = Indonesia.',
     'Api berat = 10+ titik api VIIRS di sel 5 km selama musim. Baris warga adalah bagian warga. PM₂.₅ adalah rata-rata bulanan Sept 2019 (WashU); 35/55/150 ambang 24 jam US EPA, sebagai panduan. Garis = Indonesia.'],
-  note26: ['Heavy fire = 10+ VIIRS detections in a 5 km cell over the season. No PM₂.₅ estimate exists for 2026 at this resolution, so the smoke rows stay on 2019. Tick = Indonesia.',
-    'Api berat = 10+ titik api VIIRS di sel 5 km selama musim. Belum ada estimasi PM₂.₅ 2026 pada resolusi ini, jadi baris asap tetap 2019. Garis = Indonesia.'],
+  note26: ['Heavy fire = 10+ VIIRS detections in a 5 km cell over the season. 2026 detections: Sumatra and Kalimantan from the file the story uses (near-real-time from August), other provinces from a later FIRMS archive request (standard data for July–August). 2026 PM₂.₅ is the CAMS model mean for the October peak on a 0.5° grid (≈ 55 km; no satellite map exists yet), so it is coarser than 2019. Tick = Indonesia.',
+    'Api berat = 10+ titik api VIIRS di sel 5 km selama musim. Titik api 2026: Sumatra dan Kalimantan dari berkas yang dipakai cerita (near-real-time sejak Agustus), provinsi lain dari permintaan arsip FIRMS berikutnya (data standar Juli–Agustus). PM₂.₅ 2026 adalah rerata model CAMS untuk puncak Oktober pada grid 0,5° (≈ 55 km; belum ada peta satelit), jadi lebih kasar dari 2019. Garis = Indonesia.'],
   partial: ['2026 covers only the part of this region inside Sumatra and Kalimantan ({c} of its land).', '2026 hanya mencakup bagian wilayah ini di Sumatra dan Kalimantan ({c} daratannya).'],
-  compare: ['Compare with {y}', 'Bandingkan dengan {y}'],
+  compare: ['Change 2019 → 2026', 'Perubahan 2019 → 2026'],
+  layers: ['Show', 'Tampilkan'],
+  changeEnds: ['worse ×2 ← same → better', 'memburuk ×2 ← sama → membaik'],
+  layerFire: ['Fire', 'Api'],
+  layerSmoke: ['Smoke', 'Asap'],
+  change: ['Fire detections, 2026 vs 2019 (per regency)', 'Titik api, 2026 vs 2019 (per kabupaten/kota)'],
+  changeTip: ['Fire 2019 → 2026: {a} → {b}', 'Api 2019 → 2026: {a} → {b}'],
+  changeFew: ['too few fires to compare', 'api terlalu sedikit untuk dibandingkan'],
   detections: ['{n} fire detections', '{n} titik api'],
   fewer: ['{p} fewer than 2019', '{p} lebih sedikit dari 2019'],
   more2: ['{p} more than 2019', '{p} lebih banyak dari 2019'],
@@ -43,22 +56,37 @@ const T = {
   breathed: ['{p} breathed unhealthy air', '{p} menghirup udara tidak sehat'],
   inSept: ['in Sept 2019 and', 'pada Sept 2019 dan'],
   lived: ['{p} lived in a heavy-fire cell.', '{p} tinggal di sel api berat.'],
-  metricFire: ['land with heavy fire', 'daratan dengan api berat'],
-  metricPeople: ['people in a heavy-fire cell', 'warga di sel api berat'],
-  metricSmoke: ['people in PM₂.₅ above 55 (2019)', 'warga di PM₂.₅ di atas 55 (2019)'],
-  provinces: ['All provinces', 'Semua provinsi'],
-  regencies: ['All regencies', 'Semua kabupaten/kota'],
+  chainTitle: ['1 figure = {p}% of the people in {name}', '1 orang = {p}% warga {name}'],
+  chainPeople: ['{n} people above 55 µg/m³', '{n} warga di atas 55 µg/m³'],
+  chainNone: ['no full smoke estimate here', 'belum ada estimasi asap penuh'],
+  chainTip: ['{n} of {total} figures · {p} people', '{n} dari {total} orang · {p} warga'],
+  noEstimate: ['no estimate', 'tanpa estimasi'],
+  withinWho: ['within WHO guideline', 'di bawah pedoman WHO'],
+  aboveWho: ['above WHO guideline', 'di atas pedoman WHO'],
+  unhealthy: ['unhealthy', 'tidak sehat'],
+  veryUnhealthy: ['very unhealthy or worse', 'sangat tidak sehat atau lebih'],
+  srcShort19: ['WashU satellite', 'satelit WashU'],
+  srcShort26: ['CAMS model', 'model CAMS'],
   gCountry: ['Country', 'Negara'],
   gFire: ['Fire areas', 'Area kebakaran'],
   gIslands: ['Islands', 'Pulau'],
   gProvinces: ['Provinces', 'Provinsi'],
   gIn: ['Regencies in {n}', 'Kabupaten/kota di {n}'],
   gResults: ['Matches', 'Hasil'],
-  belt: ['Peat fire belt (Sumatra + Kalimantan)', 'Sabuk api gambut (Sumatra + Kalimantan)'],
+  belt: ['Sumatra + Kalimantan (peat fire belt)', 'Sumatra + Kalimantan (sabuk api gambut)'],
+  smoke: ['Smoke over Indonesia and its neighbours', 'Asap di Indonesia dan negara tetangga'],
+  borders: ['The smoke crossed borders: {m} mean PM₂.₅ was {list}.', 'Asap melintasi perbatasan: rerata PM₂.₅ {m} di {list}.'],
+  tipOutside: ['Outside Indonesia', 'Di luar Indonesia'],
+  tipSmoke: ['{m} PM₂.₅ {r} µg/m³', 'PM₂.₅ {m} {r} µg/m³'],
+  month: ['{m} {y}', '{m} {y}'],
+  sep: ['Sept', 'Sept'], oct: ['Oct', 'Okt'],
+  breathed26: ['{p} breathed unhealthy air in {m} (CAMS model) and', '{p} menghirup udara tidak sehat pada {m} (model CAMS) dan'],
+  src19: ['WashU satellite estimate, 1 km', 'estimasi satelit WashU, 1 km'],
+  src26: ['CAMS model, 0.5° (≈ 55 km)', 'model CAMS, 0,5° (≈ 55 km)'],
   deep: ['ArcGIS deep dive by kecamatan', 'Analisis rinci ArcGIS per kecamatan'],
-  legendTitle: ['Fire detections per 100 km²', 'Titik api per 100 km²'],
-  legendGhost: ['Outline: {y}', 'Garis: {y}'],
-  legendSmoke: ['Sept 2019 PM₂.₅ above {t} µg/m³', 'PM₂.₅ Sept 2019 di atas {t} µg/m³'],
+  legendTitle: ['Fire detections per 100 km² (cells with 10+)', 'Titik api per 100 km² (sel dengan 10+)'],
+  changeLabels: [['×2 or more', 'worse', 'about the same', 'better', 'half or less'], ['×2 atau lebih', 'memburuk', 'hampir sama', 'membaik', 'separuh atau kurang']],
+  legendSmoke: ['{m} PM₂.₅, µg/m³ · {src}', 'PM₂.₅ {m}, µg/m³ · {src}'],
   legendPeople: ['People in heavy-fire cells', 'Warga di sel api berat'],
   legendPriority: ['Priority zone (index ≥ +1.5 SD)', 'Zona prioritas (indeks ≥ +1,5 SD)'],
   tipCell: ['5 km cell', 'Sel 5 km'],
@@ -73,7 +101,7 @@ const T = {
   loading: ['Loading the fire grid…', 'Memuat grid api…'],
   failed: ['Could not load the map data. Reload the page.', 'Data peta tidak bisa dimuat. Muat ulang halaman.'],
   million: ['million', 'juta'],
-  aria: ['Map of fire detections across Indonesia', 'Peta titik api di Indonesia'],
+  aria: ['Map of fire detections across Indonesia and smoke across the region', 'Peta titik api di Indonesia dan asap di kawasan'],
 };
 const t = (key, vars = {}) => T[key][lang === 'id' ? 1 : 0].replace(/\{(\w+)\}/g, (_, k) => vars[k] ?? '');
 const nf = (v, d = 0) => new Intl.NumberFormat(lang === 'id' ? 'id-ID' : 'en-US', { minimumFractionDigits: d, maximumFractionDigits: d }).format(v);
@@ -81,6 +109,8 @@ const pct = v => (v == null || Number.isNaN(v) ? '—' : v > 0 && v < 0.001 ? '<
 const people = v => (v >= 1e6 ? `${nf(v / 1e6, v >= 1e8 ? 0 : 2)} ${t('million')}` : nf(Math.round(v / (v >= 1e4 ? 100 : 1)) * (v >= 1e4 ? 100 : 1)));
 
 const ISLANDS = ['Sumatra', 'Java', 'Kalimantan', 'Bali & Nusa Tenggara', 'Sulawesi', 'Maluku', 'Papua'];
+const BELT = ['Sumatra', 'Kalimantan'];
+const ROOT = 'ID';
 const ISLAND_ID = { Sumatra: 'Sumatera', Java: 'Jawa', Kalimantan: 'Kalimantan', 'Bali & Nusa Tenggara': 'Bali & Nusa Tenggara', Sulawesi: 'Sulawesi', Maluku: 'Maluku', Papua: 'Papua' };
 // Sumatra and Kalimantan use the story's island colours; the rest are muted so the fire islands lead.
 const ISLAND_COLOR = { Sumatra: '#3c8a3a', Kalimantan: '#6e5ac8', Java: '#5b86b0', 'Bali & Nusa Tenggara': '#a8954a', Sulawesi: '#b07090', Maluku: '#4f9c9a', Papua: '#8a7560' };
@@ -101,6 +131,7 @@ const CITIES = [
   ['Pulang Pisau', 114.25, -2.75, 4], ['Buntok', 114.84, -1.71, 4], ['Kasongan', 113.4, -1.89, 4], ['Mamuju', 118.89, -2.68, 4],
   ['Serang', 106.15, -6.12, 4], ['Sintang', 111.5, 0.07, 4], ['Muara Bungo', 102.12, -1.47, 4], ['Sekayu', 103.85, -2.88, 4],
 ];
+let NEIGHBOURS = [];                                           // filled from atlas.smoke.cities
 const CITY_ZOOM = [0, 4.2, 5.4, 6.6, 7.4];
 
 /* ================================================================ projection */
@@ -109,8 +140,9 @@ const toWorld = (lon, lat) => [(lon + 180) / 360 * TILE, (1 - Math.log(Math.tan(
 const fromWorld = (x, y) => [x / TILE * 360 - 180, Math.atan(Math.sinh(Math.PI * (1 - 2 * y / TILE))) * 180 / Math.PI];
 
 /* ================================================================ state */
-const state = { region: 'ID', year: 2019, compare: false, people: false, smoke: 0, metric: 'fire', level: 'province', size: 'area' };
-let cell, regions, boundsData, view = { cx: 0, cy: 0, z: 5 }, dirty = true, anim = null, visible = true;
+// Layers: fire spikes per year (both may be on), smoke for one year at a time (0 = off), change fill.
+const state = { region: ROOT, year: 2026, fire19: false, fire26: true, smoke: 0, compare: true, people: false, smokeMonth: 'oct' };   // 2026 smoke is always the October peak
+let cell, regions, boundsData, smoke = null, cams = null, allPath = null, view = { cx: 0, cy: 0, z: 5 }, dirty = true, anim = null, visible = true;
 const canvas = $('at-map'), ctx = canvas.getContext('2d');
 const size = () => { const r = canvas.getBoundingClientRect(); return { W: r.width, H: r.height, r }; };
 
@@ -163,25 +195,63 @@ function build(atlas, bounds) {
   const provsOf = names => bounds.provinces.filter(p => names.includes(p.island));
   for (const island of ISLANDS) {
     const ps = provsOf([island]);
-    add(`is:${island}`, { kind: 'island', name: () => (lang === 'id' ? ISLAND_ID[island] : island), parent: 'ID', island, bbox: bbox(ps),
+    add(`is:${island}`, { kind: 'island', name: () => (lang === 'id' ? ISLAND_ID[island] : island), parent: ROOT, island, bbox: bbox(ps),
       fires: sumFires(ps.map(p => R.get(p.id))), cells: cellsOf(ps), rings: ps.map(p => p.rings) });
   }
-  const belt = provsOf(['Sumatra', 'Kalimantan']);
-  add('belt', { kind: 'group', name: () => t('belt'), parent: 'ID', bbox: bbox(belt), fires: sumFires(belt.map(p => R.get(p.id))),
+  const belt = provsOf(BELT);
+  add('belt', { kind: 'group', name: () => t('belt'), parent: ROOT, bbox: bbox(belt), fires: sumFires(belt.map(p => R.get(p.id))),
     cells: cellsOf(belt), rings: belt.map(p => p.rings) });
-  add('ID', { kind: 'country', name: () => 'Indonesia', parent: null, bbox: [95, -11, 141, 6], fires: sumFires(bounds.provinces.map(p => R.get(p.id))),
+  add(ROOT, { kind: 'root', name: () => 'Indonesia', parent: null, bbox: [95, -11, 141, 6], fires: sumFires(bounds.provinces.map(p => R.get(p.id))),
     cells: Array.from({ length: n }, (_, i) => i), rings: bounds.provinces.map(p => p.rings) });
   return { c, R };
 }
 
-const FIRE_MIN = 10;                       // detections per 5 km cell and season that count as heavy fire
+const SMOKE_BREAKS = [15, 35.5, 55.5, 150.5, 250.5];           // WHO 24 h guideline, then US EPA 24 h AQI breakpoints
+const FIRE_MIN = 10;
+// Change layer: regency fire detections 2026 / 2019 (same VIIRS sensor both years), +5 smoothing so tiny counts don't swing.
+const CHANGE = ['#7a1212', '#c8503e', '#c4c8bf', '#8dbb86', '#2f7a43'];   // ×2+, worse, same, better, half or less
+const CHANGE_MIN = 20;                                         // regencies with fewer detections in both years stay blank
+function changeClass(fires) {
+  const [a, b] = fires;
+  if (a + b < CHANGE_MIN) return -1;
+  const ratio = (b + 5) / (a + 5);
+  return ratio >= 2 ? 0 : ratio >= 1.25 ? 1 : ratio > 0.8 ? 2 : ratio > 0.5 ? 3 : 4;
+}
+const ratioOf = ([a, b]) => (b + 5) / (a + 5);
+function fmtChange(fires) {                                    // ×9.0 for big rises, otherwise +68% / −29%
+  const r = fires[1] / Math.max(1, fires[0]);
+  if (r >= 2) return `×${nf(r, 1)}`;
+  const d = r - 1;
+  return `${d >= 0 ? '+' : '−'}${nf(Math.abs(d) * 100)}%`;
+}
+function childRegions(key) {                                   // islands → provinces → the busiest regencies
+  const r = regions.get(key), all = [...regions.values()];
+  if (r.kind === 'root') return all.filter(x => x.kind === 'island');
+  if (r.kind === 'group') return all.filter(x => x.kind === 'island' && BELT.includes(x.island));
+  if (r.kind === 'island') return all.filter(x => x.kind === 'province' && x.island === r.island);
+  if (r.kind === 'province') return all.filter(x => x.kind === 'regency' && x.parent === r.key).sort((a, b) => b.fires[0] + b.fires[1] - a.fires[0] - a.fires[1]).slice(0, 8);
+  return [];
+}
+function renderChange(kids) {                                  // diverging bars on a log scale centred on "no change"
+  const el = $('at-change');
+  if (!kids.length) { el.innerHTML = ''; return; }
+  const rows = [...kids].sort((a, b) => ratioOf(b.fires) - ratioOf(a.fires));
+  const pos = f => Math.max(-2, Math.min(3.4, Math.log2(f[1] / Math.max(1, f[0])))) ;
+  el.innerHTML = `<h4>${t('changeHead')}</h4>` + rows.map(k => {
+    const v = pos(k.fires), c = CHANGE[changeClass(k.fires)], w = Math.abs(v) / 5.4 * 100, x = 2 / 5.4 * 100;
+    return `<button type="button" data-key="${k.key}" title="${nf(k.fires[0])} → ${nf(k.fires[1])}"><span>${k.name()}</span>
+      <i class="track"><b class="mid" style="left:${x}%"></b><b class="bar" style="background:${c};left:${v < 0 ? x - w : x}%;width:${w}%"></b></i>
+      <em style="color:${changeClass(k.fires) === 2 ? 'var(--muted)' : c}">${fmtChange(k.fires)}</em></button>`;
+  }).join('');
+}                       // detections per 5 km cell and season that count as heavy fire
 const statCache = new Map();
 function stats(key, year) {
-  const id = `${key}|${year}`;
+  const id = `${key}|${year}|${year === 2026 ? state.smokeMonth : ''}`;
   if (statCache.has(id)) return statCache.get(id);
+  const pmOf = year === 2019 ? i => cell.pm[i] / 10 : i => camsAt(i);
   const r = regions.get(key), f = cell.f[year];
   let land = 0, landCov = 0, landFire = 0, landAny = 0, pop = 0, popCov = 0, popFire = 0, pmPop = 0;
-  const over = { 35: 0, 55: 0, 150: 0 };
+  const classes = [0, 0, 0, 0, 0, 0];                           // people per smoke class (SMOKE_BREAKS)
   for (const i of r.cells) {
     const a = cell.area[i] / 100, p = cell.pop[i];
     land += a; pop += p;
@@ -190,16 +260,15 @@ function stats(key, year) {
       if (f[i]) landAny += a;
       if (f[i] >= FIRE_MIN) { landFire += a; popFire += p; }
     }
-    if (cell.pm[i]) {
-      const v = cell.pm[i] / 10; pmPop += p;
-      if (v > 35.4) over[35] += p; if (v > 55.4) over[55] += p; if (v > 150.4) over[150] += p;
-    }
+    const v = pmOf(i);
+    if (v > 0) { pmPop += p; classes[SMOKE_BREAKS.filter(b => v >= b).length] += p; }
   }
   const coverage = land ? landCov / land : 0;
   const s = {
     land, pop, coverage, fires: r.fires[year === 2019 ? 0 : 1],
     fireShare: landCov ? landFire / landCov : null, anyShare: landCov ? landAny / landCov : null, peopleFire: popCov ? popFire / popCov : null,
-    over: Object.fromEntries(Object.entries(over).map(([k, v]) => [k, pmPop ? v / pmPop : null])),
+    classes, noSmoke: pop - pmPop,
+    over: Object.fromEntries([[35, 2], [55, 3], [150, 4]].map(([k, from]) => [k, pmPop >= pop * 0.9 ? classes.slice(from).reduce((a, b) => a + b, 0) / pmPop : null])),
   };
   if (year === 2026 && coverage < 0.02) Object.assign(s, { fireShare: null, anyShare: null, peopleFire: null, fires: null });
   statCache.set(id, s);
@@ -236,7 +305,7 @@ function bins(k, year) {
   const f = cell.f[year], sel = mask(), lands = landFor(k), bc = Math.ceil(cell.g.cols / k), m = new Map();
   for (let i = 0; i < cell.n; i += 1) {
     const v = f[i];
-    if (!v) continue;
+    if (v < FIRE_MIN) continue;                                  // spikes only for heavy-fire cells (10+ detections)
     const b = Math.floor(cell.row[i] / k) * bc + Math.floor(cell.col[i] / k), id = b * 2 + sel[i];
     let o = m.get(id);
     if (!o) { o = { b, f: 0, x: 0, y: 0, row: cell.row[i], in: sel[i] }; m.set(id, o); }
@@ -293,6 +362,8 @@ function drawTiles(W, H, s) {
 /* ================================================================ map drawing */
 const SPIKE_L = ['#f3c47c', '#eeab58', '#e28c36', '#cc6c22', '#a84e16', '#7e3610'];
 const SPIKE_R = ['#dba45f', '#d08a3e', '#bf6d23', '#a45217', '#823a10', '#5c260b'];
+const SPIKE19_L = ['#cdcdef', '#ababe1', '#8b8bd2', '#6d6dc1', '#5252a6', '#3a3a86'];   // 2019 in the story's indigo
+const SPIKE19_R = ['#b5b5e3', '#9494d4', '#7676c4', '#5a5aad', '#434391', '#2d2d70'];
 let priority = null;                                           // { key, path }
 const paths = new Map();
 const pathOf = key => { if (!paths.has(key)) paths.set(key, ringsPath(regions.get(key).rings)); return paths.get(key); };
@@ -347,7 +418,14 @@ function draw() {
 
   ctx.setTransform(ratio * s, 0, 0, ratio * s, ratio * (W / 2 - view.cx * s), ratio * (H / 2 - view.cy * s));
   const px = 1 / s, sel = regions.get(state.region);
-  if (state.region !== 'ID') {
+  const layer = smokeLayer();
+  if (layer) {
+    const [ax, ay] = toWorld(layer.bounds[0], layer.bounds[3]), [bx, by] = toWorld(layer.bounds[2], layer.bounds[1]);
+    ctx.imageSmoothingEnabled = layer.smooth;
+    ctx.drawImage(layer.img, ax, ay, bx - ax, by - ay);
+    ctx.imageSmoothingEnabled = true;
+  }
+  if (state.region !== ROOT) {
     const veil = new Path2D();
     veil.rect(view.cx - W / 2 / s - 1, view.cy - H / 2 / s - 1, W / s + 2, H / s + 2);
     veil.addPath(pathOf(state.region));
@@ -357,7 +435,7 @@ function draw() {
   ctx.lineJoin = 'round';
   ctx.strokeStyle = 'rgba(75,90,81,.32)';
   ctx.lineWidth = 0.7 * px;
-  ctx.stroke(pathOf('ID'));
+  ctx.stroke(allPath);
   if (view.z >= 6.4) {
     const provKey = sel.kind === 'regency' ? sel.parent : sel.kind === 'province' ? sel.key : null;
     if (provKey) {
@@ -365,6 +443,17 @@ function draw() {
       ctx.lineWidth = 0.5 * px;
       for (const r of regions.values()) if (r.kind === 'regency' && r.parent === provKey) ctx.stroke(pathOf(r.key));
     }
+  }
+  if (state.compare) {
+    ctx.globalAlpha = 0.62;
+    for (const r of regions.values()) {
+      if (r.kind !== 'regency') continue;
+      const k = changeClass(r.fires);
+      if (k < 0) continue;
+      ctx.fillStyle = CHANGE[k];
+      ctx.fill(pathOf(r.key));
+    }
+    ctx.globalAlpha = 1;
   }
   drawCellLayers(W, H, s);
   if (priority?.path) {
@@ -374,7 +463,7 @@ function draw() {
     ctx.lineWidth = 1.1 * px;
     ctx.stroke(priority.path);
   }
-  if (state.region !== 'ID') {
+  if (state.region !== ROOT) {
     ctx.strokeStyle = 'rgba(22,33,27,.7)';
     ctx.lineWidth = 1.2 * px;
     ctx.stroke(pathOf(state.region));
@@ -389,33 +478,28 @@ function draw() {
   const toS = (x, y) => [(x - view.cx) * s + W / 2, (y - view.cy) * s + H / 2];
   const height = d => HMAX * Math.sqrt(Math.min(d, DMAX) / DMAX);
   const cull = (sx, sy, h) => sx < -10 || sx > W + 10 || sy < -4 || sy - h > H + 4;
-  for (const b of bins(k, state.year)) {
-    const [sx, sy] = toS(b.x, b.y), h = height(b.d) * (b.in ? 1 : 0.6);
-    if (h < 0.6 || cull(sx, sy, h)) continue;
-    const ci = Math.min(5, Math.floor(h / HMAX * 6));
-    ctx.fillStyle = b.in ? SPIKE_L[ci] : 'rgba(150,158,152,.4)';
-    ctx.beginPath(); ctx.moveTo(sx - hw, sy); ctx.lineTo(sx, sy - h); ctx.lineTo(sx, sy + 0.4); ctx.fill();
-    ctx.fillStyle = b.in ? SPIKE_R[ci] : 'rgba(122,130,124,.4)';
-    ctx.beginPath(); ctx.moveTo(sx + hw, sy); ctx.lineTo(sx, sy - h); ctx.lineTo(sx, sy + 0.4); ctx.fill();
-  }
-  if (state.compare) {
-    ctx.strokeStyle = 'rgba(22,33,27,.75)';
-    ctx.lineWidth = 0.8;
-    ctx.beginPath();
-    for (const b of bins(k, state.year === 2019 ? 2026 : 2019)) {
-      if (!b.in) continue;
-      const [sx, sy] = toS(b.x, b.y), h = height(b.d);
-      if (h < 1.5 || cull(sx, sy, h)) continue;
-      ctx.moveTo(sx - hw, sy); ctx.lineTo(sx, sy - h); ctx.lineTo(sx + hw, sy);
+  const years = [state.fire19 && 2019, state.fire26 && 2026].filter(Boolean);
+  for (const year of years) {
+    const dx = years.length === 2 ? (year === 2019 ? -hw * 0.95 : hw * 0.95) : 0;
+    const L = year === 2019 ? SPIKE19_L : SPIKE_L, R = year === 2019 ? SPIKE19_R : SPIKE_R;
+    for (const b of bins(k, year)) {
+      const [x0, sy] = toS(b.x, b.y), sx = x0 + dx, h = height(b.d) * (b.in ? 1 : 0.6);
+      if (h < 0.6 || cull(sx, sy, h)) continue;
+      const ci = Math.min(5, Math.floor(h / HMAX * 6));
+      ctx.globalAlpha = state.compare ? 0.55 : 1;
+      ctx.fillStyle = b.in ? L[ci] : 'rgba(150,158,152,.4)';
+      ctx.beginPath(); ctx.moveTo(sx - hw, sy); ctx.lineTo(sx, sy - h); ctx.lineTo(sx, sy + 0.4); ctx.fill();
+      ctx.fillStyle = b.in ? R[ci] : 'rgba(122,130,124,.4)';
+      ctx.beginPath(); ctx.moveTo(sx + hw, sy); ctx.lineTo(sx, sy - h); ctx.lineTo(sx, sy + 0.4); ctx.fill();
     }
-    ctx.stroke();
   }
+  ctx.globalAlpha = 1;
   drawLabels(W, H, toS);
   updateScale(s);
 }
 
 function drawCellLayers(W, H, s) {
-  if (!state.people && !state.smoke) return;
+  if (!state.people) return;
   const sel = mask(), f = cell.f[state.year];
   const step = toWorld(cell.g.x0 + cell.g.cell, 0)[0] - toWorld(cell.g.x0, 0)[0];
   const x0 = view.cx - W / 2 / s, x1 = view.cx + W / 2 / s, y0 = view.cy - H / 2 / s, y1 = view.cy + H / 2 / s;
@@ -425,8 +509,6 @@ function drawCellLayers(W, H, s) {
     if (!sel[i]) continue;
     const x = cell.wx[i], y = cell.wy[i];
     if (x < x0 || x > x1 || y < y0 || y > y1) continue;
-    const v = cell.pm[i] / 10;
-    if (state.smoke && v > state.smoke + 0.4) put(v > 150.4 ? 'rgba(84,70,140,.5)' : 'rgba(108,95,150,.32)', i);
     if (state.people && f[i] >= FIRE_MIN && cell.pop[i] > 0 && (state.year === 2019 || cell.cover[i])) {
       put(`rgba(43,92,170,${Math.min(0.85, 0.22 + Math.log10(cell.pop[i] + 1) / 7).toFixed(2)})`, i);
     }
@@ -463,8 +545,10 @@ function drawLabels(W, H, toS) {
     }
     ctx.letterSpacing = '0px';
   }
-  for (const [name, lon, lat, rank] of CITIES) {
+  const showPm = !!smokeLayer();
+  for (const [city, lon, lat, rank, pm] of [...NEIGHBOURS.map(c => [c.name, c.lon, c.lat, ['Singapore', 'Kuala Lumpur', 'Kuching'].includes(c.name) ? 1 : 3, cityPm(c.name)]), ...CITIES]) {
     if (view.z < CITY_ZOOM[rank]) continue;
+    const name = showPm && pm != null ? `${city} · ${nf(pm)} µg/m³` : city;
     const [sx, sy] = toS(...toWorld(lon, lat));
     ctx.font = `${rank <= 1 ? 700 : 600} ${rank <= 2 ? 13 : 12}px "Public Sans", sans-serif`;
     const w = ctx.measureText(name).width, tx = sx + w + 12 < W - 100 ? sx + 6 : sx - 6 - w;
@@ -486,70 +570,82 @@ function updateScale(s) {
 /* ================================================================ legend */
 function drawLegend() {
   const el = $('at-legend'), H = 64, Wc = 150;
-  let html = `<h6>${t('legendTitle')}</h6><canvas width="${Wc * 2}" height="${(H + 16) * 2}" style="width:${Wc}px;height:${H + 16}px"></canvas>`;
-  if (state.compare) html += `<div>${t('legendGhost', { y: state.year === 2019 ? 2026 : 2019 })} △</div>`;
-  if (state.smoke) html += `<div><span class="key" style="background:rgba(108,95,150,.45)"></span>${t('legendSmoke', { t: state.smoke })}</div>`;
+  const fireOn = state.fire19 || state.fire26;
+  let html = fireOn ? `<h6>${t('legendTitle')}</h6><canvas width="${Wc * 2}" height="${(H + 16) * 2}" style="width:${Wc}px;height:${H + 16}px"></canvas>` : '';
+  if (state.compare) {
+    const names = T.changeLabels[lang === 'id' ? 1 : 0];
+    html += `<div style="margin-top:6px;color:var(--ink);font-weight:600">${t('change')}</div><div>${CHANGE.map((c, k) => `<span class="key" title="${names[k]}" style="width:24px;margin:0;background:${c};opacity:.8"></span>`).join('')}</div><div style="font-size:11px">${t('changeEnds')}</div>`;
+  }
+  if (smokeLayer()) {
+    const labels = ['15–35', '35–55', '55–150', '150–250', '250+'];
+    html += `<div style="margin-top:4px">${t('legendSmoke', { m: monthName(state.smoke), src: t(state.smoke === 2019 ? 'src19' : 'src26') })}</div><div>${smoke.rgba.slice(1).map((c, i) => `<span class="key" title="${labels[i]}" style="width:22px;margin:0;background:rgba(${c[0]},${c[1]},${c[2]},${(c[3] / 255).toFixed(2)})"></span>`).join('')}</div><div style="font-size:11px">15 · 35 · 55 · 150 · 250</div>`;
+  }
+  if (state.fire19 && state.fire26) html = html.replace('</h6>', `</h6><div><span class="key" style="background:#6d6dc1"></span>2019 <span class="key" style="background:#cc6c22;margin-left:8px"></span>2026</div>`);
   if (state.people) html += `<div><span class="key" style="background:#2b5caa"></span>${t('legendPeople')}</div>`;
   if (priority?.path) html += `<div><span class="key" style="border:1.5px solid #6b3410"></span>${t('legendPriority')}</div>`;
   el.innerHTML = html;
+  if (!fireOn) return;
   const c = el.querySelector('canvas').getContext('2d');
   c.scale(2, 2); c.font = '11px "Public Sans", sans-serif'; c.textAlign = 'center';
-  [10, 100, 400, 1600].forEach((d, j) => {
+  [50, 200, 800, 1600].forEach((d, j) => {
     const h = H * Math.sqrt(d / DMAX), x = 22 + j * 36, ci = Math.min(5, Math.floor(h / H * 6));
-    c.fillStyle = SPIKE_L[ci]; c.beginPath(); c.moveTo(x - 5, H); c.lineTo(x, H - h); c.lineTo(x, H); c.fill();
-    c.fillStyle = SPIKE_R[ci]; c.beginPath(); c.moveTo(x + 5, H); c.lineTo(x, H - h); c.lineTo(x, H); c.fill();
+    const only19 = state.fire19 && !state.fire26, L = only19 ? SPIKE19_L : SPIKE_L, R = only19 ? SPIKE19_R : SPIKE_R;
+    c.fillStyle = L[ci]; c.beginPath(); c.moveTo(x - 5, H); c.lineTo(x, H - h); c.lineTo(x, H); c.fill();
+    c.fillStyle = R[ci]; c.beginPath(); c.moveTo(x + 5, H); c.lineTo(x, H - h); c.lineTo(x, H); c.fill();
     c.fillStyle = '#4b5a51'; c.fillText(nf(d), x, H + 11);
   });
 }
 
 /* ================================================================ panel */
 function renderPanel() {
-  const r = regions.get(state.region), s = stats(state.region, state.year), nat = stats('ID', state.year), s19 = stats(state.region, 2019), n19 = stats('ID', 2019);
+  const r = regions.get(state.region), s = stats(state.region, state.year), nat = stats(ROOT, state.year);
   $('at-pick-name').textContent = r.name();
   $('at-pick').classList.toggle('long', r.name().length > 15);
-  $('at-reset').hidden = state.region === 'ID';
-  const big = $('at-big');
-  big.textContent = s.fireShare == null ? '—' : pct(s.fireShare);
-  big.classList.toggle('na', s.fireShare == null);
-  $('at-sub').textContent = s.fireShare == null ? t('noData') : t('sub', { y: state.year });
-  let html;
-  if (s.fires != null) {
-    html = `<u class="f">${t('detections', { n: nf(s.fires) })}</u>`;
-    if (state.year === 2026 && s19.fires) { const ch = s.fires / s19.fires - 1; html += ` (${t(ch < 0 ? 'fewer' : 'more2', { p: pct(Math.abs(ch)) })})`; }
-    html += `. ${t('ofPeople', { n: people(s.pop) })} `;
-    html += state.year === 2019 && s.over[55] != null
-      ? `<u class="s">${t('breathed', { p: pct(s.over[55]) })}</u> ${t('inSept')} <u class="p">${t('lived', { p: pct(s.peopleFire) })}</u>`
-      : `<u class="p">${t('lived', { p: pct(s.peopleFire) })}</u>`;
-  } else html = t('noDataSub');
-  if (state.year === 2026 && s.coverage >= 0.02 && s.coverage < 0.98) html += ` <span class="muted">${t('partial', { c: pct(s.coverage) })}</span>`;
+  $('at-reset').hidden = state.region === ROOT;
+  const big = $('at-big'), ck = changeClass(r.fires);
+  big.textContent = ck < 0 ? '—' : fmtChange(r.fires);
+  big.classList.toggle('na', ck < 0);
+  big.style.color = ck < 0 || ck === 2 ? '' : CHANGE[ck];
+  big.style.borderColor = ck < 0 ? '' : CHANGE[ck];
+  $('at-sub').textContent = t(ck < 0 ? 'subFew' : 'subChange');
+  const kids = childRegions(state.region).filter(k => changeClass(k.fires) >= 0);
+  const up = kids.filter(k => changeClass(k.fires) <= 1).sort((a, b) => ratioOf(b.fires) - ratioOf(a.fires)).slice(0, 3);
+  const down = kids.filter(k => changeClass(k.fires) >= 3).sort((a, b) => ratioOf(a.fires) - ratioOf(b.fires)).slice(0, 2);
+  let html = `<u class="f">${t('lead', { a: nf(r.fires[0]), b: nf(r.fires[1]) })}</u>`;
+  if (up.length) html += ` ${t('rise', { list: up.map(k => `${k.name()} ${fmtChange(k.fires)}`).join(', ') })}`;
+  if (down.length) html += ` ${t('fall', { list: down.map(k => `${k.name()} ${fmtChange(k.fires)}`).join(', ') })}`;
+  if (s.over[55] != null) html += ` <span class="muted">${t(state.year === 2019 ? 'smoke19' : 'smoke26', { p: pct(s.over[55]) })}</span>`;
   $('at-statement').innerHTML = html;
+  renderChange(kids);
   const rows = [
     { id: 'fire', label: t('landFire'), v: s.fireShare, n: nat.fireShare, color: 'var(--ember)', lead: true },
     { id: 'any', label: t('landAny'), v: s.anyShare, n: nat.anyShare, color: 'var(--ember-hot)', lead: true },
     { id: 'people', label: t('peopleFire'), v: s.peopleFire, n: nat.peopleFire, color: 'var(--at-people)', on: state.people },
-    { id: 35, label: t('pm35'), v: s19.over[35], n: n19.over[35], color: 'var(--smoke)', on: state.smoke === 35 },
-    { id: 55, label: t('pm55'), v: s19.over[55], n: n19.over[55], color: 'var(--smoke)', on: state.smoke === 55 },
-    { id: 150, label: t('pm150'), v: s19.over[150], n: n19.over[150], color: 'var(--smoke)', on: state.smoke === 150 },
+    { id: 35, label: t('pm35'), v: s.over[35], n: nat.over[35], color: 'rgb(166,154,204)', mark: true },
+    { id: 55, label: t('pm55'), v: s.over[55], n: nat.over[55], color: 'rgb(128,110,178)', mark: true },
+    { id: 150, label: t('pm150'), v: s.over[150], n: nat.over[150], color: 'rgb(92,70,150)', mark: true },
   ];
   $('at-bars').innerHTML = rows.map(row => {
-    const control = row.lead ? `<span style="width:11px;height:11px;background:${row.color};display:block"></span>`
+    const control = row.lead || row.mark ? `<span class="mark" style="background:${row.color}"></span>`
       : `<input type="checkbox" id="at-bar-${row.id}" data-layer="${row.id}" ${row.on ? 'checked' : ''}>`;
     const w = row.v == null ? 0 : Math.max(row.v > 0 ? 1.5 : 0, row.v * 100);
-    const tick = row.n == null || state.region === 'ID' ? '' : `<b style="left:${row.n * 100}%"></b>`;
-    return `<li class="${row.id === 'fire' ? 'lead' : ''} ${typeof row.id === 'number' && state.year === 2026 ? 'off' : ''}">${control}
-      <label ${row.lead ? '' : `for="at-bar-${row.id}"`} title="${row.label}">${row.label}</label>
+    const tick = row.n == null || state.region === ROOT ? '' : `<b style="left:${row.n * 100}%"></b>`;
+    return `<li class="${row.id === 'fire' ? 'lead' : ''} ${row.mark && row.v == null ? 'off' : ''}">${control}
+      <label ${row.lead || row.mark ? '' : `for="at-bar-${row.id}"`} title="${row.label}">${row.label}</label>
       <span class="at-bar" style="color:${row.color}"><i style="width:${w}%"></i>${tick}</span><span class="v">${pct(row.v)}</span></li>`;
   }).join('');
-  $('at-note').textContent = t(state.year === 2026 ? 'note26' : 'note');
-  $('at-compare-label').textContent = t('compare', { y: state.year === 2019 ? 2026 : 2019 });
+  $('at-note').textContent = t('noteShort');
+  $('at-note').title = t(state.year === 2026 ? 'note26' : 'note');
+  paintLayers();
+
   for (const b of section.querySelectorAll('.at-years button')) b.setAttribute('aria-pressed', String(Number(b.dataset.year) === state.year));
   renderStudy();
 }
+$('at-change').addEventListener('click', e => { const b = e.target.closest('[data-key]'); if (b) select(b.dataset.key); });
 $('at-bars').addEventListener('change', e => {
   const layer = e.target.dataset.layer;
   if (!layer) return;
   if (layer === 'people') state.people = e.target.checked;
-  else state.smoke = e.target.checked ? Number(layer) : 0;
   renderPanel(); drawLegend(); dirty = true;
 });
 
@@ -598,7 +694,7 @@ function pickGroups(query) {
     return [[t('gResults'), hits.map(r => ({ key: r.key, hint: r.kind === 'regency' ? regions.get(r.parent).name() : '' }))]];
   }
   const regs = all.filter(r => r.kind === 'regency').sort((a, b) => b.fires[yi] - a.fires[yi]);
-  const groups = [[t('gCountry'), [{ key: 'ID' }]],
+  const groups = [[t('gCountry'), [{ key: ROOT }]],
     [t('gFire'), [{ key: 'belt' }, { key: 'ID14', star: true }, { key: 'ID62', star: true },
       ...regs.slice(0, 6).map(r => ({ key: r.key, hint: regions.get(r.parent).name(), indent: true }))]]];
   const cur = regions.get(state.region), pKey = cur.kind === 'province' ? cur.key : cur.kind === 'regency' ? cur.parent : null;
@@ -645,127 +741,104 @@ $('at-search').addEventListener('keydown', e => {
 $('at-items').addEventListener('click', e => { const b = e.target.closest('[data-key]'); if (b) { select(b.dataset.key); openPicker(false); } });
 document.addEventListener('click', e => { if (picker.open && !$('at-picklist').contains(e.target)) openPicker(false); });
 
-/* ================================================================ strip */
-const strip = { canvas: $('at-strip'), items: [], hover: null };
-const METRICS = { fire: 'metricFire', people: 'metricPeople', smoke: 'metricSmoke' };
-function metricValue(key) {
-  const year = state.metric === 'smoke' ? 2019 : state.year, s = stats(key, year);
-  if (year === 2026 && s.coverage < 0.5) return null;
-  return state.metric === 'fire' ? s.fireShare : state.metric === 'people' ? s.peopleFire : s.over[55];
+/* ================================================================ people chain */
+// Isotype-style row per season: solid figures holding hands like a paper-doll chain, each 2% of the people
+// in the selection (4% on phones), coloured by the smoke they breathed, worst first. Dashed = no estimate.
+const CHAIN = ['#c3cabe', '#b3a7d6', '#6f58a8', '#2c1c58'];          // <15, 15–55, 55–150, ≥150 µg/m³
+const CHAIN_LABEL = ['<15', '15–55', '55–150', '150+'];
+const CHAIN_NAME = ['withinWho', 'aboveWho', 'unhealthy', 'veryUnhealthy'];
+const toGroup = k => (k >= 4 ? 3 : k === 3 ? 2 : k >= 1 ? 1 : 0);    // six smoke classes → four groups
+const strip = { canvas: $('at-strip'), rows: [], geom: null };
+function chainParts(s, n) {                                    // largest-remainder rounding of people to n figures
+  const pops = [0, 0, 0, 0];
+  s.classes.forEach((p, k) => { pops[toGroup(k)] += p; });
+  const groups = [3, 2, 1, 0].map(g => ({ g, pop: pops[g] })).concat([{ g: -1, pop: Math.max(0, s.noSmoke) }]);
+  const total = groups.reduce((a, x) => a + x.pop, 0) || 1;
+  for (const x of groups) { x.exact = x.pop / total * n; x.count = Math.floor(x.exact); }
+  let left = n - groups.reduce((a, x) => a + x.count, 0);
+  [...groups].sort((a, b) => (b.exact - b.count) - (a.exact - a.count)).forEach(x => { if (left > 0) { x.count += 1; left -= 1; } });
+  return groups.flatMap(x => Array(x.count).fill(x.g));
 }
-function inSelection(r) {
-  const sel = regions.get(state.region);
-  if (sel.kind === 'country') return true;
-  if (sel.kind === 'island') return r.island === sel.island;
-  if (sel.kind === 'group') return r.island === 'Sumatra' || r.island === 'Kalimantan';
-  if (sel.kind === 'province') return r.key === sel.key || r.parent === sel.key;
-  return r.key === sel.key || r.key === sel.parent;
+function figure(c, x, top, u, h, g) {                          // one paper-doll figure; hands reach the cell edges
+  const head = h * 0.11, neck = top + head * 2 + h * 0.03, hip = top + h * 0.6, foot = top + h;
+  const body = Math.min(u * 0.5, h * 0.24), leg = body * 0.42;
+  const col = g < 0 ? '#9aa395' : CHAIN[g];
+  c.fillStyle = col; c.strokeStyle = col;
+  const shape = new Path2D();
+  shape.arc(x, top + head, head, 0, Math.PI * 2);
+  shape.roundRect(x - body / 2, neck, body, hip - neck + body * 0.2, [body * 0.35, body * 0.35, body * 0.15, body * 0.15]);
+  shape.roundRect(x - body / 2, hip, leg, foot - hip, [0, 0, leg / 2, leg / 2]);
+  shape.roundRect(x + body / 2 - leg, hip, leg, foot - hip, [0, 0, leg / 2, leg / 2]);
+  c.lineCap = 'round'; c.lineWidth = Math.max(1.6, body * 0.3);
+  const arms = new Path2D();
+  arms.moveTo(x - body / 2 + 1, neck + c.lineWidth / 2); arms.lineTo(x - u / 2, top + h * 0.52);
+  arms.moveTo(x + body / 2 - 1, neck + c.lineWidth / 2); arms.lineTo(x + u / 2, top + h * 0.52);
+  if (g < 0) {
+    c.setLineDash([2, 2]); c.lineWidth = 1; c.stroke(shape);
+    c.lineWidth = Math.max(1.6, body * 0.3); c.stroke(arms); c.setLineDash([]);
+  } else { c.fill(shape); c.stroke(arms); }
 }
 function renderStrip() {
   if (!regions) return;
   const { width: W, height: H } = resizeCanvas(strip.canvas);
   if (!W) return;
-  const c = strip.canvas.getContext('2d');
+  const c = strip.canvas.getContext('2d'), narrow = W < 700, n = narrow ? 25 : 50;
   c.clearRect(0, 0, W, H);
-  const kind = state.level;
-  const list = [...regions.values()].filter(r => r.kind === kind).map(r => ({ r, v: metricValue(r.key), area: stats(r.key, 2019).land })).filter(o => o.v != null);
-  const top = Math.max(0.01, ...list.map(o => o.v), metricValue(state.region) ?? 0);
-  const vmax = [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.8, 1].find(v => v >= top * 1.04) ?? 1;
-  const padL = 10, padR = 24, axisY = H - 18, x = v => padL + v / vmax * (W - padL - padR);
-  const maxArea = Math.max(...list.map(o => o.area)), base = kind === 'province' ? 22 : 11;
-  for (const o of list) o.size = state.size === 'equal' ? base * 0.62 : Math.max(kind === 'province' ? 6 : 3.2, base * Math.sqrt(o.area / maxArea));
-  const mid = (axisY - 22) / 2 + 14, placed = [];
-  list.sort((a, b) => b.size - a.size);
-  for (const o of list) {                                       // beeswarm: larger first, nudge vertically
-    o.x = x(o.v);
-    let best = mid;
-    for (let k = 0; k < 40; k += 1) {
-      const y = mid + (k % 2 ? 1 : -1) * Math.ceil(k / 2) * 3;
-      if (y - o.size / 2 < 14 || y + o.size / 2 > axisY - 4) continue;
-      best = y;
-      if (!placed.some(p => Math.abs(p.x - o.x) < (p.size + o.size) / 2 + 0.6 && Math.abs(p.y - y) < (p.size + o.size) / 2 + 0.6)) break;
+  $('at-chain-title').textContent = t('chainTitle', { p: 100 / n, name: regions.get(state.region).name() });
+  const left = narrow ? 62 : 100, right = narrow ? 6 : 260, rowH = H / 2, ink = '#16211b';
+  const u = Math.min(26, (W - left - right) / n), h = Math.min(rowH - 14, u * 2.3);
+  strip.rows = [];
+  [[2019, 'sep'], [2026, state.smokeMonth]].forEach(([year, month], row) => {
+    const s = stats(state.region, year), label = t('month', { m: t(month), y: year });
+    const parts = chainParts(s, n), y0 = row * rowH, known = s.over[55] != null, top = y0 + rowH - h - 3;
+    c.globalAlpha = year === state.year ? 1 : 0.5;
+    c.textBaseline = 'middle'; c.textAlign = 'left';
+    c.fillStyle = ink; c.font = `700 ${narrow ? 12 : 13.5}px "Public Sans", sans-serif`;
+    c.fillText(label, 0, narrow ? top + 4 : top + h * 0.38);
+    if (narrow) {                                               // phones: the share replaces the source line
+      c.fillStyle = known ? '#2c1c58' : '#76837a'; c.font = '800 15px "Public Sans", sans-serif';
+      c.fillText(known ? pct(s.over[55]) : '—', 0, top + 21);
+    } else {
+      c.fillStyle = '#76837a'; c.font = '500 11.5px "Public Sans", sans-serif';
+      c.fillText(t(year === 2019 ? 'srcShort19' : 'srcShort26'), 0, top + h * 0.38 + 15);
     }
-    o.y = best; placed.push(o);
-  }
-  const ink = '#16211b', halo = 'rgba(248,249,245,.95)';
-  c.strokeStyle = 'rgba(22,33,27,.55)'; c.lineWidth = 1;
-  c.beginPath(); c.moveTo(padL, axisY); c.lineTo(W - padR, axisY); c.stroke();
-  c.font = '12px "Public Sans", sans-serif'; c.fillStyle = '#4b5a51'; c.textBaseline = 'top';
-  const stepV = vmax <= 0.2 ? 0.05 : vmax <= 0.5 ? 0.1 : 0.25;
-  for (let v = 0; v <= vmax + 1e-9; v += stepV) {
-    const last = v + stepV > vmax + 1e-9;
-    c.beginPath(); c.moveTo(x(v), axisY); c.lineTo(x(v), axisY + 4); c.stroke();
-    c.textAlign = v === 0 ? 'left' : last ? 'right' : 'center';
-    c.fillText(`${nf(v * 100)}%`, last ? x(v) + padR - 2 : x(v), axisY + 5);
-  }
-  c.textAlign = 'left';
-  const refV = metricValue(state.region);
-  if (refV != null) {
-    c.setLineDash([2, 3]); c.strokeStyle = 'rgba(22,33,27,.6)';
-    c.beginPath(); c.moveTo(x(refV), 12); c.lineTo(x(refV), axisY); c.stroke(); c.setLineDash([]);
-  }
-  for (const o of [...list].sort((a, b) => a.size - b.size)) {
-    c.globalAlpha = inSelection(o.r) ? 0.92 : 0.2;
-    c.fillStyle = ISLAND_COLOR[o.r.island] ?? '#888';
-    c.fillRect(o.x - o.size / 2, o.y - o.size / 2, o.size, o.size);
-    if (o.r.key === state.region || o.r.key === strip.hover) {
-      c.globalAlpha = 1; c.strokeStyle = ink; c.lineWidth = 1.6;
-      c.strokeRect(o.x - o.size / 2 - 1.5, o.y - o.size / 2 - 1.5, o.size + 3, o.size + 3);
+    parts.forEach((g, i) => figure(c, left + (i + 0.5) * u, top, u, h, g));
+    const bad = parts.filter(g => g >= 2).length;               // bracket over everyone above 55 µg/m³
+    if (bad && known) {
+      const x1 = left + bad * u;
+      c.strokeStyle = '#2c1c58'; c.lineWidth = 1.3;
+      c.beginPath(); c.moveTo(left + 2, top - 2); c.lineTo(left + 2, top - 7); c.lineTo(x1 - 2, top - 7); c.lineTo(x1 - 2, top - 2); c.stroke();
     }
-  }
+    if (!narrow) {
+      const x = left + n * u + 18;
+      c.fillStyle = known ? '#2c1c58' : '#76837a'; c.font = '800 26px "Public Sans", sans-serif';
+      c.fillText(known ? pct(s.over[55]) : '—', x, top + h * 0.38);
+      c.fillStyle = '#4b5a51'; c.font = '600 12px "Public Sans", sans-serif';
+      c.fillText(known ? t('chainPeople', { n: people(s.pop * s.over[55]) }) : t('chainNone'), x, top + h * 0.38 + 20);
+    }
+    strip.rows.push({ y0, y1: y0 + rowH, parts, s, label });
+  });
   c.globalAlpha = 1;
-  const labels = [], used = [];
-  const label = (text, lx, bold = false) => {
-    c.font = `${bold ? 700 : 600} 12.5px "Public Sans", sans-serif`;
-    const w = c.measureText(text).width, tx = Math.max(2, Math.min(W - w - 2, lx - w / 2));
-    if (used.some(u => tx < u[1] + 16 && tx + w > u[0] - 16)) return;
-    used.push([tx, tx + w]); labels.push([text, tx, bold]);
-  };
-  const hovered = strip.hover && list.find(o => o.r.key === strip.hover);
-  if (hovered) label(`${hovered.r.name()} ${pct(hovered.v)}`, hovered.x, true);
-  if (refV != null) label(`${regions.get(state.region).name()} ${pct(refV)}`, x(refV), true);
-  const sorted = [...list].sort((a, b) => a.v - b.v);
-  if (sorted.length) {
-    label(`${sorted[0].r.name()} ${pct(sorted[0].v)}`, Math.max(sorted[0].x, 40));
-    const hi = sorted.at(-1); label(`${hi.r.name()} ${pct(hi.v)}`, Math.min(hi.x, W - 60));
-  }
-  for (const o of [...list].sort((a, b) => b.area - a.area).slice(0, kind === 'province' ? 6 : 4)) label(o.r.name(), o.x);
-  c.textBaseline = 'alphabetic';
-  for (const [text, tx, bold] of labels) {
-    c.font = `${bold ? 700 : 600} 12.5px "Public Sans", sans-serif`;
-    c.strokeStyle = halo; c.lineWidth = 3; c.strokeText(text, tx, 11);
-    c.fillStyle = ink; c.fillText(text, tx, 11);
-  }
-  strip.items = list;
+  strip.geom = { left, u, n };
+  $('at-chain-key').innerHTML = `<span>PM₂.₅ µg/m³</span>${[3, 2, 1, 0].map(g => `<i style="background:${CHAIN[g]}" title="${t(CHAIN_NAME[g])}"></i>${CHAIN_LABEL[g]}`).join('')}<i class="none"></i>${t('noEstimate')}`;
 }
 strip.canvas.addEventListener('pointermove', e => {
   const rect = strip.canvas.getBoundingClientRect(), mx = e.clientX - rect.left, my = e.clientY - rect.top;
-  let best = null, bd = 12;
-  for (const o of strip.items) { const d = Math.hypot(o.x - mx, o.y - my) - o.size / 2; if (d < bd) { bd = d; best = o; } }
-  const key = best?.r.key ?? null;
-  if (key !== strip.hover) { strip.hover = key; renderStrip(); }
+  const row = strip.rows.find(r => my >= r.y0 && my < r.y1), geo = strip.geom, tip = $('at-tip');
+  const i = geo ? Math.floor((mx - geo.left) / geo.u) : -1;
+  if (!row || i < 0 || i >= geo.n) { tip.hidden = true; return; }
+  const g = row.parts[i], same = row.parts.filter(x => x === g).length;
+  tip.innerHTML = `<b>${row.label}</b>${g < 0 ? t('noEstimate') : `PM₂.₅ ${CHAIN_LABEL[g]} µg/m³ · ${t(CHAIN_NAME[g])}`}<br>${t('chainTip', { n: same, total: geo.n, p: people(row.s.pop * same / geo.n) })}`;
+  tip.hidden = false;
+  tip.style.left = `${Math.min(innerWidth - tip.offsetWidth - 8, e.clientX + 14)}px`;
+  tip.style.top = `${Math.max(8, e.clientY - tip.offsetHeight - 10)}px`;
 });
-strip.canvas.addEventListener('pointerleave', () => { strip.hover = null; renderStrip(); });
-strip.canvas.addEventListener('click', () => { if (strip.hover) select(strip.hover); });
-function fillStripControls() {
-  $('at-metric').innerHTML = Object.entries(METRICS).map(([k, key]) => `<option value="${k}" ${k === state.metric ? 'selected' : ''}>${t(key)}</option>`).join('');
-  $('at-level').innerHTML = ['province', 'regency'].map(v => `<option value="${v}" ${state.level === v ? 'selected' : ''}>${t(v === 'province' ? 'provinces' : 'regencies')}</option>`).join('');
-}
-$('at-metric').addEventListener('change', e => { state.metric = e.target.value; renderStrip(); });
-$('at-level').addEventListener('change', e => { state.level = e.target.value; renderStrip(); });
-for (const b of section.querySelectorAll('.at-sizes button')) b.addEventListener('click', () => {
-  state.size = b.dataset.size;
-  for (const x of section.querySelectorAll('.at-sizes button')) x.setAttribute('aria-pressed', String(x === b));
-  renderStrip();
-});
+strip.canvas.addEventListener('pointerleave', () => { $('at-tip').hidden = true; });
 
 /* ================================================================ interaction */
 function select(key, animate = true) {
-  if (!regions.has(key)) key = 'ID';
+  if (!regions.has(key)) key = ROOT;
   state.region = key;
-  const kind = regions.get(key).kind;
-  const level = kind === 'province' || kind === 'regency' ? 'regency' : 'province';
-  if (level !== state.level) { state.level = level; fillStripControls(); }
   fit(key, animate);
   renderPanel(); renderStrip(); writeURL();
   dirty = true;
@@ -773,22 +846,38 @@ function select(key, animate = true) {
 // Region and year live in the query string; the deck owns the #slide hash.
 function writeURL() {
   const p = new URLSearchParams(location.search);
-  if (state.region === 'ID') p.delete('r'); else p.set('r', state.region);
-  if (state.year === 2019) p.delete('y'); else p.set('y', state.year);
+  if (state.region === ROOT) p.delete('r'); else p.set('r', state.region);
+  if (state.year === 2026) p.delete('y'); else p.set('y', state.year);
   const q = p.toString(), url = `${location.pathname}${q ? `?${q}` : ''}${location.hash}`;
   if (url !== `${location.pathname}${location.search}${location.hash}`) history.replaceState(history.state, '', url);
 }
 function readURL() {
   const p = new URLSearchParams(location.search), y = Number(p.get('y'));
   if (y === 2019 || y === 2026) state.year = y;
-  return p.get('r') ?? 'ID';
+  return p.get('r') ?? ROOT;
 }
 for (const b of section.querySelectorAll('.at-years button')) b.addEventListener('click', () => {
   state.year = Number(b.dataset.year);
+  state.fire19 = state.year === 2019; state.fire26 = state.year === 2026;
+  if (state.smoke) state.smoke = state.year;
   renderPanel(); renderStrip(); drawLegend(); writeURL(); dirty = true;
 });
-$('at-reset').addEventListener('click', () => select('ID'));
-$('at-compare').addEventListener('change', e => { state.compare = e.target.checked; drawLegend(); dirty = true; });
+$('at-reset').addEventListener('click', () => select(ROOT));
+
+// Layer bar: fire spikes, smoke and the 2019 → 2026 change fill switch on and off independently.
+const layerOn = key => ({ fire19: state.fire19, fire26: state.fire26, smoke19: state.smoke === 2019, smoke26: state.smoke === 2026, change: state.compare })[key];
+function paintLayers() {
+  for (const b of section.querySelectorAll('.at-layers button')) b.setAttribute('aria-pressed', String(layerOn(b.dataset.layer)));
+}
+for (const b of section.querySelectorAll('.at-layers button')) b.addEventListener('click', () => {
+  const key = b.dataset.layer;
+  if (key === 'fire19') state.fire19 = !state.fire19;
+  else if (key === 'fire26') state.fire26 = !state.fire26;
+  else if (key === 'smoke19') state.smoke = state.smoke === 2019 ? 0 : 2019;   // one smoke year at a time
+  else if (key === 'smoke26') state.smoke = state.smoke === 2026 ? 0 : 2026;
+  else state.compare = !state.compare;
+  paintLayers(); drawLegend(); dirty = true;
+});
 
 function zoomAt(mx, my, dz) {
   const { W, H } = size(), s0 = 2 ** view.z, z = Math.max(4, Math.min(12, view.z + dz)), s1 = 2 ** z;
@@ -861,9 +950,18 @@ function cellAt(clientX, clientY) {
 }
 function showTip(mx, my) {
   const tip = $('at-tip'), i = cellAt(mx, my);
-  if (i < 0) { tip.hidden = true; return; }
+  if (i < 0) {
+    const v = smokeValueAt(mx, my);
+    if (v == null) { tip.hidden = true; return; }
+    tip.innerHTML = `<b>${t('tipOutside')}</b>${t('tipSmoke', { m: monthName(state.smoke), r: v })}`;
+    tip.hidden = false;
+    tip.style.left = `${Math.min(innerWidth - tip.offsetWidth - 8, mx + 14)}px`;
+    tip.style.top = `${Math.min(innerHeight - tip.offsetHeight - 8, my + 14)}px`;
+    return;
+  }
   const reg = boundsData.regencies[cell.reg[i]], f = cell.f[state.year][i], covered = state.year === 2019 || cell.cover[i];
-  tip.innerHTML = `<b>${reg.name}</b><span>${regions.get(reg.province).name()}</span><br>${t('tipCell')} · ${covered ? t('tipFire', { n: nf(f) }) : t('noData')}<br>${t('tipPeople', { n: nf(cell.pop[i]) })}${cell.pm[i] ? `<br>${t('tipPm', { n: nf(cell.pm[i] / 10) })}` : ''}`;
+  const pmYear = state.smoke || state.year, pmv = pmYear === 2019 ? cell.pm[i] / 10 : camsAt(i);
+  tip.innerHTML = `<b>${reg.name}</b><span>${regions.get(reg.province).name()}</span><br>${t('tipCell')} · ${covered ? t('tipFire', { n: nf(f) }) : t('noData')}<br>${t('tipPeople', { n: nf(cell.pop[i]) })}${pmv > 0 ? `<br>${t('tipSmoke', { m: monthName(pmYear), r: nf(pmv) })}` : ''}${state.compare ? `<br><b style="display:inline">${changeClass(reg.fires) < 0 ? t('changeFew') : t('changeTip', { a: nf(reg.fires[0]), b: nf(reg.fires[1]) })}</b>` : ''}`;
   tip.hidden = false;
   tip.style.left = `${Math.min(innerWidth - tip.offsetWidth - 8, mx + 14)}px`;
   tip.style.top = `${Math.min(innerHeight - tip.offsetHeight - 8, my + 14)}px`;
@@ -872,7 +970,7 @@ section.addEventListener('keydown', e => {                      // arrows stay w
   if (e.target.closest('input, select, textarea')) return;
   if (e.key === '+' || e.key === '=') zoomAt(...centre(), 0.5);
   else if (e.key === '-') zoomAt(...centre(), -0.5);
-  else if (e.key === 'Escape' && state.region !== 'ID') select(regions.get(state.region).parent ?? 'ID');
+  else if (e.key === 'Escape' && state.region !== ROOT) select(regions.get(state.region).parent ?? ROOT);
 });
 new IntersectionObserver(([e]) => { visible = e.isIntersecting; if (visible) dirty = true; }, { root: $('deck') }).observe(section);
 let lastW = 0;
@@ -887,9 +985,59 @@ function applyLanguage() {
   lang = root.lang === 'id' ? 'id' : 'en';
   for (const el of section.querySelectorAll('[data-at]')) el.textContent = t(el.dataset.at);
   canvas.setAttribute('aria-label', t('aria'));
-  if (regions) { fillStripControls(); renderPanel(); renderStrip(); drawLegend(); if (picker.open) renderPicker(); dirty = true; }
+  if (regions) { renderPanel(); renderStrip(); drawLegend(); if (picker.open) renderPicker(); dirty = true; }
 }
 new MutationObserver(applyLanguage).observe(root, { attributes: true, attributeFilter: ['lang'] });
+
+/* ================================================================ smoke layer helpers */
+// 2019: WashU satellite image (data/atlas-smoke.png). 2026: CAMS model monthly means on the story's 0.5° grid
+// (data/regional.json), drawn as blocks so the coarser source shows.
+const monthName = (year = state.year) => (year === 2019 ? t('month', { m: t('sep'), y: 2019 }) : t('month', { m: t(state.smokeMonth), y: 2026 }));
+function smokeLayer() {
+  if (!state.smoke) return null;
+  if (state.smoke === 2019) return smoke?.ok ? { img: smoke.img, bounds: smoke.bounds, smooth: true } : null;
+  if (!cams) return null;
+  const h = cams.g.step / 2;
+  return { img: cams.tiles[state.smokeMonth], bounds: [cams.lon0 - h, cams.lat0 - h, cams.lon1 + h, cams.lat1 + h], smooth: false };
+}
+function camsValue(lon, lat) {
+  if (!cams) return 0;
+  const c = Math.round((lon - cams.lon0) / cams.g.step), r = Math.round((cams.lat1 - lat) / cams.g.step);
+  if (c < 0 || r < 0 || c >= cams.g.w || r >= cams.g.h) return 0;
+  return cams.values[state.smokeMonth][r * cams.g.w + c];
+}
+function camsAt(i) {
+  const lon = cell.g.x0 + (cell.col[i] + 0.5) * cell.g.cell, lat = cell.g.y0 - (cell.row[i] + 0.5) * cell.g.cell;
+  return camsValue(lon, lat);
+}
+function cityPm(name) {
+  if ((state.smoke || state.year) === 2026) { const c = cams?.cities[name]; return c ? c[state.smokeMonth === 'sep' ? 'camsSep2026' : 'camsOct2026'] : null; }
+  return cams?.cities[name]?.washuSep2019 ?? NEIGHBOURS.find(c => c.name === name)?.pm25 ?? null;
+}
+function smokeValueAt(clientX, clientY) {                      // PM2.5 under the pointer outside Indonesia
+  if (!smokeLayer()) return null;
+  const { W, H, r } = size(), s = 2 ** view.z;
+  const [lon, lat] = fromWorld(view.cx + (clientX - r.left - W / 2) / s, view.cy + (clientY - r.top - H / 2) / s);
+  if (state.smoke === 2026) { const v = camsValue(lon, lat); return v > 0 ? `≈ ${nf(v)}` : null; }
+  if (!smoke.pixels) return null;
+  const [ax, ay] = toWorld(smoke.bounds[0], smoke.bounds[3]), [bx, by] = toWorld(smoke.bounds[2], smoke.bounds[1]), [wx, wy] = toWorld(lon, lat);
+  const x = Math.floor((wx - ax) / (bx - ax) * smoke.img.width), y = Math.floor((wy - ay) / (by - ay) * smoke.img.height);
+  if (x < 0 || y < 0 || x >= smoke.img.width || y >= smoke.img.height) return null;
+  const k = smoke.rgba.findIndex(c => c[3] === smoke.pixels[4 * (y * smoke.img.width + x) + 3]);
+  return k > 0 ? ['15–35', '35–55', '55–150', '150–250', '250+'][k - 1] : null;
+}
+function loadCams(regional, full) {                            // October 2026 CAMS for all Indonesian land (0.5°)
+  const g = full, lon0 = full.lon0, lat1 = full.lat1, lon1 = lon0 + (g.w - 1) * g.step, lat0 = lat1 - (g.h - 1) * g.step;
+  const values = { oct: decode(g.oct, Uint8Array) }, tiles = {};
+  const c = document.createElement('canvas'); c.width = g.w; c.height = g.h;
+  const x = c.getContext('2d'), img = x.createImageData(g.w, g.h);
+  values.oct.forEach((v, i) => {
+    if (v >= smoke.breaks[0]) img.data.set(smoke.rgba[Math.min(smoke.rgba.length - 1, smoke.breaks.filter(b => v >= b).length)], 4 * i);
+  });
+  x.putImageData(img, 0, 0); tiles.oct = c;
+  cams = { g, lon0, lon1, lat0, lat1, values, tiles, cities: regional.cities };
+  statCache.clear(); dirty = true;
+}
 
 /* ================================================================ boot */
 applyLanguage();
@@ -898,10 +1046,22 @@ try {
   const [atlas, bounds] = await Promise.all([readJSON('atlas.json'), readJSON('atlas-bounds.json')]);
   boundsData = bounds;
   ({ c: cell, R: regions } = build(atlas, bounds));
+  allPath = ringsPath(bounds.provinces.map(p => p.rings));
+  NEIGHBOURS = atlas.smoke.cities.filter(c => c.pm25 != null);
+  smoke = { ...atlas.smoke, img: new Image(), ok: false };
+  smoke.img.onload = () => {
+    const c = document.createElement('canvas');
+    c.width = smoke.img.width; c.height = smoke.img.height;
+    const g = c.getContext('2d'); g.drawImage(smoke.img, 0, 0);
+    smoke.pixels = g.getImageData(0, 0, c.width, c.height).data;
+    smoke.ok = true; dirty = true; drawLegend();
+  };
+  smoke.img.src = new URL(`data/${atlas.smoke.file}`, import.meta.url);
+  Promise.all([readJSON('regional.json'), readJSON('cams-indonesia.json')])
+    .then(([reg, full]) => { loadCams(reg, full); renderPanel(); renderStrip(); drawLegend(); }).catch(() => {});
   $('at-status').textContent = '';
-  fillStripControls();
   const key = readURL();
-  select(regions.has(key) ? key : 'ID', false);
+  select(regions.has(key) ? key : ROOT, false);
   lastW = size().W;
   drawLegend();
   requestAnimationFrame(step);
