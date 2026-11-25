@@ -1,5 +1,5 @@
-import { EXPOSURE_COLORS, HEAT_COLORS, INDEX_COLORS, PROVINCE_NAMES, TYPE_COLORS, createMap, resizeCanvas } from './map.mjs';
-import { PROCESS_STEPS, createProcess, createTerrain, setStill } from './iso.mjs';
+import { EXPOSURE_COLORS, HEAT_COLORS, INDEX_COLORS, PROVINCE_NAMES, createMap, lostPeat, profileColor, resizeCanvas } from './map.mjs?v=2';
+import { PROCESS_STEPS, createProcess, createTerrain, setStill } from './iso.mjs?v=2';
 import { lonLat } from './tools/model.mjs';
 
 const el = id => document.getElementById(id);
@@ -164,9 +164,15 @@ const seasonTotal = (id, y) => (ISLANDS.includes(id) ? islandSeason(id, y).total
 const change = id => 100 * (seasonTotal(id, 2026) / seasonTotal(id, 2019) - 1);
 const priorityPeople = (scenario, ids = allProvinces()) => total(ids.map(id => scenario.provinces[id].priorityPeople));
 
-function clusterLabel(profile) {
+// k-means can return more than one fire-and-smoke group; tell them apart by what drives each one
+function clusterLabel(profile, all = []) {
   const [fire, loss, pm, pop] = profile.center;
-  if (profile.type === 'both') return [t('Fire and smoke hotspots', 'Pusat api dan asap'), t('Patrol hotspots, prepare clinics and clean-air shelters.', 'Patroli titik api, siapkan puskesmas dan ruang udara bersih.')];
+  if (profile.type === 'both' && lostPeat(profile)) return [t('Lost peat forest, heavy smoke', 'Hutan gambut hilang, asap tebal'), t('Rewet the drained peat before it burns again; prepare clinics and clean-air shelters.', 'Basahi ulang gambut yang dikeringkan sebelum terbakar lagi; siapkan puskesmas dan ruang udara bersih.')];
+  if (profile.type === 'both') {
+    const hot = all.filter(p => p.type === 'both' && !lostPeat(p));
+    const worst = hot.length > 1 && fire === Math.max(...hot.map(p => p.center[0]));
+    return [worst ? t('Worst fire and smoke', 'Api dan asap terparah') : t('Fire and smoke hotspots', 'Pusat api dan asap'), t('Patrol hotspots, prepare clinics and clean-air shelters.', 'Patroli titik api, siapkan puskesmas dan ruang udara bersih.')];
+  }
   if (profile.type === 'fire') return fire > 0.35
     ? [t('High fire activity', 'Aktivitas api tinggi'), t('Prioritise ground checks and peat rewetting.', 'Prioritaskan pengecekan lapangan dan pembasahan gambut.')]
     : [t('Degraded peat, little fire now', 'Gambut rusak, api kini sedikit'), t('Past forest loss on peat: rewet and patrol before the next dry season.', 'Bekas kehilangan hutan di gambut: basahi ulang dan patroli sebelum kemarau.')];
@@ -520,7 +526,7 @@ function renderMapPanel() {
     legend = legendRamp(INDEX_COLORS, '−1.5 SD', '+1.5 SD', t('0.5 SD per class', '0,5 SD per kelas'));
   } else {
     caption = t(`K-means groups all ${overview.zones.length} regencies into ${scenario.clusters.k} profiles for ${year}.`, `K-means mengelompokkan ${overview.zones.length} kabupaten/kota menjadi ${scenario.clusters.k} profil untuk ${year}.`);
-    legend = `<div class="range">${scenario.clusters.profiles.map(p => `<span><i class="swatch" style="background:${TYPE_COLORS[p.type]}"></i>${clusterLabel(p)[0]}</span>`).join(' ')}</div>`;
+    legend = `<div class="range">${scenario.clusters.profiles.map(p => `<span><i class="swatch" style="background:${profileColor(p)}"></i>${clusterLabel(p, scenario.clusters.profiles)[0]}</span>`).join(' ')}</div>`;
   }
   el('map-title').textContent = t(...layerTitles[layer]);
   el('map-caption').textContent = caption;
@@ -546,7 +552,7 @@ function renderDistrict() {
     <p class="district-meta">${d.level === 'kabupaten' ? t('Regency / city', 'Kabupaten/kota') : `${t('Sub-district', 'Kecamatan')} · ${esc(d.regency)}`} · ${provinceName(d.province)}</p>
     <dl class="district-metrics">${metrics.map(([a, b]) => `<div><dt>${a}</dt><dd>${b}</dd></div>`).join('')}</dl>
     <p class="district-note">${r.priorityPeople >= 1 ? t(`<strong>${fmt(r.priorityPeople)}</strong> people live in priority cells.`, `<strong>${fmt(r.priorityPeople)}</strong> orang tinggal di sel prioritas.`) : t('No priority cells in this area.', 'Tidak ada sel prioritas di wilayah ini.')}</p>
-    <p class="district-note"><i class="swatch" style="background:${TYPE_COLORS[profile.type]}"></i>${clusterLabel(profile)[0]}</p>
+    <p class="district-note"><i class="swatch" style="background:${profileColor(profile)}"></i>${clusterLabel(profile, scenario.clusters.profiles)[0]}</p>
     ${r.extrapolated ? `<p class="district-note small muted">${t('2026 fire level is outside the 2019 training range; read this estimate with care.', 'Tingkat api 2026 di luar rentang data latih 2019; baca perkiraan ini dengan hati-hati.')}</p>` : ''}`;
   map.update({ ...state, selected, language, provinceName, visible: provinceIds(state.region) });
 }
@@ -595,8 +601,8 @@ function renderPriority() {
   el('clusters').innerHTML = scenario.clusters.profiles.flatMap(p => {
     const members = ids.filter(i => scenario.indicators[i].cluster === p.id);
     if (!members.length) return [];
-    const [label, action] = clusterLabel(p);
-    return `<div class="cluster-row"><span class="swatch" style="background:${TYPE_COLORS[p.type]}"></span><div><h4>${label}</h4>
+    const [label, action] = clusterLabel(p, scenario.clusters.profiles);
+    return `<div class="cluster-row"><span class="swatch" style="background:${profileColor(p)}"></span><div><h4>${label}</h4>
       <p>${members.length} ${areaWord(members.length)} · ${fmt(total(members.map(i => overview.zones[i].population)) / 1e6, 2)}M ${t('people', 'jiwa')}. ${action}</p></div></div>`;
   }).join('');
 }
@@ -622,8 +628,9 @@ function drawDaily() {
   const panels = [['Kalimantan', 0.6], ['Sumatra', 0.4]];
   let top = 0;
   ctx.font = '12px "Public Sans", sans-serif';
+  const left = Math.ceil(ctx.measureText(fmt(20000)).width) + 9; // room for the widest y label so it never clips
   for (const [id, share] of panels) {
-    const h = height * share, m = { l: 40, r: 8, t: 18, b: id === 'Sumatra' ? 20 : 8 };
+    const h = height * share, m = { l: left, r: 8, t: 18, b: id === 'Sumatra' ? 20 : 8 };
     const max = Math.max(...[2019, 2026].flatMap(y => profile[id][y].daily));
     const nice = [100, 200, 500, 1000, 2000, 5000, 10000, 20000].find(v => v >= max) ?? max;
     const X = d => m.l + (width - m.l - m.r) * d / 122, Y = v => top + h - m.b - (h - m.t - m.b) * v / nice;
@@ -704,9 +711,13 @@ function drawRegion() {
     const x = X(c.lon), y = Y(c.lat);
     ctx.fillStyle = cssVar('--ink'); ctx.beginPath(); ctx.arc(x, y, 3, 0, 7); ctx.fill();
     const label = `${name} ${c[field] == null ? '' : fmt(c[field])}`;
-    ctx.lineWidth = 3; ctx.strokeStyle = cssVar('--bg'); ctx.textAlign = name === 'Kuala Lumpur' || name === 'Pekanbaru' || name === 'Jambi' ? 'right' : 'left';
-    const dx = ctx.textAlign === 'right' ? -6 : 6;
-    ctx.strokeText(label, x + dx, y - 5); ctx.fillText(label, x + dx, y - 5);
+    ctx.lineWidth = 3; ctx.strokeStyle = cssVar('--bg'); ctx.textAlign = 'left';
+    // preferred side, flipped (or clamped) when the label would run off a narrow map
+    const w = ctx.measureText(label).width, right = name === 'Kuala Lumpur' || name === 'Pekanbaru' || name === 'Jambi';
+    let lx = right ? x - 6 - w : x + 6;
+    if (lx < 2) lx = x + 6 + w < width - 2 ? x + 6 : 2;
+    if (lx + w > width - 2) lx = x - 6 - w > 2 ? x - 6 - w : width - 2 - w;
+    ctx.strokeText(label, lx, y - 5); ctx.fillText(label, lx, y - 5);
   }
   el('region-legend').innerHTML = `<span class="small muted">PM₂.₅ µg/m³</span>${PM_COLORS.map((c, i) => `<span class="small"><i class="swatch" style="background:${c}"></i>${i === 0 ? `<${PM_BREAKS[0]}` : i === PM_COLORS.length - 1 ? `≥${PM_BREAKS.at(-1)}` : `${PM_BREAKS[i - 1]}–${PM_BREAKS[i]}`}</span>`).join('')}`;
   el('region-source').textContent = regionKey === 'w19'
@@ -877,7 +888,7 @@ function drawQuad() {
   ctx.textAlign = 'right';
   for (const v of [0, 30, 60, 90]) { if (v !== DAY_CUT) { ctx.beginPath(); ctx.moveTo(L, Y(v)); ctx.lineTo(R, Y(v)); ctx.stroke(); } ctx.fillText(v, L - 6, Y(v) + 4); }
   ctx.textAlign = 'center';
-  for (const v of [0.01, 0.03, 0.1, 0.3, 1, 3]) { if (X(v) <= R && X(v) >= L) ctx.fillText(fmt(v, v < 0.1 ? 2 : v < 1 ? 1 : 0), X(v), B + 15); }
+  for (const v of [0.01, 0.03, 0.1, 0.3, 1, 3]) { if (X(v) <= R && X(v) >= L && Math.abs(X(v) - xc) > 14) ctx.fillText(fmt(v, v < 0.1 ? 2 : v < 1 ? 1 : 0), X(v), B + 15); }
   ctx.fillStyle = ink; ctx.font = '600 12px "Public Sans", sans-serif';
   ctx.fillText(width < 520 ? t('Fire nearby → (per km², log)', 'Api di sekitar → (per km², log)') : t('Fire nearby →  (detections per km², 100 km kernel, log scale)', 'Api di sekitar →  (deteksi per km², kernel 100 km, skala log)'), L + (R - L) / 2, height - 4);
   ctx.save(); ctx.translate(12, T + (B - T) / 2); ctx.rotate(-Math.PI / 2); ctx.fillText(t('Days of unhealthy air, Jul–Oct →', 'Hari udara tidak sehat, Jul–Okt →'), 0, 0); ctx.restore();

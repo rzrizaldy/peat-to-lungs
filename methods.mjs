@@ -124,10 +124,10 @@ function drawDid(step) {
   $('did-note').textContent = t('dNote', { n: nf(d.cells), b: sgn(d.beta), l: sgn(d.ci95[0]), h: sgn(d.ci95[1]) });
 }
 // all regions at once: estimate and 95% range; the island rows use the within-regency comparison
-function drawForest() {
+function drawForest(L = 168) {
   const rows = [...Object.entries(methods.did).map(([k, r]) => ({ k, r, label: t(k), island: false })),
     ...['Kalimantan', 'Sumatra', 'Papua'].map(k => ({ k, r: methods.islands[k], label: `${t('fIsland')}: ${t(k)}`, island: true }))];
-  const W = 460, rowH = 18, Tp = 6, L = 168, R = 14, H = Tp + rows.length * rowH + 30, lo = -200, hi = 250;
+  const W = 460, rowH = 18, Tp = 6, R = 14, H = Tp + rows.length * rowH + 30, lo = -200, hi = 250;
   const X = v => L + (Math.max(lo, Math.min(hi, v)) - lo) / (hi - lo) * (W - L - R);
   const col = r => (verdict(r) === 'up' ? css('--alarm') : verdict(r) === 'down' ? css('--forest') : css('--faint'));
   let s = '';
@@ -145,6 +145,9 @@ function drawForest() {
       <circle cx="${X(r.beta)}" cy="${y}" r="${island ? 5.5 : 4.5}" fill="${c}"/></g>`;
   });
   const svg = $('did-forest'); svg.setAttribute('viewBox', `0 0 ${W} ${H}`); svg.innerHTML = s;
+  // phones use a larger label font: widen the label column until the longest name fits
+  const need = Math.ceil(Math.max(...[...svg.querySelectorAll('.mx-flab')].map(e => e.getBBox().width))) + 16;
+  if (need > L && need < 300) return drawForest(need);
   $('did-forest-title').textContent = t('fTitle');
   const K = methods.islands.Kalimantan, S = methods.islands.Sumatra;
   $('did-forest-note').textContent = t('fNote', { k0: nf(K.dose[0]), k1: nf(K.dose[3]), s0: sgn(S.dose[0]), s1: sgn(S.dose[3]), kp: sgn(K.placebo) });
@@ -278,7 +281,10 @@ function drawOver() {
   if (windStep === 0) {          // the 100 km "nearby" ring around the biggest fire
     const f = fires[0], [x, y] = P(f.lo, f.la);
     g.strokeStyle = css('--ember-ink'); g.setLineDash([4, 4]); g.lineWidth = 1.2; g.beginPath(); g.arc(x, y, 100 / DEG_KM * geo.k, 0, 7); g.stroke(); g.setLineDash([]);
-    g.font = '600 11px "Public Sans", sans-serif'; g.fillStyle = css('--ember-ink'); g.textAlign = 'center'; g.fillText('100 km', x, y - 100 / DEG_KM * geo.k - 6);
+    // label under the ring (open sea), so it never sits on the city name above
+    const ly = y + 100 / DEG_KM * geo.k + 12;
+    g.font = '600 11px "Public Sans", sans-serif'; g.textAlign = 'center'; g.textBaseline = 'middle'; g.lineJoin = 'round';
+    g.lineWidth = 3; g.strokeStyle = 'rgba(248,249,245,.9)'; g.strokeText('100 km', x, ly); g.fillStyle = css('--ember-ink'); g.fillText('100 km', x, ly);
   }
   drawCities(g);
 }

@@ -1,6 +1,6 @@
 # Handoff
 
-Last updated 2026-11-25 (America/New_York), after coursework log W36. W34–W36 pushed to `main` (see `git log`): plan off the main map, animated DiD and wind explainers, national DiD for every peat region, plain-language copy.
+Last updated 2026-11-25 (America/New_York), after coursework log W37. W37 (phone layout fixes) is in the working tree, not committed. W34–W36 pushed to `main` (see `git log`): plan off the main map, animated DiD and wind explainers, national DiD for every peat region, plain-language copy.
 
 ## Where things live
 
@@ -10,6 +10,7 @@ Last updated 2026-11-25 (America/New_York), after coursework log W36. W34–W36 
 
 ## Current state
 
+- **W37 (phone layout):** daily chart left margin from the widest y label; terrain island labels split into halves on screens < 560 px (`.terrain-labels.narrow`), land place names hidden there; DiD forest label column widens to the longest label; PM₂.₅ map city labels flip at the edge; Fund-first bar width `calc((100% - 26px) * share)`; Fund-first map markers repelled from each other and from city labels; wind "100 km" under the ring; matrix x tick under the median dropped; Pareto labels haloed. `map.mjs` exports `lostPeat`/`profileColor`: a fire-and-smoke cluster driven by peat loss is "Lost peat forest, heavy smoke" (#a16207). Cache-bust: styles v11, atlas.css v10, atlas.mjs v8, app v14, plan v3, methods v4, imports `map.mjs?v=2`, `iso.mjs?v=2`.
 - **W34–W36:** the prevention plan is off the opening map; it lives only on `#budget`, where the context sits with it (the "See on the main map" button is gone too). `plan.json` still feeds the peat checks in the Riau/Kalteng cards. Two animated explainers from `methods.mjs`: `#did` after `#peat` (4 steps; region picker for 8 peat regions incl. Ogan Komering Ilir and Papua; an always-visible answer "it depends on the island"; an all-regions chart with 95% ranges; data from coursework `analysis.py` part N with the national peat map in git-ignored `raw/peat/`) and `#wind` after `#borders` (canvas: fires from the top 32 regencies, ERA5 Aug–Oct 2026 mean wind streaks, smoke puffs; 3 steps). Data: `data/methods.json` from `tools/export-methods.py "<Paper folder>"`. Copy in `app.mjs`, `plan.mjs`, `atlas.mjs` and the Limits slide rewritten in plain language. 16 slides. Cache-bust: atlas.mjs v7, atlas.css v9, app v13, plan v2, methods v3. The DiD slide shows a highlighted answer box (`#did-answer`).
 
 - **Opening map leads with fire (live, `f436204`):** it opens on Jul–Oct 2026 with the change layer on. The big number is +68% detections vs 2019, followed by "where fire changed" bars (Papua ×9.0, Maluku ×4.7, Sulawesi +99%, Kalimantan +98%, Java −14%, Sumatra −29%, Bali–NT −30%). A layer bar toggles Fire 2019/2026 (side-by-side spikes), Smoke 2019/2026 (one at a time) and Change on their own. Smoke is supporting context (one sentence, off by default). The panel note is now one line, with the full note in a tooltip.

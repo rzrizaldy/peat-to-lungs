@@ -173,6 +173,10 @@ tr.best td { font-weight: 700; }
 .terrain-labels span { position: absolute; transform: translateX(-50%); font: 400 13px/1.3 var(--sans); color: var(--ink); white-space: nowrap; text-align: center; font-variant-numeric: tabular-nums; text-shadow: 0 0 3px var(--bg), 0 0 3px var(--bg), 0 0 3px var(--bg); }
 .terrain-labels b { font-weight: 700; }
 .terrain-labels em { display: block; font-style: normal; color: var(--muted); font-size: 12.5px; }
+.terrain-labels span { width: max-content; }
+.terrain-labels.narrow span { font-size: 12px; transform: translate(-50%, -16px); }
+.terrain-labels.narrow b { display: block; }
+.terrain-labels.narrow em { font-size: 11.5px; }
 .year-toggle { display: flex; align-items: center; gap: 12px; margin-top: 4px; }
 .months { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
 .month-chart h4 { font-size: 13.5px; margin-bottom: 6px; }

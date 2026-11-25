@@ -3,7 +3,7 @@
 // share-of-land / share-of-people bars and a strip that places every province or regency.
 // Web Mercator over Esri Light Gray Canvas, the same basemap as the story's explorer.
 // Plain scrolling passes through to the story deck; zoom needs pinch, Ctrl/⌘ + wheel or the buttons.
-import { resizeCanvas } from './map.mjs';
+import { resizeCanvas } from './map.mjs?v=2';
 import { lonLat } from './tools/model.mjs';
 
 const root = document.documentElement;

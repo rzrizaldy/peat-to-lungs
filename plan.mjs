@@ -64,7 +64,7 @@ function renderPareto() {
     const cx = X(z.emissions_cut_pct), cy = Y(z.health_ugm3), on = i === sel, lab = label(i);
     s += `<g class="pb-pt" data-i="${i}" tabindex="0" role="button" aria-pressed="${on}" aria-label="${lab || `Plan ${i + 1}`}: ${nf(z.health_ugm3, 1)} µg/m³, ${nf(z.emissions_cut_pct, 1)}%">`
       + `<circle cx="${cx}" cy="${cy}" r="14" fill="transparent"/><circle cx="${cx}" cy="${cy}" r="${on ? 7.5 : 5}" fill="${on ? TEAL : '#fff'}" stroke="${on ? TEAL : INK}" stroke-width="1.8"/></g>`;
-    if (lab) s += `<text x="${cx}" y="${cy - 13}" text-anchor="${i === 0 ? 'start' : i === f.length - 1 ? 'end' : 'middle'}" class="pb-lab" fill="${i === plan.knee_index ? TEAL : INK}" font-weight="700">${lab}</text>`;
+    if (lab) s += `<text x="${cx}" y="${i === f.length - 1 ? cy + 22 : cy - 13}" text-anchor="${i === 0 ? 'start' : i === f.length - 1 ? 'end' : 'middle'}" class="pb-lab" fill="${i === plan.knee_index ? TEAL : INK}" font-weight="700">${lab}</text>`;
   });
   svg.setAttribute('viewBox', `0 0 ${W} ${H}`);
   svg.innerHTML = s;
@@ -89,7 +89,7 @@ function renderList() {
   $('pb-list-title').textContent = t('top');
   $('pb-list').innerHTML = z.ids.slice(0, 8).map((id, i) => {
     const r = regs.get(id), pv = provName.get(r.province);
-    return `<li><b>${r.name}</b> <span>${pv}</span><em>${t('protects', { c: plan.protects[id] ?? '—' })} · ${t('benefit', { p: `${nf(z.share[i] * 100, 0)}%` })}</em><i style="width:${z.share[i] / z.share[0] * 100}%"></i></li>`;
+    return `<li><b>${r.name}</b> <span>${pv}</span><em>${t('protects', { c: plan.protects[id] ?? '—' })} · ${t('benefit', { p: `${nf(z.share[i] * 100, 0)}%` })}</em><i style="width:calc((100% - 26px) * ${(z.share[i] / z.share[0]).toFixed(3)})"></i></li>`;
   }).join('');
 }
 
@@ -112,16 +112,42 @@ function renderMap() {
     g.fillStyle = chosen.has(r.id) ? TEAL : '#e6eae3'; g.fill();
     g.strokeStyle = '#ffffff'; g.lineWidth = 0.5; g.stroke();
   }
-  g.font = '700 11px "Public Sans", sans-serif'; g.textAlign = 'center'; g.textBaseline = 'middle';
-  plan.frontier_plans[sel].ids.slice(0, 8).forEach((id, i) => {
-    const r = regs.get(id), [x, y] = P((r.bbox[0] + r.bbox[2]) / 2, (r.bbox[1] + r.bbox[3]) / 2);
-    g.fillStyle = INK; g.strokeStyle = '#fff'; g.lineWidth = 1.5; g.beginPath(); g.arc(x, y, 7, 0, 7); g.fill(); g.stroke();
-    g.fillStyle = '#fff'; g.fillText(String(i + 1), x, y + 0.5);
-  });
-  g.font = '600 11px "Public Sans", sans-serif'; g.fillStyle = MUTED;
+  // city labels first (white halo), then the numbered markers on top, kept off the labels
+  const boxes = [];
+  g.font = '600 11px "Public Sans", sans-serif'; g.textBaseline = 'alphabetic'; g.lineJoin = 'round';
   for (const [n, lo, la] of [['Palembang', 104.76, -2.99], ['Pontianak', 109.34, -0.03], ['Banjarmasin', 114.59, -3.32], ['Pekanbaru', 101.45, 0.51], ['Bandar Lampung', 105.26, -5.43]]) {
-    const [x, y] = P(lo, la); g.fillStyle = INK; g.fillRect(x - 2, y - 2, 4, 4); g.fillStyle = MUTED; g.textAlign = 'left'; g.fillText(n, x + 5, y - 7);
+    const [x, y] = P(lo, la), w = g.measureText(n).width;
+    const lx = x + 5 + w > W - 2 ? x - 5 - w : x + 5;
+    g.fillStyle = INK; g.fillRect(x - 2, y - 2, 4, 4);
+    boxes.push([lx - 1, y - 13, lx + w + 1, y]);
+    g.textAlign = 'left'; g.lineWidth = 3; g.strokeStyle = '#fff'; g.strokeText(n, lx, y - 3); g.fillStyle = MUTED; g.fillText(n, lx, y - 3);
   }
+  // numbered markers at regency centres, pushed apart where they would overlap (small maps), with a tick back to the centre
+  const pts = plan.frontier_plans[sel].ids.slice(0, 8).map(id => { const r = regs.get(id), [x, y] = P((r.bbox[0] + r.bbox[2]) / 2, (r.bbox[1] + r.bbox[3]) / 2); return { x0: x, y0: y, x, y }; });
+  const gap = 16;
+  for (let it = 0; it < 60; it += 1) {
+    for (let a = 0; a < pts.length; a += 1) for (let b = a + 1; b < pts.length; b += 1) {
+      const p = pts[a], q = pts[b]; let dx = q.x - p.x, dy = q.y - p.y, d = Math.hypot(dx, dy);
+      if (d >= gap) continue;
+      if (d < 0.01) { dx = Math.cos(a + b); dy = Math.sin(a + b); d = 1; }
+      const push = (gap - d) / 2; dx /= d; dy /= d;
+      p.x -= dx * push; p.y -= dy * push; q.x += dx * push; q.y += dy * push;
+    }
+    for (const p of pts) for (const [x0, y0, x1, y1] of boxes) {   // step out of a label box by the shortest way
+      const r = 8;
+      if (p.x + r <= x0 || p.x - r >= x1 || p.y + r <= y0 || p.y - r >= y1) continue;
+      const moves = [[x0 - r - p.x, 0], [x1 + r - p.x, 0], [0, y0 - r - p.y], [0, y1 + r - p.y]];
+      const [mx, my] = moves.sort((a, b) => Math.hypot(...a) - Math.hypot(...b))[0];
+      p.x += mx * 0.5; p.y += my * 0.5;
+    }
+  }
+  g.strokeStyle = INK; g.lineWidth = 1;
+  for (const p of pts) if (Math.hypot(p.x - p.x0, p.y - p.y0) > 4) { g.beginPath(); g.moveTo(p.x0, p.y0); g.lineTo(p.x, p.y); g.stroke(); }
+  g.font = '700 11px "Public Sans", sans-serif'; g.textAlign = 'center'; g.textBaseline = 'middle';
+  pts.forEach((p, i) => {
+    g.fillStyle = INK; g.strokeStyle = '#fff'; g.lineWidth = 1.5; g.beginPath(); g.arc(p.x, p.y, 7, 0, 7); g.fill(); g.stroke();
+    g.fillStyle = '#fff'; g.fillText(String(i + 1), p.x, p.y + 0.5);
+  });
 }
 
 function render() { renderLede(); renderPareto(); renderBars(); renderHead(); renderList(); renderMap(); $('pb-source').textContent = t('source'); $('pb-pick').textContent = t('pick'); $('pb-pick-note').textContent = t('pickNote'); }

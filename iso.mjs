@@ -1,6 +1,6 @@
 // Isometric visuals: (1) a schematic cutaway that animates the analysis
 // process, (2) a real-data "fire terrain" built from the kernel density grids.
-import { resizeCanvas } from './map.mjs';
+import { resizeCanvas } from './map.mjs?v=2';
 
 // still mode: draw one frame and stop (set by the page's 3D animation switch; starts from the OS setting)
 let REDUCE = matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -367,10 +367,14 @@ export function createTerrain(canvas, labelsEl, geography, zones, basemap) {
     }
     ctx.font = 'italic 500 12px "Public Sans", sans-serif'; ctx.textAlign = 'center'; ctx.fillStyle = c.muted;
     const lang = document.documentElement.lang === 'id' ? 'id' : 'en';
+    const placed = []; // skip a place name that would collide with one already drawn (narrow screens)
     for (const p of places) {
       const [fx, fy] = toFrame(p.at);
       const [x, y] = project(geo, fx, fy, 0);
-      if (x > 40 && x < width - 40 && y > 12 && y < height - 4) ctx.fillText(p[lang], x, y);
+      if (width < 560 && !p.sea) continue;            // phones: the island labels already name the land, and the peaks hide it
+      const w = ctx.measureText(p[lang]).width, box = [x - w / 2 - 4, y - 12, x + w / 2 + 4, y + 3];
+      if (placed.some(q => box[0] < q[2] && box[2] > q[0] && box[1] < q[3] && box[3] > q[1])) continue;
+      if (x - w / 2 > 2 && x + w / 2 < width - 2 && y > 12 && y < height - 4) { ctx.fillText(p[lang], x, y); placed.push(box); }
     }
     // heightfield
     const ramp = [c.land, '#efd7a0', '#e4ad55', c.ember, '#a8501a', '#6e2c10'];
@@ -428,6 +432,16 @@ export function createTerrain(canvas, labelsEl, geography, zones, basemap) {
       html.push(`<span style="left:${Math.min(width - 100, Math.max(100, px))}px;top:${ly - 12}px"><b>${name}</b> ${labels.totals?.[isl] ?? ''}${peak}</span>`);
     }
     labelsEl.innerHTML = html.join('');
+    // keep labels on screen; on narrow screens give each island label its own half so they never overlap
+    const spans = [...labelsEl.children].sort((a, b) => parseFloat(a.style.left) - parseFloat(b.style.left));
+    const narrow = width < 560;
+    labelsEl.classList.toggle('narrow', narrow);
+    spans.forEach((s, i) => {
+      const half = s.offsetWidth / 2;
+      let lo = half + 2, hi = width - half - 2;
+      if (narrow && spans.length === 2) { if (i === 0) hi = Math.min(hi, width / 2 - half - 4); else lo = Math.max(lo, width / 2 + half + 4); }
+      s.style.left = `${Math.max(lo, Math.min(hi, parseFloat(s.style.left)))}px`;
+    });
     if (k < 1) raf = requestAnimationFrame(draw); else raf = 0;
   }
   function kick() { if (!raf) raf = requestAnimationFrame(draw); }

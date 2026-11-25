@@ -11,6 +11,9 @@ export const INDEX_COLORS = ['#2e6b4a', '#5e8f6c', '#98b69c', '#d6dbd0', '#ead6a
 export const EXPOSURE_COLORS = ['#ecebf3', '#d1cce1', '#b0a8ca', '#8d82b0', '#6b5e95', '#4a3e70'];
 // Cluster colours follow the profile type, not the cluster id (validated categorical set).
 export const TYPE_COLORS = { both: '#c2410c', fire: '#8e5bb5', monitor: '#2e8540', exposure: '#5b5bb0', dense: '#8a8f86' };
+// a fire-and-smoke group driven by lost peat forest rather than by fire itself gets its own name and colour
+export const lostPeat = p => p.type === 'both' && p.center[1] > 1.5 && p.center[1] > p.center[0];
+export const profileColor = p => (lostPeat(p) ? '#a16207' : TYPE_COLORS[p.type]);
 const cssVar = name => getComputedStyle(document.documentElement).getPropertyValue(name).trim();
 const isDark = () => document.documentElement.dataset.theme === 'dark'
   || (!document.documentElement.dataset.theme && matchMedia('(prefers-color-scheme: dark)').matches);
@@ -183,7 +186,7 @@ export function createMap(canvas, geography, zones, onSelection) {
         ctx.fillStyle = EXPOSURE_COLORS[exposureClass(value, scenario.year)];
         ctx.fill(shape.path, 'evenodd');
       } else if (layer === 'cluster') {
-        ctx.fillStyle = TYPE_COLORS[scenario.clusters.profiles[scenario.indicators[i].cluster].type];
+        ctx.fillStyle = profileColor(scenario.clusters.profiles[scenario.indicators[i].cluster]);
         ctx.fill(shape.path, 'evenodd');
       }
     }

@@ -169,7 +169,7 @@
 .pb-pareto { width: 100%; height: auto; display: block; margin-top: 6px; }
 .pb-pareto .pb-tick { font: 11px var(--sans); fill: var(--muted); }
 .pb-pareto .pb-axis { font: 600 11.5px var(--sans); fill: var(--ink); }
-.pb-pareto .pb-lab { font: 600 11.5px var(--sans); }
+.pb-pareto .pb-lab { font: 600 11.5px var(--sans); paint-order: stroke; stroke: var(--bg); stroke-width: 3px; stroke-linejoin: round; }
 .pb-pt { cursor: pointer; outline: none; }
 .pb-pt:focus-visible circle:last-child { stroke: var(--ember); stroke-width: 3; }
 .pb-cap { margin: 14px 0 6px; font-size: 13px; color: var(--muted); }
