@@ -1,6 +1,6 @@
 # Handoff
 
-Last updated 2026-11-25 (America/New_York), after coursework log W37. W37 (phone layout fixes) is in the working tree, not committed. W34–W36 pushed to `main` (see `git log`): plan off the main map, animated DiD and wind explainers, national DiD for every peat region, plain-language copy.
+Last updated 2026-11-25 (America/New_York), after coursework log W37. W37 (phone layout fixes) is committed as `3cf341a` and pushed, but the Pages deploy failed during a GitHub Pages/Actions outage (HTTP 500), so the live site still serves e4a0366 until the "pages build and deployment" run is re-run. W34–W36 pushed to `main` (see `git log`): plan off the main map, animated DiD and wind explainers, national DiD for every peat region, plain-language copy.
 
 ## Where things live
 
